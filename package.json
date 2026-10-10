@@ -1,7 +1,7 @@
 {
   "name": "brandroom-cloud",
   "version": "1.0.0",
-  "description": "Brandroom by CreativHeads: the brand knowledgebase and caption studio, on Vercel + Supabase.",
+  "description": "Brandroom by CreativHeads: the brand knowledgebase, on Vercel + Supabase.",
   "private": true,
   "type": "commonjs",
   "engines": {

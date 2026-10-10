@@ -107,7 +107,7 @@ reference images. In Supabase, **Table Editor → clients** shows White Stone.
 | `SUPABASE_URL` | your Project URL |
 | `SUPABASE_SERVICE_KEY` | your service_role key |
 | `SUPABASE_BUCKET` | `brand-refs` |
-| `APP_SECRET` | any long random text (the one in your `.env` is fine) |
+| `APP_SECRET` | **required.** Long random text, at least 24 characters. The site refuses to run without it. Make one with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `APP_URL` | `https://ch.creativheads.com` |
 | `KB_API_KEYS` | the same line as in your `.env`, for example `seo-agent:the-key` |
 | `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET` | add after step 6 |

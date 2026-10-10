@@ -1,0 +1,23 @@
+{
+  "name": "brandroom-cloud",
+  "version": "1.0.0",
+  "description": "Brandroom by CreativHeads: the brand knowledgebase and caption studio, on Vercel + Supabase.",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "dev": "node scripts/dev-server.js",
+    "setup": "node scripts/setup.js",
+    "migrate": "node scripts/migrate.js",
+    "reset-local": "node scripts/reset-local.js"
+  },
+  "dependencies": {
+    "pdf-parse": "^2.4.5",
+    "pg": "8.13.1"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8"
+  }
+}

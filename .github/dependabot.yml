@@ -1,0 +1,8 @@
+# GitHub checks the packages this site uses and opens a pull request when a safer version exists.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5

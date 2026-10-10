@@ -1,0 +1,54 @@
+# ── Secrets. Never commit these. ─────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+secrets/
+credentials*.json
+service-account*.json
+
+# ── Local data: your database and uploaded files stay on your computer ───────
+.local-db/
+.local-files/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+data/
+
+# ── Installed packages and build output ──────────────────────────────────────
+node_modules/
+.vercel/
+.next/
+dist/
+build/
+coverage/
+
+# ── Logs, backups and temporary files ────────────────────────────────────────
+*.log
+npm-debug.log*
+*.bak
+*.backup
+*.tmp
+*.orig
+*.rej
+.cache/
+tmp/
+
+# ── Editor and computer clutter ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+*.swp
+
+# ── Tool settings that belong to one person ──────────────────────────────────
+.claude/

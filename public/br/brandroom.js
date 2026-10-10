@@ -1,0 +1,648 @@
+"use strict";
+/* Brandroom · CreativHeads — the Knowledgebase screens. Data comes from /api/br/* (the existing ck_* tables). */
+
+/* ================= icons (lucide) ================= */
+const ICONS = {"archive":"<rect width=\"20\" height=\"5\" x=\"2\" y=\"3\" rx=\"1\"/><path d=\"M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8\"/><path d=\"M10 12h4\"/>","book-open":"<path d=\"M12 5v16\"/><path d=\"M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z\"/>","braces":"<path d=\"M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1\"/><path d=\"M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1\"/>","check-check":"<path d=\"M18 6 7 17l-5-5\"/><path d=\"m22 10-7.5 7.5L13 16\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>","chevron-down":"<path d=\"m6 9 6 6 6-6\"/>","chevron-left":"<path d=\"m15 18-6-6 6-6\"/>","chevron-right":"<path d=\"m9 18 6-6-6-6\"/>","chevron-up":"<path d=\"m18 15-6-6-6 6\"/>","chevrons-up-down":"<path d=\"m7 15 5 5 5-5\"/><path d=\"m7 9 5-5 5 5\"/>","circle-alert":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\"/><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\"/>","circle-check":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/>","clock-3":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 6v6h4\"/>","copy":"<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>","file-text":"<path d=\"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z\"/><path d=\"M14 2v5a1 1 0 0 0 1 1h5\"/><path d=\"M10 9H8\"/><path d=\"M16 13H8\"/><path d=\"M16 17H8\"/>","image":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" ry=\"2\"/><circle cx=\"9\" cy=\"9\" r=\"2\"/><path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\"/>","info":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 16v-4\"/><path d=\"M12 8h.01\"/>","layers":"<path d=\"M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z\"/><path d=\"M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12\"/><path d=\"M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17\"/>","layout-grid":"<rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\"/>","list":"<path d=\"M3 5h.01\"/><path d=\"M3 12h.01\"/><path d=\"M3 19h.01\"/><path d=\"M8 5h13\"/><path d=\"M8 12h13\"/><path d=\"M8 19h13\"/>","loader-circle":"<path d=\"M21 12a9 9 0 1 1-6.219-8.56\"/>","lock":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>","message-square":"<path d=\"M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z\"/>","panel-left":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M9 3v18\"/>","plug":"<path d=\"M12 22v-5\"/><path d=\"M15 8V2\"/><path d=\"M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z\"/><path d=\"M9 8V2\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","refresh-cw":"<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"/><path d=\"M8 16H3v5\"/>","scissors":"<circle cx=\"6\" cy=\"6\" r=\"3\"/><path d=\"M8.12 8.12 12 12\"/><path d=\"M20 4 8.12 15.88\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><path d=\"M14.8 14.8 20 20\"/>","search":"<path d=\"m21 21-4.34-4.34\"/><circle cx=\"11\" cy=\"11\" r=\"8\"/>","settings-2":"<path d=\"M14 17H5\"/><path d=\"M19 7h-9\"/><circle cx=\"17\" cy=\"17\" r=\"3\"/><circle cx=\"7\" cy=\"7\" r=\"3\"/>","shield-check":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/>","sparkles":"<path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\"/><path d=\"M20 2v4\"/><path d=\"M22 4h-4\"/><circle cx=\"4\" cy=\"20\" r=\"2\"/>","star":"<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\"/>","tag":"<path d=\"M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z\"/><circle cx=\"7.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/>","upload":"<path d=\"M12 3v12\"/><path d=\"m17 8-5-5-5 5\"/><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/>","users":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><path d=\"M16 3.128a4 4 0 0 1 0 7.744\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/>","video":"<path d=\"m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5\"/><rect x=\"2\" y=\"6\" width=\"14\" height=\"12\" rx=\"2\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","zap":"<path d=\"M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z\"/>",
+  "log-out": "<path d=\"m16 17 5-5-5-5\"/><path d=\"M21 12H9\"/><path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/>",
+  "external-link": "<path d=\"M15 3h6v6\"/><path d=\"M10 14 21 3\"/><path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"/>"};
+const ic = (name, { size = 24, cls = "", fill = "none" } = {}) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fill}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-${name}${cls ? " " + cls : ""}" aria-hidden="true">${ICONS[name] || ""}</svg>`;
+
+/* ================= helpers ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const dm = (t) => new Date(t).toLocaleDateString("en-GB", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short" });
+const hm = (t) => new Date(t).toLocaleTimeString("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" });
+const initials = (s) => String(s || "").split(/[ &]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("");
+const pad2 = (n) => String(n).padStart(2, "0");
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "id-" + Date.now() + Math.random().toString(16).slice(2));
+const PLATFORMS = ["Instagram", "Facebook", "LinkedIn", "YouTube", "WhatsApp", "Website"];
+const LANGUAGES = ["English", "Malayalam", "Manglish"];
+
+async function api(path, body) {
+  const r = await fetch("/api" + path, body === undefined ? { cache: "no-store", headers: { "x-section": "kb" } } : { method: "POST", headers: { "content-type": "application/json", "x-requested-with": "app", "x-section": "kb" }, body: JSON.stringify(body) });
+  const d = await r.json().catch(() => ({}));
+  if (r.status === 401) { st.me = null; st.ws = null; renderLogin(); throw Object.assign(new Error(d.error || "Please sign in."), { status: 401 }); }
+  if (!r.ok) throw Object.assign(new Error(d.error || "Please try again."), { status: r.status });
+  return d;
+}
+async function apiDelete(path) {
+  const r = await fetch("/api" + path, { method: "DELETE", headers: { "x-requested-with": "app", "x-section": "kb" } });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(d.error || "Please try again."), { status: r.status });
+  return d;
+}
+const act = (b) => api("/br/workspace", b);
+async function copyText(t) { try { await navigator.clipboard.writeText(t); toast.success("Copied to clipboard"); } catch { toast.error("Clipboard is unavailable. Select the text to copy it."); } }
+
+/* ================= ui primitives (shadcn class strings) ================= */
+const BTN = "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4";
+const VAR = { default: "bg-primary text-primary-foreground hover:bg-primary/90", outline: "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50", ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50" };
+const SIZE = { default: "h-9 px-4 py-2 has-[>svg]:px-3", sm: "h-8 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5", lg: "h-10 rounded-md px-6 has-[>svg]:px-4", icon: "size-9", "icon-sm": "size-8", "icon-7": "size-7" };
+function btn(inner, { variant = "default", size = "default", cls = "", a = "", type = "button", disabled = false, attrs = "" } = {}) {
+  const base = size === "sm" ? BTN.replace(" gap-2 ", " ") : BTN;
+  return `<button data-slot="button" data-variant="${variant}" data-size="${size}" type="${type}" class="${base} ${VAR[variant]} ${SIZE[size]}${cls ? " " + cls : ""}"${a ? ` data-a="${a}"` : ""}${disabled ? " disabled" : ""}${attrs ? " " + attrs : ""}>${inner}</button>`;
+}
+const INPUT = "h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40";
+const TEXTAREA = "flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-invalid:ring-destructive/40";
+const input = ({ id = "", value = "", placeholder = "", type = "text", inp = "", attrs = "" } = {}) => `<input data-slot="input" class="${INPUT}" type="${type}"${id ? ` id="${id}"` : ""} value="${esc(value)}"${placeholder ? ` placeholder="${esc(placeholder)}"` : ""}${inp ? ` data-in="${inp}"` : ""} ${attrs}>`;
+const textarea = ({ id = "", value = "", placeholder = "", rows = 4, inp = "", attrs = "" } = {}) => `<textarea data-slot="textarea" class="${TEXTAREA}"${id ? ` id="${id}"` : ""} rows="${rows}"${placeholder ? ` placeholder="${esc(placeholder)}"` : ""}${inp ? ` data-in="${inp}"` : ""} ${attrs}>${esc(value)}</textarea>`;
+const progress = (v, { cls = "", label = "" } = {}) => `<div aria-valuemax="100" aria-valuemin="0" aria-valuenow="${v}" role="progressbar" data-state="${v >= 100 ? "complete" : "loading"}" data-value="${v}" data-max="100" data-slot="progress" class="relative h-2 w-full overflow-hidden rounded-full bg-primary/20${cls ? " " + cls : ""}"${label ? ` aria-label="${esc(label)}"` : ""}><div data-state="${v >= 100 ? "complete" : "loading"}" data-value="${v}" data-max="100" data-slot="progress-indicator" class="h-full w-full flex-1 bg-primary transition-all" style="transform: translateX(-${100 - (v || 0)}%);"></div></div>`;
+const pill = (inner, kind = "") => `<span class="pill ${kind}">${inner}</span>`;
+const SW = "peer group/switch inline-flex shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-[1.15rem] data-[size=default]:w-8 data-[size=sm]:h-3.5 data-[size=sm]:w-6 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input dark:data-[state=unchecked]:bg-input/80";
+const SWT = "pointer-events-none block rounded-full bg-background ring-0 transition-transform group-data-[size=default]/switch:size-4 group-data-[size=sm]/switch:size-3 data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0 dark:data-[state=checked]:bg-primary-foreground dark:data-[state=unchecked]:bg-foreground";
+const toggle = (on, a, { size = "default", label = "" } = {}) => { const s = on ? "checked" : "unchecked"; return `<button type="button" role="switch" aria-checked="${on}" data-state="${s}" value="on" data-slot="switch" data-size="${size}" class="${SW}" aria-label="${esc(label)}" data-a="${a}"><span data-state="${s}" data-slot="switch-thumb" class="${SWT}"></span></button>`; };
+const TABS = "group/tabs flex gap-2 data-[orientation=horizontal]:flex-col";
+const TLIST = "group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground group-data-[orientation=horizontal]/tabs:h-9 group-data-[orientation=vertical]/tabs:h-fit group-data-[orientation=vertical]/tabs:flex-col data-[variant=line]:rounded-none gap-1 bg-transparent";
+const TTRIG = "relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 group-data-[variant=default]/tabs-list:data-[state=active]:shadow-sm group-data-[variant=line]/tabs-list:data-[state=active]:shadow-none dark:text-muted-foreground dark:hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-[state=active]:bg-transparent dark:group-data-[variant=line]/tabs-list:data-[state=active]:border-transparent dark:group-data-[variant=line]/tabs-list:data-[state=active]:bg-transparent data-[state=active]:bg-background data-[state=active]:text-foreground dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 dark:data-[state=active]:text-foreground after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-[orientation=horizontal]/tabs:after:inset-x-0 group-data-[orientation=horizontal]/tabs:after:bottom-[-5px] group-data-[orientation=horizontal]/tabs:after:h-0.5 group-data-[orientation=vertical]/tabs:after:inset-y-0 group-data-[orientation=vertical]/tabs:after:-right-1 group-data-[orientation=vertical]/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-[state=active]:after:opacity-100";
+function tabs(value, items, onPick, { cls = "", content = "" } = {}) {
+  return `<div dir="ltr" data-orientation="horizontal" data-slot="tabs" class="${TABS}${cls ? " " + cls : ""}"><div role="tablist" aria-orientation="horizontal" data-slot="tabs-list" data-variant="line" class="${TLIST}" data-orientation="horizontal">${items.map(([v, label]) => `<button type="button" role="tab" aria-selected="${v === value}" data-state="${v === value ? "active" : "inactive"}" data-slot="tabs-trigger" class="${TTRIG}" data-a="${reg(() => onPick(v))}">${label}</button>`).join("")}</div>${content ? `<div data-state="active" data-orientation="horizontal" role="tabpanel" data-slot="tabs-content" class="flex-1 outline-none">${content}</div>` : ""}</div>`;
+}
+const SEL_TRIG = "flex w-fit items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[placeholder]:text-muted-foreground data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground";
+const SEL_CONTENT = "relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1";
+const SEL_ITEM = "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2";
+function select(value, options, onChange, { label = "", cls = "" } = {}) {
+  const opts = options.map((o) => (typeof o === "string" ? { value: o, label: o } : o)); const cur = opts.find((o) => o.value === value);
+  const id = reg((ev, el) => openSelect(el, opts, value, onChange));
+  return `<button type="button" role="combobox" aria-expanded="false" aria-autocomplete="none" dir="ltr" data-state="closed" data-slot="select-trigger" data-size="default" class="${SEL_TRIG} choice${cls ? " " + cls : ""}" aria-label="${esc(label)}" data-a="${id}"${cur ? "" : " data-placeholder=\"\""}><span data-slot="select-value" style="pointer-events: none;">${esc(cur ? cur.label : label)}</span>${ic("chevron-down", { cls: "size-4 opacity-50" })}</button>`;
+}
+function openSelect(trigger, opts, value, onChange) {
+  closePopover(); const r = trigger.getBoundingClientRect(); trigger.setAttribute("aria-expanded", "true"); trigger.dataset.state = "open";
+  const below = window.innerHeight - r.bottom > 220 || r.top < 240; const pop = document.createElement("div"); pop.className = "br-popper";
+  pop.style.cssText = `position:fixed;left:${Math.min(r.left, window.innerWidth - Math.max(r.width, 128) - 8)}px;${below ? `top:${r.bottom}px` : `bottom:${window.innerHeight - r.top}px`};min-width:${r.width}px;z-index:60;--radix-select-trigger-width:${r.width}px;--radix-select-content-available-height:${below ? window.innerHeight - r.bottom - 12 : r.top - 12}px`;
+  pop.innerHTML = `<div data-slot="select-content" role="listbox" data-state="open" data-side="${below ? "bottom" : "top"}" class="${SEL_CONTENT}" style="max-height:var(--radix-select-content-available-height)"><div class="p-1 w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1">${opts.map((o, i) => `<div role="option" tabindex="-1" data-i="${i}" aria-selected="${o.value === value}" data-state="${o.value === value ? "checked" : "unchecked"}" data-slot="select-item" class="${SEL_ITEM}"><span data-slot="select-item-indicator" class="absolute right-2 flex size-3.5 items-center justify-center">${o.value === value ? ic("check", { cls: "size-4" }) : ""}</span><span>${esc(o.label)}</span></div>`).join("")}</div></div>`;
+  document.body.appendChild(pop); popover = { el: pop, trigger };
+  const items = [...pop.querySelectorAll("[data-i]")]; const focusAt = (i) => { const el = items[Math.max(0, Math.min(items.length - 1, i))]; el?.focus(); };
+  focusAt(Math.max(0, opts.findIndex((o) => o.value === value)));
+  items.forEach((el) => { el.addEventListener("mouseenter", () => el.focus()); el.addEventListener("click", () => { const o = opts[+el.dataset.i]; closePopover(); trigger.focus(); if (o.value !== value) onChange(o.value); }); });
+  pop.addEventListener("keydown", (e) => { const i = items.indexOf(document.activeElement); if (e.key === "ArrowDown") { e.preventDefault(); focusAt(i + 1); } else if (e.key === "ArrowUp") { e.preventDefault(); focusAt(i - 1); } else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); document.activeElement?.click(); } else if (e.key === "Escape" || e.key === "Tab") { e.preventDefault(); closePopover(); trigger.focus(); } });
+}
+let popover = null;
+function closePopover() { if (!popover) return; popover.el.remove(); popover.trigger.setAttribute("aria-expanded", "false"); popover.trigger.dataset.state = "closed"; popover = null; }
+document.addEventListener("mousedown", (e) => { if (popover && !popover.el.contains(e.target) && !popover.trigger.contains(e.target)) closePopover(); });
+window.addEventListener("resize", closePopover); window.addEventListener("scroll", (e) => { if (popover && !popover.el.contains(e.target)) closePopover(); }, true);
+
+/* action registry: data-a="id" (click), data-in="id" (input), data-sub="id" (submit) */
+let REG = new Map(), regN = 0;
+const reg = (fn) => { const id = "a" + ++regN; REG.set(id, fn); return id; };
+document.addEventListener("click", (e) => { const el = e.target.closest("[data-a]"); if (!el || el.disabled) return; const fn = REG.get(el.dataset.a); if (fn) { if (el.tagName === "A" && !el.dataset.keep) e.preventDefault(); fn(e, el); } });
+document.addEventListener("input", (e) => { const el = e.target.closest("[data-in]"); if (!el) return; const fn = REG.get(el.dataset.in); if (fn) fn(el.value, el, e); });
+document.addEventListener("submit", (e) => { const el = e.target.closest("[data-sub]"); if (!el) return; e.preventDefault(); const fn = REG.get(el.dataset.sub); if (fn) fn(e, el); });
+document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; if (popover) return closePopover(); if (st.dialog && !st.dialog.locked) return closeDialog(); if (st.mobileOpen) { st.mobileOpen = false; renderShell(); } if (menuEl) closeMenu(); });
+
+/* toasts (sonner look) */
+const toast = { show(type, msg) { const t = $("#toaster"); const el = document.createElement("div"); el.className = `br-toast ${type}`; el.setAttribute("role", "status"); el.innerHTML = `${ic(type === "success" ? "circle-check" : "circle-alert", { size: 18 })}<span>${esc(msg)}</span>`; t.appendChild(el); requestAnimationFrame(() => el.classList.add("in")); setTimeout(() => { el.classList.remove("in"); setTimeout(() => el.remove(), 300); }, 4000); }, success(m) { toast.show("success", m); }, error(m) { toast.show("error", m); } };
+
+/* dialogs (radix look) */
+const DLG_OVERLAY = "fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0";
+const DLG = "fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-lg";
+const ALERT = "group/alert-dialog-content fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[size=sm]:max-w-xs data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[size=default]:sm:max-w-lg";
+const DLG_CLOSE = "absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4";
+const dlgHeader = (t, d, extra = "") => `<div data-slot="dialog-header" class="flex flex-col gap-2 text-center sm:text-left">${extra}<h2 data-slot="dialog-title" class="text-lg leading-none font-semibold">${t}</h2>${d ? `<p data-slot="dialog-description" class="text-sm text-muted-foreground">${d}</p>` : ""}</div>`;
+const dlgFooter = (inner) => `<div data-slot="dialog-footer" class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">${inner}</div>`;
+const alertHeader = (t, d) => `<div data-slot="alert-dialog-header" class="grid grid-rows-[auto_1fr] place-items-center gap-1.5 text-center has-data-[slot=alert-dialog-media]:grid-rows-[auto_auto_1fr] has-data-[slot=alert-dialog-media]:gap-x-6 sm:group-data-[size=default]/alert-dialog-content:place-items-start sm:group-data-[size=default]/alert-dialog-content:text-left sm:group-data-[size=default]/alert-dialog-content:has-data-[slot=alert-dialog-media]:grid-rows-[auto_1fr]"><h2 data-slot="alert-dialog-title" class="text-lg font-semibold sm:group-data-[size=default]/alert-dialog-content:group-has-data-[slot=alert-dialog-media]/alert-dialog-content:col-start-2">${t}</h2><p data-slot="alert-dialog-description" class="text-sm text-muted-foreground">${d}</p></div>`;
+const alertFooter = (inner) => `<div data-slot="alert-dialog-footer" class="flex flex-col-reverse gap-2 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end">${inner}</div>`;
+function openDialog(render, { alert = false, cls = "", onClose = null } = {}) { st.dialog = { render, alert, cls, onClose, locked: false }; renderDialog(true); }
+function renderDialog(first = false) {
+  const d = st.dialog; const p = $("#portal"); if (!d) { p.innerHTML = ""; return; }
+  const focused = document.activeElement && p.contains(document.activeElement) ? document.activeElement.id : null;
+  const close = reg(() => { if (!st.dialog?.locked) closeDialog(); });
+  p.innerHTML = `<div data-state="open" data-slot="${d.alert ? "alert-dialog-overlay" : "dialog-overlay"}" class="${DLG_OVERLAY}"${d.alert ? "" : ` data-a="${close}"`}></div><div role="${d.alert ? "alertdialog" : "dialog"}" aria-modal="true" data-state="open" data-size="default" data-slot="${d.alert ? "alert-dialog-content" : "dialog-content"}" class="${d.alert ? ALERT : DLG}${d.cls ? " " + d.cls : ""}" tabindex="-1">${d.render()}${d.alert ? "" : `<button type="button" data-slot="dialog-close" class="${DLG_CLOSE}" data-a="${close}">${ic("x")}<span class="sr-only">Close</span></button>`}</div>`;
+  document.body.style.overflow = "hidden";
+  if (first) setTimeout(() => (p.querySelector("input:not([type=file]),textarea,[data-autofocus]") || p.querySelector("[role=dialog],[role=alertdialog]"))?.focus(), 30);
+  else if (focused) document.getElementById(focused)?.focus();
+}
+function closeDialog() { const d = st.dialog; st.dialog = null; closePopover(); renderDialog(); document.body.style.overflow = ""; d?.onClose?.(); }
+
+/* ================= knowledge sections ================= */
+const F = (key, label, help, example, short = false) => ({ key, label, help, example, short });
+const SECTIONS = [
+  { id: "basics", name: "Brand basics", description: "Start with the story behind the brand.", fields: [F("about", "About the brand", "What they do, who they serve, and what sets them apart.", "A Kerala-based surface brand for thoughtful homes."), F("website", "Website", "The public website, if available.", "https://example.com", true)] },
+  { id: "voice", name: "Voice & tone", description: "Make every caption sound unmistakably like them.", fields: [F("tone", "Tone summary", "Describe the personality in one or two sentences.", "Warm and confident. Helpful, never pushy."), F("adjectives", "Voice adjectives", "Separate a few distinctive traits with commas.", "Considered, warm, quietly confident", true), F("soundsLike", "Sounds like", "A sentence that captures the brand.", "Beautiful surfaces. Made for real life."), F("doesNotSoundLike", "Does not sound like", "An example of what the brand would never say.", "HURRY! CRAZY DEALS!"), F("dos", "Do", "Writing habits to follow.", "Lead with an everyday benefit. Use simple words."), F("donts", "Don’t", "Writing habits to avoid.", "Avoid exaggerated claims and pressure to buy.")] },
+  { id: "audience", name: "Audience", description: "Write for people, with a clear sense of their needs.", fields: [F("audience", "Audience summary", "Who is most likely to care?", "Homeowners aged 28–45 in Kerala."), F("personas", "Personas & needs", "Include motivations, locations and objections.", "First-time homeowner · Kochi · wants durability, worries about cost.")] },
+  { id: "products", name: "Products & USPs", description: "Keep product facts and benefits close at hand.", fields: [F("products", "Products or services", "One offering per line, with its key benefit.", "Stone tiles — a versatile surface for indoor spaces."), F("usps", "What makes them different", "Use claims the client has verified.", "Thoughtful design and local product support.")] },
+  { id: "messages", name: "Key messages", description: "The ideas this brand should be remembered for.", fields: [F("tagline", "Tagline", "The approved brand line.", "Made for everyday living.", true), F("messages", "Key messages", "One message per line.", "Materials that make a space feel like home."), F("validity", "Campaign validity", "Record start and end dates for time-sensitive copy.", "No active limited-time campaign.", true)] },
+  { id: "words", name: "Words to use & avoid", description: "A shared vocabulary keeps the voice consistent.", fields: [F("wordsUse", "Words to use", "Separate words with commas.", "thoughtful, everyday, considered", true), F("wordsAvoid", "Words to avoid", "Separate words with commas.", "cheap, guaranteed, No.1", true)] },
+  { id: "languages", name: "Languages", description: "Match the language to the audience and the moment.", fields: [F("primaryLanguage", "Primary language", "English, Malayalam or Manglish.", "English", true), F("languageNotes", "Language guidelines", "Explain when to switch languages and which script to use.", "English for LinkedIn. Conversational Manglish for Instagram reels.")] },
+  { id: "social", name: "Hashtags & CTA", description: "Set the rules for the end of every caption.", fields: [F("hashtags", "Brand hashtags", "Separate tags with spaces.", "#Whitestone #ThoughtfulHomes", true), F("bannedHashtags", "Banned hashtags", "Leave empty when there are none.", "#CheapDeals", true), F("cta", "Preferred call to action", "Use an approved, repeatable next step.", "Explore the collection.", true), F("emoji", "Emoji rules", "Set a simple limit and preferred style.", "At most one emoji. Avoid urgency symbols.", true)] },
+  { id: "platforms", name: "Platform rules", description: "Adapt the same voice to different formats.", fields: [F("platforms", "Active platforms", "Separate platform names with commas.", "Instagram, Facebook, LinkedIn", true), F("maxLength", "Maximum caption length", "A character limit for this brand.", "2200", true), F("format", "Format & media rules", "Hooks, aspect ratios, video length and hashtag counts.", "Instagram: hook first, 3 hashtags, 4:5 posts or 9:16 reels.")] },
+  { id: "compliance", name: "Compliance", description: "Keep the claims clear, supportable and approved.", fields: [F("compliance", "Claims & restrictions", "What needs evidence or client approval?", "No unverified superlatives or warranty promises."), F("disclaimer", "Required disclaimer", "Included verbatim in captions when present.", "Images are for illustration purposes only.")] },
+  { id: "seasonal", name: "Festivals & seasons", description: "Capture the moments that matter to this brand.", fields: [F("seasonal", "Seasonal opportunities", "Include dates, lead time and local considerations.", "Onam: plan 21 days ahead. Confirm current dates with the client.")] },
+  { id: "contacts", name: "Contacts & approvals", description: "Know who can give the final yes.", fields: [F("contacts", "Client contacts", "Name, role, email and phone.", "Marketing lead · marketing@example.com"), F("approvals", "Approval rules", "Who approves which work?", "Client marketing lead approves every caption before publishing.")] },
+  { id: "assets", name: "Asset links", description: "Point the team to the original files.", fields: [F("assets", "OneDrive or SharePoint links", "One labelled URL per line.", "Brand guide: https://example.com/brand-guide")] },
+  { id: "recognition", name: "Brand recognition", description: "Help match a message to the right brand.", fields: [F("aliases", "Names & aliases", "Short names, nicknames and common spellings.", "whitestone, white stone, wst", true), F("keywords", "Detection keywords", "Distinctive terms that appear in filenames or messages.", "stone tiles, surface collection", true), F("colours", "Brand colours", "Separate hex codes with commas.", "#303C35, #D5DDCC", true), F("logoRules", "Logo rules", "Placement, contrast and clear-space requirements.", "Use the primary mark with clear space on every side.")] },
+  { id: "internal", name: "Internal notes", description: "For the team only. Never included in the bot’s writing context.", fields: [F("internalNotes", "Private team notes", "Keep relationship and account notes here.", "Demo account. Confirm all brand details before use.")] },
+];
+const filled = (c, k) => !!String(c.fields[k] || "").trim();
+const score = (c) => { const s = SECTIONS.filter((x) => x.id !== "internal"); return Math.round((s.filter((x) => x.fields.some((f) => filled(c, f.key))).length / s.length) * 100); };
+const missing = (c) => SECTIONS.filter((x) => x.id !== "internal" && !x.fields.some((f) => filled(c, f.key))).map((x) => x.name);
+function bundle(c, examples, platform = "Instagram", language = "English") {
+  const brand = Object.fromEntries(Object.entries(c.fields).filter(([k]) => k !== "internalNotes" && !c.internalFields.includes(k)));
+  return { client: c.name, platform, language, brand, examples: examples.filter((e) => e.clientId === c.id && !e.internal).slice(0, 8).map((e) => ({ verdict: e.verdict, text: e.text, reason: e.reason })) };
+}
+const mark = (c, size = "") => `<div class="brand-mark ${size}" style="--brand: ${esc(c.colour)};">${esc(initials(c.name))}</div>`;
+const peach = (name) => (String(name || "").split("").reduce((a, ch) => a + ch.charCodeAt(0), 0) % 2 ? "peach" : "");
+const pageHead = (eyebrow, title, desc, actions = "") => `<div class="page-head"><div>${eyebrow ? `<div class="eyebrow">${eyebrow}</div>` : ""}<h1>${title}</h1>${desc ? `<p>${desc}</p>` : ""}</div>${actions ? `<div class="head-actions">${actions}</div>` : ""}</div>`;
+const empty = (icon, title, desc, inner = "") => `<div class="empty">${ic(icon, { size: 30 })}<h3>${title}</h3><p>${desc}</p>${inner}</div>`;
+const spin = (size) => ic("loader-circle", { size: size || 24, cls: "spin" });
+
+/* ================= state ================= */
+const st = { me: null, ws: null, cfg: {}, pub: null, err: "", view: "clients", clientId: null, section: "voice", dialog: null, mobileOpen: false };
+const lib = { q: "", tab: "All clients", sort: "Recently updated", mode: "grid" };
+const det = { ctx: null, ctxKey: "", ctxLoading: null, tab: "overview", platform: "Instagram", language: "English", forId: null };
+const ed = { draft: null, dirty: false, saving: false, error: "", forId: null };
+const exs = { tab: "All examples", client: "all", q: "", busy: null };
+const sets = { tab: "connections" };
+const refsState = { kind: "Logo", description: "", file: null, busy: false, error: "" };
+
+async function load() {
+  const ws = await api("/br/workspace"); st.ws = ws; st.me = ws.me; st.cfg = ws.config || {}; st.err = ""; return ws;
+}
+// Where a reference image is served from, and which extra links the account menu shows,
+// differ between the local app and the hosted one. The server tells us in workspace.config.
+const refUrl = (id) => (st.cfg.refBase || "/api/ck/refs/") + id + "/file";
+async function refresh() { await load(); renderShell(); }
+const VIEWS = ["clients", "client", "editor", "documents", "examples", "activity", "settings"];
+function go(view, id) {
+  if (st.view === "editor" && ed.dirty && view !== "editor") { confirmLeave(() => { ed.dirty = false; go(view, id); }); return; }
+  if (st.view === "editor" && view !== "editor") ed.draft = null;
+  st.view = view; if (id) st.clientId = id; st.mobileOpen = false;
+  const h = "#" + view + (id ? "/" + encodeURIComponent(id) : "");
+  if (location.hash !== h) history.pushState(null, "", h);
+  renderShell(); window.scrollTo({ top: 0, behavior: "instant" });
+}
+window.addEventListener("popstate", () => { readHash(); if (!st.ws) return; renderShell(); window.scrollTo({ top: 0, behavior: "instant" }); });
+function readHash() { const [v, id] = location.hash.slice(1).split("/"); if (VIEWS.includes(v)) { st.view = v; if (id) st.clientId = decodeURIComponent(id); } else st.view = "clients"; }
+window.addEventListener("beforeunload", (e) => { if (st.view === "editor" && ed.dirty) { e.preventDefault(); e.returnValue = ""; } });
+const curClient = () => st.ws?.clients.find((c) => c.id === st.clientId);
+const canEdit = () => !!st.me?.canEdit;
+
+/* ================= shell ================= */
+const MENU_BTN = "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left ring-sidebar-ring outline-hidden transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-8 text-sm";
+const GROUP_LABEL = "flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-sidebar-foreground/70 ring-sidebar-ring outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0 group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0";
+const ROLE = { admin: "Admin", head: "Head", staff: "Staff" };
+function sidebarInner() {
+  const ws = st.ws; const v = st.view;
+  const item = ([key, label, icon]) => `<li data-slot="sidebar-menu-item" data-sidebar="menu-item" class="group/menu-item relative"><button data-slot="sidebar-menu-button" data-sidebar="menu-button" data-size="default" data-active="${v === key || (key === "clients" && ["client", "editor"].includes(v))}" class="${MENU_BTN}" data-a="${reg(() => go(key))}">${ic(icon)}<span>${label}</span></button></li>`;
+  const group = (label, items) => `<div data-slot="sidebar-group" data-sidebar="group" class="relative flex w-full min-w-0 flex-col p-2"><div data-slot="sidebar-group-label" data-sidebar="group-label" class="${GROUP_LABEL}">${label}</div><ul data-slot="sidebar-menu" data-sidebar="menu" class="flex w-full min-w-0 flex-col gap-1">${items.map(item).join("")}</ul></div>`;
+  const me = st.me || {};
+  return `<div data-slot="sidebar-header" data-sidebar="header" class="flex flex-col gap-2 p-2"><button class="wordmark" data-a="${reg(() => go("clients"))}"><span class="app-mark">${ic("book-open", { size: 22 })}</span><span>brandroom<span class="wordmark-sub">BY CREATIVHEADS®</span></span></button><div class="workspace-name"><span class="workspace-logo">CH</span><span>CreativHeads Agency<small>Team workspace</small></span>${ic("chevrons-up-down", { size: 15 })}</div></div>
+  <div data-slot="sidebar-content" data-sidebar="content" class="flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden">${group("WORKSPACE", [["clients", "Clients", "layers"], ["documents", "Documents", "file-text"]])}${group("MANAGE", [["activity", "Activity", "clock-3"], ["settings", "Settings", "settings-2"]])}</div>
+  <div data-slot="sidebar-footer" data-sidebar="footer" class="flex flex-col gap-2 p-2">
+  <div class="account"><span class="avatar admin">${esc((me.name || "?")[0].toUpperCase())}</span><span><b>${esc(me.name || "")}</b><small>${esc(ROLE[me.role] || "Team")} · CreativHeads</small></span>${pill(esc((ROLE[me.role] || "TEAM").toUpperCase()))}</div></div>`;
+}
+const TITLES = { clients: "Clients", editor: "Edit brand", documents: "Documents", examples: "Examples library", activity: "Activity", settings: "Settings" };
+function renderShell() {
+  closePopover(); REG = new Map(); if (st.dialog) renderDialog();
+  const app = $("#app"); const ws = st.ws; const c = curClient();
+  const crumb = st.view === "client" ? c?.name || "Client" : TITLES[st.view];
+  let main = "";
+  if (!ws && !st.err) main = `<div class="loading-layout"><div data-slot="skeleton" class="animate-pulse rounded-md bg-accent h-9 w-64"></div><div data-slot="skeleton" class="animate-pulse rounded-md bg-accent h-20 w-full"></div><div class="client-grid">${[1, 2, 3, 4, 5, 6].map(() => `<div data-slot="skeleton" class="animate-pulse rounded-md bg-accent h-60 w-full"></div>`).join("")}</div></div>`;
+  else if (st.err) main = empty("circle-alert", "Let’s try that again", esc(st.err), btn("Reload workspace", { a: reg(() => load().then(renderShell).catch((e) => { st.err = e.message; renderShell(); })) }));
+  else if (st.view === "clients") main = viewClients();
+  else if (["client", "editor"].includes(st.view) && !c) main = empty("search", "Client not found", "This brand may have been removed.", btn("Back to clients", { a: reg(() => go("clients")) }));
+  else if (st.view === "client") main = viewClient(c);
+  else if (st.view === "editor") main = viewEditor(c);
+  else if (st.view === "documents") main = viewAllDocuments();
+  else if (st.view === "examples") main = viewExamples();
+  else if (st.view === "activity") main = viewActivity();
+  else if (st.view === "settings") main = viewSettings();
+  const sheet = st.mobileOpen ? `<div data-state="open" data-slot="sheet-overlay" class="fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" data-a="${reg(() => { st.mobileOpen = false; renderShell(); })}"></div><div role="dialog" data-state="open" data-sidebar="sidebar" data-slot="sidebar" data-mobile="true" class="fixed z-50 flex flex-col gap-4 shadow-lg transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:animate-in data-[state=open]:duration-500 inset-y-0 left-0 h-full border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground app-sidebar" style="--sidebar-width: 18rem;"><div class="flex h-full w-full flex-col">${sidebarInner()}</div></div>` : "";
+  app.innerHTML = `<div data-slot="sidebar-wrapper" style="--sidebar-width:244px;--sidebar-width-icon:3rem" class="group/sidebar-wrapper flex min-h-svh w-full has-data-[variant=inset]:bg-sidebar"><div class="group peer hidden text-sidebar-foreground md:block" data-state="expanded" data-collapsible="" data-variant="sidebar" data-side="left" data-slot="sidebar"><div data-slot="sidebar-gap" class="relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear group-data-[collapsible=offcanvas]:w-0 group-data-[side=right]:rotate-180 group-data-[collapsible=icon]:w-(--sidebar-width-icon)"></div><div data-slot="sidebar-container" class="fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l app-sidebar"><div data-sidebar="sidebar" data-slot="sidebar-inner" class="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow-sm">${sidebarInner()}</div></div></div>${sheet}
+  <div class="app-body"><header class="topbar"><div class="breadcrumbs">${btn(ic("panel-left") + '<span class="sr-only">Toggle Sidebar</span>', { variant: "ghost", size: "icon", cls: "size-7 mobile-menu", a: reg(() => { st.mobileOpen = !st.mobileOpen; renderShell(); }), attrs: 'data-sidebar="trigger"' })}<span>Workspace</span>${ic("chevron-right", { size: 14 })}<strong>${esc(crumb)}</strong></div><div class="topbar-right"><span class="sample-label">TEAM WORKSPACE</span><button class="guide-button" data-a="${reg(openGuide)}">${ic("info", { size: 16 })}<span>Brandroom guide</span></button><button class="avatar small br-avatar-btn" aria-label="Account menu" data-a="${reg((e, el) => openMenu(el))}">${esc((st.me?.name || "?")[0].toUpperCase())}</button></div></header>
+  <main class="main-content">${main}</main><footer class="workspace-footer"><span>CreativHeads® Agency</span><span>Made for a little more clarity.</span><button data-a="${reg(openGuide)}">Brandroom ${ic("info", { size: 12 })}</button></footer></div></div>`;
+  afterRender();
+}
+let afterHooks = [];
+function afterRender() { const h = afterHooks; afterHooks = []; h.forEach((f) => f()); }
+
+// The writing context comes from the server, so the tab shows what the bot really reads.
+async function loadContext(c) {
+  const key = c.id + det.platform + det.language;
+  if (det.ctxLoading === key) return;
+  det.ctxLoading = key;
+  try {
+    det.ctx = await api(`/br/context?client=${encodeURIComponent(c.id)}&platform=${encodeURIComponent(det.platform)}&language=${encodeURIComponent(det.language)}`);
+    det.ctxKey = key;
+  } catch (e) { det.ctx = { error: e.message }; det.ctxKey = key; }
+  finally { det.ctxLoading = null; if (st.view === "client" && det.tab === "bundle") renderShell(); }
+}
+
+/* Documents: the file is kept, and the words inside it become brand knowledge the bot reads. */
+const docState = { file: null, busy: false, error: "", busyId: null };
+const fileSize = (n) => (n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB");
+const DOC_TYPES = "application/pdf,text/plain,text/markdown,text/csv,.pdf,.txt,.md,.csv";
+
+function viewDocuments(c) {
+  const D = docState;
+  const list = (st.ws.documents || []).filter((d) => d.clientId === c.id);
+  const readable = list.filter((d) => d.status === "ready" && !d.internal);
+  const totalChars = readable.reduce((a, d) => a + d.chars, 0);
+  afterHooks.push(() => {
+    const f = $("#doc-file");
+    if (f) f.onchange = () => { const x = f.files?.[0]; D.file = x || null; D.error = ""; renderShell(); };
+  });
+  const badge = (d) => d.internal ? pill("Team only", "draft")
+    : d.status === "ready" ? pill(`${d.chars.toLocaleString()} characters read`, "ready")
+    : pill(d.status === "no_text" ? "No text found" : "Could not be read", "rejected");
+  return `<div class="bundle-head"><div><h2>What this brand has written down.</h2><p>Brand guides, price lists, FAQs. The words inside become part of the brand knowledge.</p></div>${pill(`${list.length} document${list.length === 1 ? "" : "s"}`)}</div>
+  <div class="doc-layout">
+    ${canEdit() ? `<form class="doc-upload panel" data-sub="${reg(() => uploadDoc(c))}">
+      <label class="dropzone">${ic("upload", { size: 26 })}<b>${esc(D.file ? D.file.name : "Choose a document")}</b><span>PDF, text, Markdown or CSV · up to 3 MB</span>
+      <input type="file" id="doc-file" accept="${DOC_TYPES}" aria-label="Document"></label>
+      ${D.error ? `<p class="error-text">${esc(D.error)}</p>` : ""}
+      ${btn((D.busy ? spin() : ic("upload")) + (D.busy ? "Reading the file…" : "Add document"), { type: "submit", disabled: !D.file || D.busy })}
+      <p class="field-help">A PDF made of scans holds pictures of text, so nothing can be read from it. Those are kept as files only.</p>
+    </form>` : ""}
+    <div class="doc-list">
+      ${list.length ? list.map((d) => `<div class="doc-row panel">
+        <span class="doc-icon">${ic(d.kind === "PDF" ? "file-text" : "braces", { size: 20 })}</span>
+        <div class="doc-main"><b>${esc(d.name)}</b><small>${esc(d.kind)} · ${fileSize(d.size)}${d.pages ? ` · ${d.pages} page${d.pages === 1 ? "" : "s"}` : ""} · ${dm(d.createdAt)}</small>${d.note ? `<p class="doc-note">${esc(d.note)}</p>` : ""}</div>
+        <div class="doc-side">${badge(d)}
+          <div class="doc-actions">
+            <a class="text-button" href="/api/br/documents/${d.id}/file" target="_blank" rel="noreferrer">Open</a>
+            ${canEdit() ? `<label class="lock-control">${ic("lock", { size: 12 })}<span>Team only</span>${toggle(d.internal, reg(() => toggleDoc(d)), { size: "sm", label: `Keep ${d.name} from the bot` })}</label>` : ""}
+            ${canEdit() ? `<button class="text-button danger" data-a="${reg(() => removeDoc(d))}"${D.busyId === d.id ? " disabled" : ""}>Remove</button>` : ""}
+          </div>
+        </div></div>`).join("") : empty("file-text", "Nothing written down yet.", "Add a brand guide, price list or FAQ, and the bot can use what is inside it.")}
+      ${readable.length ? `<p class="doc-total">${ic("circle-check", { size: 14 })}${totalChars.toLocaleString()} characters of document text are saved with this brand. Team-only documents are kept out of the writing context.</p>` : ""}
+    </div>
+  </div>`;
+}
+/* Every client's documents in one place, with upload from here. */
+const allDocs = { client: "all", q: "", target: "" };
+function viewAllDocuments() {
+  const ws = st.ws, D = docState, A = allDocs;
+  const active = ws.clients.filter((c) => c.status === "active");
+  if (!A.target || !active.some((c) => c.id === A.target)) A.target = active[0]?.id || "";
+  const q = A.q.toLowerCase();
+  const list = (ws.documents || [])
+    .filter((d) => (A.client === "all" || d.clientId === A.client) && d.name.toLowerCase().includes(q));
+  const readable = list.filter((d) => d.status === "ready" && !d.internal);
+  const target = active.find((c) => c.id === A.target);
+  afterHooks.push(() => {
+    const f = $("#alldoc-file");
+    if (f) f.onchange = () => { D.file = f.files?.[0] || null; D.error = ""; renderShell(); };
+    const s = $("#alldoc-q");
+    if (s) s.addEventListener("input", () => { A.q = s.value; const p = s.selectionStart; renderShell(); const n = $("#alldoc-q"); n.focus(); n.setSelectionRange(p, p); });
+  });
+  const badge = (d) => d.internal ? pill("Team only", "draft")
+    : d.status === "ready" ? pill(`${d.chars.toLocaleString()} characters read`, "ready")
+    : pill(d.status === "no_text" ? "No text found" : "Could not be read", "rejected");
+  return `${pageHead("WHAT YOUR BRANDS HAVE WRITTEN DOWN", "The facts, in their own words.", "Brand guides, price lists and FAQs. The words inside become part of the brand knowledge.")}
+  <div class="examples-toolbar"><div class="inline-options"><div class="searchbox">${ic("search", { size: 16 })}${input({ id: "alldoc-q", value: A.q, placeholder: "Search document names…", attrs: 'aria-label="Search documents"' })}</div>${select(A.client, [{ value: "all", label: "All clients" }, ...ws.clients.map((c) => ({ value: c.id, label: c.name }))], (v) => { A.client = v; renderShell(); }, { label: "Filter documents by client" })}</div><span class="doc-count">${readable.reduce((a, d) => a + d.chars, 0).toLocaleString()} characters available to the bot</span></div>
+  <div class="doc-layout">
+    ${canEdit() ? `<form class="doc-upload panel" data-sub="${reg(() => uploadDoc(target, true))}">
+      <h3 class="doc-upload-title">Add a document</h3>
+      <div class="form-field"><label>Client</label>${select(A.target, active.map((c) => ({ value: c.id, label: c.name })), (v) => { A.target = v; renderShell(); }, { label: "Client for this document" })}</div>
+      <label class="dropzone">${ic("upload", { size: 26 })}<b>${esc(D.file ? D.file.name : "Choose a document")}</b><span>PDF, text, Markdown or CSV · up to 3 MB</span>
+      <input type="file" id="alldoc-file" accept="${DOC_TYPES}" aria-label="Document"></label>
+      ${D.error ? `<p class="error-text">${esc(D.error)}</p>` : ""}
+      ${btn((D.busy ? spin() : ic("upload")) + (D.busy ? "Reading the file…" : "Add document"), { type: "submit", disabled: !D.file || D.busy || !target })}
+      <p class="field-help">A PDF made of scans holds pictures of text, so nothing can be read from it.</p>
+    </form>` : ""}
+    <div class="doc-list">
+      ${list.length ? list.map((d) => { const c = ws.clients.find((x) => x.id === d.clientId); return `<div class="doc-row panel">
+        <span class="doc-icon">${ic(d.kind === "PDF" ? "file-text" : "braces", { size: 20 })}</span>
+        <div class="doc-main"><b>${esc(d.name)}</b><small>${c ? `<button class="text-button" data-a="${reg(() => go("client", c.id))}">${esc(c.name)}</button> · ` : ""}${esc(d.kind)} · ${fileSize(d.size)}${d.pages ? ` · ${d.pages} page${d.pages === 1 ? "" : "s"}` : ""} · ${dm(d.createdAt)}</small>${d.note ? `<p class="doc-note">${esc(d.note)}</p>` : ""}</div>
+        <div class="doc-side">${badge(d)}
+          <div class="doc-actions">
+            <a class="text-button" href="/api/br/documents/${d.id}/file" target="_blank" rel="noreferrer">Open</a>
+            ${canEdit() ? `<label class="lock-control">${ic("lock", { size: 12 })}<span>Team only</span>${toggle(d.internal, reg(() => toggleDoc(d)), { size: "sm", label: `Keep ${d.name} from the bot` })}</label>` : ""}
+            ${canEdit() ? `<button class="text-button danger" data-a="${reg(() => removeDoc(d))}"${D.busyId === d.id ? " disabled" : ""}>Remove</button>` : ""}
+          </div>
+        </div></div>`; }).join("") : empty("file-text", A.q || A.client !== "all" ? "Nothing matches" : "Nothing written down yet.", A.q || A.client !== "all" ? "Try another name, or show all clients." : "Add a brand guide, price list or FAQ, and the bot can use what is inside it.")}
+    </div>
+  </div>`;
+}
+async function uploadDoc(c) {
+  if (!c) return;
+  const D = docState;
+  if (!D.file || D.busy) return;
+  if (D.file.size > 3 * 1024 * 1024) { D.error = "That file is over 3 MB. Please use a smaller one."; return renderShell(); }
+  D.busy = true; D.error = ""; renderShell();
+  try {
+    const data = await blobB64(D.file);
+    const mime = D.file.type || (/\.md$/i.test(D.file.name) ? "text/markdown" : /\.csv$/i.test(D.file.name) ? "text/csv" : /\.txt$/i.test(D.file.name) ? "text/plain" : "application/pdf");
+    const r = await api("/br/documents", { clientId: c.id, name: D.file.name, mime, data });
+    await load();
+    D.file = null;
+    const d = r.document;
+    d.status === "ready" ? toast.success(`Read ${d.chars.toLocaleString()} characters from ${d.name}`) : toast.error(d.note || "The file was saved, but nothing could be read from it.");
+  } catch (e) { D.error = e.message; } finally { D.busy = false; renderShell(); }
+}
+async function toggleDoc(d) {
+  try { await api(`/br/documents/${d.id}`, { internal: !d.internal }); await load(); renderShell(); }
+  catch (e) { toast.error(e.message); }
+}
+function removeDoc(d) {
+  openDialog(() => `${alertHeader(`Remove ${esc(d.name)}?`, "The file and the text read from it are deleted. The bot stops using it straight away.")}${alertFooter(btn("Cancel", { variant: "outline", a: reg(closeDialog) }) + btn("Remove document", { a: reg(async () => {
+    closeDialog(); docState.busyId = d.id; renderShell();
+    try { await apiDelete(`/br/documents/${d.id}`); await load(); toast.success("Document removed"); }
+    catch (e) { toast.error(e.message); } finally { docState.busyId = null; renderShell(); }
+  }) }))}`, { alert: true });
+}
+function viewNotes() { return empty("message-square", "Team Notes", "Internal discussions and updates for the team."); }
+function viewAssets() { return empty("image", "Brand Assets", "Manage logos, imagery, and visual guidelines."); }
+
+/* account menu */
+let menuEl = null;
+function closeMenu() { menuEl?.remove(); menuEl = null; }
+function openMenu(anchor) {
+  closeMenu(); const r = anchor.getBoundingClientRect(); const m = document.createElement("div"); m.className = "br-menu"; m.style.cssText = `position:fixed;top:${r.bottom + 8}px;right:${window.innerWidth - r.right}px;z-index:60`;
+  const me = st.me || {};
+  const links = st.cfg.cloud
+    ? (st.cfg.seoUrl ? `<a class="br-menu-item" href="${esc(st.cfg.seoUrl)}" target="_blank" rel="noreferrer">${ic("external-link", { size: 15 })}SEO workspace</a>` : "")
+    : `${(me.spaces || []).includes("seo") ? `<a class="br-menu-item" href="/seo/">${ic("external-link", { size: 15 })}SEO workspace</a>` : ""}<a class="br-menu-item" href="/classic/">${ic("external-link", { size: 15 })}Full settings &amp; tools</a>`;
+  m.innerHTML = `<div class="br-menu-head"><b>${esc(me.name)}</b><small>${esc(me.email)}</small></div>${links}<button class="br-menu-item" id="br-logout">${ic("log-out", { size: 15 })}Sign out</button>`;
+  document.body.appendChild(m); menuEl = m;
+  m.querySelector("#br-logout").onclick = async () => { closeMenu(); try { await fetch("/api/logout", { method: "POST", headers: { "x-requested-with": "app", "x-section": "kb" } }); } catch {} st.me = null; st.ws = null; renderLogin(); };
+  setTimeout(() => document.addEventListener("mousedown", function h(e) { if (menuEl && !menuEl.contains(e.target)) { closeMenu(); document.removeEventListener("mousedown", h); } }), 0);
+}
+
+function openGuide() {
+  openDialog(() => `${dlgHeader("Welcome to Brandroom.", "Every brand’s knowledge, in one place.", `<span class="large-app-mark">${ic("book-open")}</span>`)}
+  <div class="guide-list"><div>${ic("circle-check")}<p><b>Build your brand knowledge</b><span>Add clients and fill in each section: voice, audience, products, rules and more. Changes are saved straight away.</span></p></div>
+  <div>${ic("file-text")}<p><b>Add documents and images</b><span>Upload brand guides, price lists and logos. The words inside documents are read and kept with the brand.</span></p></div>
+  <div>${ic("lock")}<p><b>Keep some things private</b><span>Mark any field or document as internal and it stays with your team, out of the writing context.</span></p></div></div>
+  <div class="notice">Internal notes and locked fields are never included in the writing context.</div>${dlgFooter(btn("Explore the workspace", { a: reg(closeDialog) }))}`, { cls: "guide-dialog" });
+}
+function confirmLeave(onDiscard) {
+  openDialog(() => `${alertHeader("Leave without saving?", "Your recent edits have not been saved.")}${alertFooter(btn("Keep editing", { variant: "outline", a: reg(closeDialog) }) + btn("Discard changes", { a: reg(() => { closeDialog(); onDiscard(); }) }))}`, { alert: true });
+}
+
+/* ================= Clients ================= */
+function viewClients() {
+  const ws = st.ws; const active = ws.clients.filter((c) => c.status === "active"); const ready = active.filter((c) => score(c) >= 80);
+  const avg = active.length ? Math.round(active.reduce((a, c) => a + score(c), 0) / active.length) : 0;
+  const add = canEdit() ? btn(ic("plus", { size: 16 }) + "Add client", { size: "lg", a: reg(openAddClient) }) : "";
+  const metric = (cls, icon, label, n, small) => `<div><span class="metric-icon ${cls}">${ic(icon)}</span><p>${label}<strong>${n}<small>${small}</small></strong></p></div>`;
+  afterHooks.push(bindLibrarySearch);
+  return `${pageHead("YOUR BRAND KNOWLEDGEBASE", "Good work starts with context.", "Every brand’s voice, details and direction. All in one place.", add)}
+  <div class="metrics">${metric("blue", "layers", "Total clients", active.length, "active brands")}${metric("green", "check-check", "Complete profiles", ready.length, "80%+ complete")}${metric("orange", "file-text", "Need a little more context", active.length - ready.length, "brands to complete")}${metric("violet", "book-open", "Approved examples", ws.examples.filter((e) => e.verdict === "approved").length, "voices to learn from")}</div>
+  <div class="workspace-columns"><section class="clients-area"><div class="section-title"><h2>Client library <span>${active.length}</span></h2><div class="view-toggle">${btn(ic("layout-grid"), { variant: "ghost", size: "icon-sm", cls: lib.mode === "grid" ? "selected" : "", a: reg(() => { lib.mode = "grid"; renderShell(); }), attrs: 'aria-label="Grid view"' })}${btn(ic("list"), { variant: "ghost", size: "icon-sm", cls: lib.mode === "list" ? "selected" : "", a: reg(() => { lib.mode = "list"; renderShell(); }), attrs: 'aria-label="List view"' })}</div></div>
+  <div class="filter-bar"><div class="searchbox">${ic("search", { size: 17 })}${input({ id: "lib-q", value: lib.q, placeholder: "Search clients, products, examples…", attrs: 'aria-label="Search clients"' })}<button aria-label="Clear search" id="lib-clear"${lib.q ? "" : " hidden"}>${ic("x", { size: 14 })}</button></div>${select(lib.sort, ["Recently updated", "Incomplete first", "Name A–Z"], (v) => { lib.sort = v; renderShell(); }, { label: "Sort clients" })}</div>
+  ${tabs(lib.tab, ["All clients", "Needs attention", "Complete", "Archived"].map((x) => [x, x]), (v) => { lib.tab = v; renderShell(); }, { cls: "filter-tabs" })}
+  <div id="lib-results">${libraryResults()}</div><div class="library-note">${ic("shield-check", { size: 15 })}<span>One shared source of truth. Internal notes stay with your team.</span></div></section>
+  <aside class="insights-rail"><div class="rail-section"><div class="section-title"><h3>Workspace health</h3>${ic("info", { size: 14 })}</div><div class="health-number">${avg}<span>%</span>${pill("Average readiness", "ready")}</div>${progress(avg, { label: "Average completeness" })}<p>Aim for 80% so every brand is properly documented.</p>
+  ${active.filter((c) => score(c) < 80).slice(0, 2).map((c) => `<button class="attention-row" data-a="${reg(() => editClient(c, SECTIONS.find((s) => missing(c).includes(s.name))?.id))}">${mark(c, "mini")}<span><b>${esc(c.name)}</b><small>${missing(c).length} sections to complete</small></span>${ic("chevron-right", { size: 15 })}</button>`).join("")}</div>
+  <div class="rail-section"><div class="section-title"><h3>Recent activity</h3><button class="text-button" data-a="${reg(() => go("activity"))}">View all</button></div>${ws.activities.slice(0, 3).map((a) => `<div class="mini-activity"><span class="event-dot"></span><div><p>${esc(a.text)}</p><small>${dm(a.createdAt)} · ${esc(a.actor || "Workspace admin")}</small></div></div>`).join("")}</div></aside></div>`;
+}
+function libraryList() {
+  const ws = st.ws; const q = lib.q.toLowerCase();
+  return ws.clients.filter((c) => (lib.tab === "Archived" ? c.status === "archived" : c.status === "active") && (lib.tab !== "Needs attention" || score(c) < 80) && (lib.tab !== "Complete" || score(c) >= 80) &&
+    [c.name, c.industry, ...Object.entries(c.fields).filter(([k]) => k !== "internalNotes").map(([, v]) => v), ...ws.examples.filter((e) => e.clientId === c.id).map((e) => e.text)].join(" ").toLowerCase().includes(q))
+    .sort((a, b) => (lib.sort === "Incomplete first" ? score(a) - score(b) : lib.sort === "Name A–Z" ? a.name.localeCompare(b.name) : b.updatedAt.localeCompare(a.updatedAt)));
+}
+function libraryResults() {
+  const list = libraryList();
+  if (!list.length) return empty("search", "No clients here yet", lib.q ? "Try another name, product or phrase." : "Add a brand to start building its knowledgebase.", !lib.q && canEdit() ? btn(ic("plus") + "Add client", { a: reg(openAddClient) }) : "");
+  if (lib.mode === "grid") return `<div class="client-grid">${list.map((c) => { const n = score(c), m = missing(c); return `<button class="client-card" data-a="${reg(() => go("client", c.id))}"><div class="card-top">${mark(c)}${pill((n >= 80 ? ic("check", { size: 12 }) : '<span class="tiny-dot"></span>') + (c.status === "archived" ? "Archived" : n >= 80 ? "Complete" : "In progress"), n >= 80 ? "ready" : "draft")}</div><h3>${esc(c.name)}</h3><p class="industry">${esc(c.industry)}</p><div class="card-readiness"><span>Brand knowledge</span><b>${n}%</b></div>${progress(n, { cls: n >= 80 ? "complete" : "", label: `${c.name} ${n}% complete` })}<div class="card-missing">${m.length ? `<span class="missing-label">Missing</span><span>${esc(m[0])}${m.length > 1 ? ` +${m.length - 1}` : ""}</span>` : `<span class="complete-copy">${ic("circle-check", { size: 13 })}All sections covered</span>`}</div><div class="card-footer"><span><span class="avatar tiny ${peach(c.lead)}">${esc((c.lead || "S")[0])}</span>${esc(c.lead || "Unassigned")}</span><span>${dm(c.updatedAt)}</span></div></button>`; }).join("")}${canEdit() ? `<button class="add-card" data-a="${reg(openAddClient)}"><span>${ic("plus", { size: 24 })}</span><b>A new brand, a new story.</b><small>Add a client to your workspace</small></button>` : ""}</div>`;
+  const th = (t) => `<th data-slot="table-head" class="h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]">${t}</th>`;
+  return `<div class="panel">${table([th("Client"), th("Account lead"), th("Completeness"), th("")].join(""), list.map((c) => row([`<button class="table-brand" data-a="${reg(() => go("client", c.id))}">${mark(c, "mini")}${esc(c.name)}</button>`, esc(c.lead), score(c) + "%", btn("Open", { variant: "ghost", a: reg(() => go("client", c.id)) })])).join(""))}</div>`;
+}
+const TD = "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]";
+const row = (cells) => `<tr data-slot="table-row" class="border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted">${cells.map((x) => `<td data-slot="table-cell" class="${TD}">${x}</td>`).join("")}</tr>`;
+const table = (head, body) => `<div data-slot="table-container" class="relative w-full overflow-x-auto"><table data-slot="table" class="w-full caption-bottom text-sm"><thead data-slot="table-header" class="[&_tr]:border-b"><tr data-slot="table-row" class="border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted">${head}</tr></thead><tbody data-slot="table-body" class="[&_tr:last-child]:border-0">${body}</tbody></table></div>`;
+const thc = (t) => `<th data-slot="table-head" class="h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]">${t}</th>`;
+function bindLibrarySearch() {
+  const inp = $("#lib-q"), clear = $("#lib-clear"); if (!inp) return;
+  inp.addEventListener("input", () => { lib.q = inp.value; clear.hidden = !lib.q; $("#lib-results").innerHTML = libraryResults(); });
+  clear.addEventListener("click", () => { lib.q = ""; inp.value = ""; clear.hidden = true; $("#lib-results").innerHTML = libraryResults(); inp.focus(); });
+}
+function editClient(c, section = "voice") { st.section = section || "voice"; ed.forId = null; go("editor", c.id); }
+
+/* add client dialog */
+function openAddClient() {
+  const team = st.ws.team.map((t) => t.name); const f = { name: "", industry: "", lead: st.me?.name && team.includes(st.me.name) ? st.me.name : team[0] || "", busy: false, error: "" };
+  const render = () => `${dlgHeader("Add a new client", "Start with the basics. Build the brand knowledge one section at a time.")}<form data-sub="${reg(submit)}"><div class="form-field"><label for="new-name">Client name</label>${input({ id: "new-name", value: f.name, placeholder: "e.g. Whitestone", inp: reg((v) => { f.name = v; $("#new-create").disabled = f.busy || !v.trim(); }), attrs: 'required maxlength="100"' })}</div><div class="form-field"><label for="new-industry">Industry</label>${input({ id: "new-industry", value: f.industry, placeholder: "e.g. Architecture & surfaces", inp: reg((v) => (f.industry = v)), attrs: 'maxlength="100"' })}</div><div class="form-field"><label>Account lead</label>${select(f.lead, team.length ? team : ["Unassigned"], (v) => { f.lead = v; renderDialog(); }, { label: "Account lead" })}</div>${f.error ? `<p class="error-text" role="alert">${esc(f.error)}</p>` : ""}${dlgFooter(btn("Cancel", { variant: "outline", a: reg(closeDialog), disabled: f.busy }) + btn((f.busy ? spin() : ic("plus")) + "Create client", { type: "submit", disabled: f.busy || !f.name.trim(), attrs: 'id="new-create"' }))}</form>`;
+  async function submit() {
+    if (!f.name.trim()) return; f.busy = true; f.error = ""; st.dialog.locked = true; renderDialog();
+    try { const r = await act({ action: "client.save", client: { id: uuid(), name: f.name.trim(), industry: f.industry.trim(), location: "", lead: f.lead, colour: "#526bc4", status: "active", fields: {}, internalFields: ["internalNotes"] } });
+      await load(); st.dialog.locked = false; closeDialog(); toast.success("Client added"); editClient(r.client, "basics"); }
+    catch (e) { f.error = e.message; f.busy = false; if (st.dialog) { st.dialog.locked = false; renderDialog(); } }
+  }
+  openDialog(render);
+}
+
+/* ================= Client detail ================= */
+function viewClient(c) {
+  const ws = st.ws; if (det.forId !== c.id) { det.forId = c.id; det.tab = "overview"; }
+  const n = score(c); const refs = ws.refs.filter((r) => r.clientId === c.id);
+  const approved = ws.examples.filter((e) => e.clientId === c.id && e.verdict === "approved");
+  let content = "";
+  if (det.tab === "overview") content = `<div class="brand-overview"><section><div class="brand-voice-card" style="--brand: ${esc(c.colour)};"><div class="eyebrow">THE BRAND IN A FEW WORDS</div><h2>“${esc(c.fields.tagline || c.fields.soundsLike || "Every brand has a story to tell.")}”</h2><p>${esc(c.fields.about || "Add a short introduction to this brand.")}</p><div class="tone-tags">${(c.fields.adjectives || "Add a voice").split(",").map((t) => `<span>${esc(t.trim())}</span>`).join("")}</div></div>
+    <div class="section-title knowledge-title"><h2>Brand knowledge</h2><span>14 shared sections</span></div><div class="knowledge-grid">${SECTIONS.filter((s) => s.id !== "basics" && s.id !== "internal").map((s) => { const fs = s.fields.filter((f) => c.fields[f.key]); return `<div class="knowledge-block"><div class="section-title"><h3>${s.name}</h3>${canEdit() ? `<button aria-label="Edit ${s.name}" class="text-button" data-a="${reg(() => editClient(c, s.id))}">Edit</button>` : ""}</div>${fs.length ? fs.map((f) => `<div class="knowledge-field"><span>${f.label}${c.internalFields.includes(f.key) ? ic("lock", { size: 11 }) : ""}</span><p>${esc(c.fields[f.key])}</p></div>`).join("") : `<p class="not-added">A little more context needed. Add this section.</p>`}</div>`; }).join("")}</div></section>
+    <aside><div class="panel brand-sidecard"><h3>Brand palette</h3><div class="colour-swatches">${(c.fields.colours || c.colour).split(",").map((x) => x.trim()).filter((x) => /^#[a-f\d]{6}$/i.test(x)).map((x) => `<button data-a="${reg(() => copyText(x))}"><span style="background: ${x};"></span><small>${x}</small></button>`).join("")}</div><p>Click a colour to copy its hex code.</p></div>
+    <div class="panel brand-sidecard"><h3>${ic("book-open", { size: 17 })}Caption examples</h3><b class="side-number">${approved.length}</b><p>approved examples for this brand</p>${approved.slice(0, 1).map((e) => `<blockquote>${esc(e.text)}</blockquote>`).join("")}</div>
+    ${st.me?.canEdit ? `<div class="panel brand-sidecard internal-card"><h3>${ic("lock", { size: 16 })}Internal notes</h3><p>${esc(c.fields.internalNotes || "No internal notes yet.")}</p><small>Excluded from all writing context</small><button class="text-button" data-a="${reg(() => editClient(c, "internal"))}">Edit notes</button></div>` : ""}
+    ${st.me?.isAdmin ? btn(ic("archive") + (c.status === "archived" ? "Restore client" : "Archive client"), { variant: "ghost", cls: "archive-button", a: reg(() => confirmArchive(c)) }) : ""}</aside></div>`;
+  else if (det.tab === "references") content = viewRefs(c, refs);
+  else if (det.tab === "documents") content = viewDocuments(c);
+  else if (det.tab === "notes") content = viewNotes(c);
+  else if (det.tab === "assets") content = viewAssets(c);
+  else { const json = det.ctx && det.ctxKey === c.id + det.platform + det.language ? JSON.stringify(det.ctx, null, 2) : null;
+    if (json === null) loadContext(c);
+    content = `<div class="bundle-head"><div><h2>What the bot can see</h2><p>Internal notes, locked fields and team-only documents are left out. This is exactly the context used for captions.</p></div><div class="inline-options">${select(det.platform, PLATFORMS, (v) => { det.platform = v; det.ctx = null; renderShell(); }, { label: "Context platform" })}${select(det.language, LANGUAGES, (v) => { det.language = v; det.ctx = null; renderShell(); }, { label: "Context language" })}${btn(ic("copy") + "Copy JSON", { variant: "outline", disabled: !json, a: reg(() => copyText(json)) })}</div></div><pre class="bundle-json">${json === null ? "Loading the writing context…" : esc(json)}</pre>`; }
+  return `<button class="back-button" data-a="${reg(() => go("clients"))}">${ic("chevron-left", { size: 15 })}Client library</button>
+  <div class="client-detail-head">${mark(c, "large")}<div><div class="detail-name"><h1>${esc(c.name)}</h1>${pill(c.status === "archived" ? "Archived" : n >= 80 ? "Complete" : "In progress", n >= 80 ? "ready" : "draft")}</div><p>${esc(c.industry)} <span>·</span> ${esc(c.location || "Location not added")}</p></div><div class="head-actions">${canEdit() ? btn(ic("file-text") + "Edit brand", { variant: "outline", a: reg(() => editClient(c)) }) : ""}${btn(ic("sparkles") + "Try in caption studio", { disabled: c.status === "archived", a: reg(() => { studio.client = c.id; go("studio"); }) })}</div></div>
+  <div class="client-meta"><span><span class="avatar tiny">${esc((c.lead || "?")[0])}</span>${esc(c.lead || "Unassigned")} · Account lead</span><span>${ic("clock-3", { size: 14 })}Updated ${dm(c.updatedAt)}</span><span class="detail-progress">Brand knowledge ${progress(n)}<b>${n}%</b></span></div>
+  ${tabs(det.tab, [["overview", "Brand overview"], ["references", `Reference images <span class="tab-count">${refs.length}</span>`], ["documents", "Documents"], ["notes", "Team Notes"], ["assets", "Brand Assets"], ["bundle", `Writing context ${ic("braces", { size: 15 })}`]], (v) => { det.tab = v; renderShell(); }, { cls: "detail-tabs", content })}`;
+}
+function confirmArchive(c) {
+  let busy = false;
+  openDialog(() => `${alertHeader(`${c.status === "archived" ? "Restore" : "Archive"} ${esc(c.name)}?`, c.status === "archived" ? "The brand will be available in the active client library again." : "Brand details and examples are kept. The client will be excluded from caption detection.")}${alertFooter(btn("Cancel", { variant: "outline", a: reg(closeDialog), disabled: busy }) + btn(busy ? "Saving…" : c.status === "archived" ? "Restore client" : "Archive client", { disabled: busy, a: reg(async () => { busy = true; st.dialog.locked = true; renderDialog();
+    try { await act({ action: "client.save", client: { ...c, status: c.status === "archived" ? "active" : "archived" } }); await load(); st.dialog.locked = false; closeDialog(); toast.success("Client status updated"); renderShell(); }
+    catch (e) { toast.error(e.message); busy = false; if (st.dialog) { st.dialog.locked = false; renderDialog(); } } }) }))}`, { alert: true });
+}
+function viewRefs(c, refs) {
+  const R = refsState; afterHooks.push(() => { const f = $("#ref-file"); if (f) f.onchange = () => { const x = f.files?.[0]; if (x && x.size > 2e7) { R.error = "Please choose an image under 20 MB."; renderShell(); return; } R.file = x || null; R.error = ""; renderShell(); }; });
+  return `<div class="bundle-head"><div><h2>Give the team a visual reference.</h2><p>Logos, products, packaging and places that make this brand recognisable.</p></div>${pill(`${refs.length} images`)}</div>
+  <div class="reference-layout">${canEdit() ? `<form class="reference-upload panel" data-sub="${reg(() => saveRef(c))}"><label class="dropzone">${ic("upload", { size: 26 })}<b>${esc(R.file ? R.file.name : "Choose a reference image")}</b><span>JPG, PNG or WebP · resized to 1024px</span><input type="file" id="ref-file" accept="image/jpeg,image/png,image/webp" aria-label="Reference image"></label>
+  <div class="form-field"><label>Reference type</label>${select(R.kind, ["Logo", "Product", "Packaging", "Location", "Reference"], (v) => { R.kind = v; renderShell(); }, { label: "Reference type" })}</div><div class="form-field"><label for="ref-description">Description or visible text</label>${textarea({ id: "ref-description", value: R.description, placeholder: "Primary logo on a light background…", inp: reg((v) => (R.description = v)) })}</div>${R.error ? `<p class="error-text">${esc(R.error)}</p>` : ""}${btn((R.busy ? spin() : ic("upload")) + "Save reference", { type: "submit", disabled: !R.file || R.busy })}</form>` : ""}
+  <div class="reference-grid">${refs.length ? refs.map((r) => `<div class="reference-card panel"><a href="${refUrl(r.id)}" target="_blank" rel="noreferrer"><img src="${refUrl(r.id)}" alt="${esc(r.description || r.name)}"></a><div>${pill(esc(r.kind))}<h3>${esc(r.name)}</h3><p>${esc(r.description || "No description added.")}</p></div></div>`).join("") : empty("image", "A picture gives a little more context.", "Upload the first reference for this brand. Images stay in this private workspace.")}</div></div>`;
+}
+async function shrink(file, max = 1024, limit = 2097152) {
+  const bmp = await createImageBitmap(file); const k = Math.min(1, max / Math.max(bmp.width, bmp.height)); const cv = document.createElement("canvas");
+  cv.width = Math.round(bmp.width * k); cv.height = Math.round(bmp.height * k); const g = cv.getContext("2d"); if (!g) throw new Error("Your browser could not prepare this image.");
+  g.drawImage(bmp, 0, 0, cv.width, cv.height); bmp.close?.();
+  const type = file.type === "image/png" ? "image/png" : "image/webp"; const blob = await new Promise((r) => cv.toBlob(r, type, 0.86));
+  if (!blob) throw new Error("Please try another image."); if (blob.size > limit) throw new Error("This image is still larger than 2 MB. Please use a smaller image.");
+  return { mime: blob.type, data: await blobB64(blob) };
+}
+const blobB64 = (blob) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1]); fr.onerror = rej; fr.readAsDataURL(blob); });
+async function saveRef(c) {
+  const R = refsState; if (!R.file) return; R.busy = true; R.error = ""; renderShell();
+  try { const im = await shrink(R.file); await api("/br/media", { clientId: c.id, kind: R.kind, description: R.description, name: R.file.name, ...im }); await load(); R.file = null; R.description = ""; toast.success("Reference image saved"); }
+  catch (e) { R.error = e.message; } finally { R.busy = false; renderShell(); }
+}
+
+/* ================= Editor ================= */
+function viewEditor(c) {
+  if (ed.forId !== c.id || !ed.draft) { ed.forId = c.id; ed.draft = JSON.parse(JSON.stringify(c)); ed.dirty = false; ed.error = ""; }
+  const a = ed.draft; const sec = SECTIONS.find((s) => s.id === st.section) || SECTIONS[0]; const idx = SECTIONS.findIndex((s) => s.id === sec.id);
+  const markDirty = () => { if (!ed.dirty) { ed.dirty = true; const b = $("#ed-state"); if (b) b.outerHTML = editorBadge(); } updateStepper(); };
+  const setField = (k) => reg((v) => { a.fields[k] = v; markDirty(); });
+  const setTop = (k) => reg((v) => { a[k] = v; markDirty(); const sv = $("#ed-save"); if (sv) sv.disabled = ed.saving || !a.name.trim(); });
+  const save = async () => { ed.saving = true; ed.error = ""; renderShell();
+    try { const r = await act({ action: "client.save", client: a }); await load(); ed.draft = JSON.parse(JSON.stringify(r.client)); ed.dirty = false; toast.success("Brand knowledge saved"); }
+    catch (e) { ed.error = e.message; } finally { ed.saving = false; renderShell(); } };
+  const pick = (id) => { st.section = id; renderShell(); };
+  return `<button class="back-button" data-a="${reg(() => (ed.dirty ? confirmLeave(() => { ed.dirty = false; ed.draft = null; go("client", c.id); }) : go("client", c.id)))}">${ic("chevron-left", { size: 15 })}Back to ${esc(c.name)}</button>
+  ${pageHead("GUIDED BRAND EDITOR", `Get to know ${esc(c.name)}.`, "Small details make a big difference. Save your progress as you go.", editorBadge())}
+  <div class="editor-layout"><nav class="section-stepper" id="ed-stepper">${stepper(a, sec, pick)}</nav>
+  <section class="editor-main panel"><div class="editor-title"><span>SECTION ${pad2(idx + 1)} OF ${SECTIONS.length}</span><h2>${sec.name}</h2><p>${sec.description}</p></div>
+  <form data-sub="${reg(save)}">${sec.id === "basics" ? `<div class="basics-fields">${["name", "industry", "location", "lead"].map((k) => `<div class="form-field"><label for="${k}">${{ name: "Client name", industry: "Industry", location: "Location", lead: "Account lead" }[k]}</label>${input({ id: k, value: a[k], inp: setTop(k), attrs: `maxlength="100"${k === "name" ? " required" : ""}${k === "lead" ? ' list="br-team"' : ""}` })}</div>`).join("")}<datalist id="br-team">${st.ws.team.map((t) => `<option value="${esc(t.name)}">`).join("")}</datalist></div>` : ""}
+  ${sec.fields.map((f) => `<div class="guided-field"><div class="field-input"><div class="field-label"><label for="${f.key}">${f.label}</label>${f.key !== "internalNotes" ? `<label class="lock-control">${ic("lock", { size: 12 })}<span>Internal</span>${toggle(a.internalFields.includes(f.key), reg((ev, el) => { const on = el.dataset.state !== "checked"; a.internalFields = on ? [...a.internalFields, f.key] : a.internalFields.filter((x) => x !== f.key); const s = on ? "checked" : "unchecked"; el.dataset.state = s; el.setAttribute("aria-checked", on); el.firstElementChild.dataset.state = s; markDirty(); }), { size: "sm", label: `Keep ${f.label} internal` })}</label>` : ""}</div><p class="field-help">${f.help}</p>${f.short ? input({ id: f.key, value: a.fields[f.key] || "", placeholder: f.example, inp: setField(f.key), attrs: 'maxlength="12000"' }) : textarea({ id: f.key, value: a.fields[f.key] || "", placeholder: "Add the brand’s details…", inp: setField(f.key), attrs: 'maxlength="12000"' })}</div><aside class="field-example"><span>${ic("sparkles", { size: 12 })}AN EXAMPLE</span><p>${f.example}</p></aside></div>`).join("")}
+  ${ed.error ? `<p class="error-text" role="alert">${esc(ed.error)}</p>` : ""}<div class="editor-actions">${btn("Previous section", { variant: "outline", disabled: idx === 0, a: reg(() => pick(SECTIONS[idx - 1].id)) })}<div>${btn((ed.saving ? spin() : ic("check")) + "Save changes", { type: "submit", disabled: ed.saving || !a.name.trim(), attrs: 'id="ed-save"' })}${idx < SECTIONS.length - 1 ? btn("Next section", { variant: "ghost", a: reg(() => pick(SECTIONS[idx + 1].id)) }) : ""}</div></div></form></section></div>`;
+}
+const editorBadge = () => `<span id="ed-state" class="pill ${ed.dirty ? "draft" : "ready"}">${ed.dirty ? "Unsaved changes" : ic("check", { size: 13 }) + "All changes saved"}</span>`;
+function stepper(a, sec, pick) {
+  const n = score(a);
+  return `<div class="stepper-progress"><b>${n}% complete</b>${progress(n, { label: "Brand completeness" })}</div>${SECTIONS.map((s, i) => { const done = s.fields.some((f) => filled(a, f.key)); return `<button class="${sec.id === s.id ? "active" : ""}" data-a="${reg(() => pick(s.id))}"><span class="${done ? "done" : ""}">${s.id === "internal" ? ic("lock", { size: 12 }) : done ? ic("check", { size: 13 }) : pad2(i + 1)}</span>${s.name}</button>`; }).join("")}`;
+}
+function updateStepper() { const el = $("#ed-stepper"); if (!el || !ed.draft) return; const sec = SECTIONS.find((s) => s.id === st.section) || SECTIONS[0]; el.innerHTML = stepper(ed.draft, sec, (id) => { st.section = id; renderShell(); }); }
+
+/* ================= Examples ================= */
+function viewExamples() {
+  const ws = st.ws; const E = exs; const q = E.q.toLowerCase();
+  const list = ws.examples.filter((e) => (E.client === "all" || e.clientId === E.client) && (E.tab === "All examples" || (E.tab === "Featured" && e.featured) || (E.tab === "Approved" && e.verdict === "approved") || (E.tab === "Rejected" && e.verdict === "rejected")) && e.text.toLowerCase().includes(q));
+  afterHooks.push(() => { const i = $("#ex-q"); if (i) i.addEventListener("input", () => { E.q = i.value; const pos = i.selectionStart; renderShell(); const n = $("#ex-q"); n.focus(); n.setSelectionRange(pos, pos); }); });
+  const add = canEdit() ? btn(ic("plus") + "Add example", { a: reg(openAddExample) }) : "";
+  return `${pageHead("THE VOICES TO LEARN FROM", "Good examples. Clear direction.", "Keep the captions that work, and the lessons from those that don’t.", add)}
+  <div class="examples-toolbar">${tabs(E.tab, ["All examples", "Approved", "Rejected", "Featured"].map((x) => [x, x]), (v) => { E.tab = v; renderShell(); })}<div class="inline-options"><div class="searchbox">${ic("search", { size: 16 })}${input({ id: "ex-q", value: E.q, placeholder: "Search caption text…", attrs: 'aria-label="Search examples"' })}</div>${select(E.client, [{ value: "all", label: "All clients" }, ...ws.clients.map((c) => ({ value: c.id, label: c.name }))], (v) => { E.client = v; renderShell(); }, { label: "Filter examples by client" })}</div></div>
+  <div class="examples-grid">${list.map((n) => { const c = ws.clients.find((x) => x.id === n.clientId); return `<article class="example-card panel"><div class="example-head"><div class="table-brand">${c ? mark(c, "mini") : ""}<span><b>${esc(c?.name)}</b><small>${esc(n.platform)} · ${esc(n.language)}</small></span></div><button class="star-button ${n.featured ? "featured" : ""}" aria-label="${n.featured ? "Unfeature example" : "Feature example"}"${E.busy === n.id || !canEdit() ? " disabled" : ""} data-a="${reg(() => toggleFeatured(n))}">${ic("star", { size: 18, fill: n.featured ? "currentColor" : "none" })}</button></div>${pill((n.verdict === "approved" ? ic("check", { size: 12 }) : ic("x", { size: 12 })) + " " + (n.verdict === "approved" ? "Approved" : "Rejected"), n.verdict === "approved" ? "ready" : "rejected")}<p class="example-text">${esc(n.text)}</p>${n.reason ? `<div class="example-reason ${n.verdict}"><b>${n.verdict === "approved" ? "Why it works" : "Why it was rejected"}</b><p>${esc(n.reason)}</p></div>` : ""}<div class="example-footer"><small>${dm(n.createdAt)}</small>${btn(ic("copy") + "Copy caption", { variant: "ghost", size: "sm", a: reg(() => copyText(n.text)) })}</div></article>`; }).join("")}</div>
+  ${list.length ? "" : empty("book-open", "No examples found", "Adjust the filters or add a caption to start the library.", canEdit() ? btn(ic("plus") + "Add example", { a: reg(openAddExample) }) : "")}`;
+}
+async function toggleFeatured(n) { exs.busy = n.id; renderShell(); try { await act({ action: "example.save", example: { ...n, featured: !n.featured } }); await load(); } catch (e) { toast.error(e.message); } finally { exs.busy = null; renderShell(); } }
+function openAddExample() {
+  const cs = st.ws.clients; const f = { client: (exs.client !== "all" && exs.client) || cs[0]?.id || "", platform: "Instagram", language: "English", verdict: "approved", text: "", reason: "", busy: false, error: "" };
+  const okNow = () => !f.busy && f.text.trim() && f.client && !(f.verdict === "rejected" && !f.reason.trim());
+  const upd = () => { const b = $("#ex-save"); if (b) b.disabled = !okNow(); };
+  const render = () => `${dlgHeader("Add a caption example", "The reason is as useful as the caption itself.")}<form data-sub="${reg(submit)}"><div class="form-field"><label>Client</label>${select(f.client, cs.map((c) => ({ value: c.id, label: c.name })), (v) => { f.client = v; renderDialog(); }, { label: "Example client" })}</div>
+  <div class="two-fields"><div class="form-field"><label>Platform</label>${select(f.platform, PLATFORMS, (v) => { f.platform = v; renderDialog(); }, { label: "Example platform" })}</div><div class="form-field"><label>Language</label>${select(f.language, LANGUAGES, (v) => { f.language = v; renderDialog(); }, { label: "Example language" })}</div></div>
+  <div class="form-field"><label>Status</label>${select(f.verdict, [{ value: "approved", label: "Approved" }, { value: "rejected", label: "Rejected" }], (v) => { f.verdict = v; renderDialog(); }, { label: "Example status" })}</div>
+  <div class="form-field"><label for="ex-text">Caption</label>${textarea({ id: "ex-text", value: f.text, rows: 4, inp: reg((v) => { f.text = v; upd(); }), attrs: 'maxlength="5000" required' })}</div>
+  <div class="form-field"><label for="ex-reason">${f.verdict === "rejected" ? "Why was this rejected? (required)" : "Why does this work?"}</label>${textarea({ id: "ex-reason", value: f.reason, rows: 2, inp: reg((v) => { f.reason = v; upd(); }), attrs: `maxlength="2000"${f.verdict === "rejected" ? " required" : ""}` })}</div>
+  ${f.error ? `<p class="error-text">${esc(f.error)}</p>` : ""}${dlgFooter(btn("Cancel", { variant: "outline", a: reg(closeDialog) }) + btn((f.busy ? spin() : ic("check")) + "Save example", { type: "submit", disabled: !okNow(), attrs: 'id="ex-save"' }))}</form>`;
+  async function submit() { if (!okNow()) return; f.busy = true; f.error = ""; renderDialog();
+    try { await act({ action: "example.save", example: { id: uuid(), clientId: f.client, platform: f.platform, language: f.language, verdict: f.verdict, text: f.text, reason: f.reason, featured: false } }); await load(); closeDialog(); toast.success("Caption example saved"); renderShell(); }
+    catch (e) { f.error = e.message; f.busy = false; renderDialog(); } }
+  openDialog(render, { cls: "example-dialog" });
+}
+
+/* ================= Activity ================= */
+function viewActivity() {
+  return `${pageHead("WORKSPACE", "Activity", "A record of changes to your brand knowledge.")}<div class="activity-page panel">${st.ws.activities.map((a) => `<div class="activity-item"><span class="activity-icon">${ic("clock-3", { size: 16 })}</span><div><b>${esc(a.text)}</b><p>${esc(a.actor || "Workspace admin")} · ${dm(a.createdAt)} · ${hm(a.createdAt)} IST</p></div></div>`).join("") || empty("clock-3", "Nothing yet", "Changes to brand knowledge will appear here.")}</div>`;
+}
+
+/* ================= People & roles (admin manages; everyone else just sees who is here) ================= */
+const people = { users: null, loading: false, error: "" };
+const ROLE_INFO = {
+  admin: ["Admin", "Everything: clients, documents, people and settings."],
+  head: ["Head", "Create and edit clients, documents, images and examples. Can see internal notes."],
+  staff: ["Staff", "View brand knowledge only. Internal notes and team-only documents are hidden."],
+};
+const ago = (t) => { if (!t) return "Never"; const m = Math.round((Date.now() - new Date(t)) / 60000); return m < 2 ? "Just now" : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : dm(t); };
+const genPassword = () => { const a = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"; const r = crypto.getRandomValues(new Uint32Array(14)); return [...r].map((n) => a[n % a.length]).join(""); };
+
+async function loadPeople(force = false) {
+  if (people.loading || (people.users && !force)) return;
+  people.loading = true;
+  try { people.users = (await api("/br/users")).users; people.error = ""; }
+  catch (e) { people.error = e.message; }
+  finally { people.loading = false; if (st.view === "settings" && sets.tab === "people") renderShell(); }
+}
+
+function viewPeople() {
+  const ws = st.ws; const admin = st.me?.isAdmin;
+  const legend = `<div class="role-legend">${Object.entries(ROLE_INFO).map(([k, [n, d]]) => `<div><b>${n}</b><span>${d}</span></div>`).join("")}</div>`;
+  if (!admin) {
+    return `<div class="notice people-notice">${ic("info", { size: 17 })}Only an admin can add or change people.</div>${legend}<div class="panel">${table([thc("Person"), thc("Access")].join(""), ws.team.map((p) => row([`<div class="table-brand"><span class="avatar">${esc(initials(p.name))}</span><b>${esc(p.name)}</b></div>`, pill(ROLE[p.role] || p.role)])).join(""))}</div>`;
+  }
+  if (!people.users) { loadPeople(); return people.error ? `<div class="notice people-notice">${ic("circle-alert", { size: 17 })}${esc(people.error)}</div>` : `<p class="hint">Loading people…</p>`; }
+  const list = people.users;
+  return `<div class="people-head"><p>${list.filter((u) => u.active).length} active · ${list.length} in total</p>${btn(ic("plus") + "Add person", { a: reg(() => openPersonDialog()) })}</div>${legend}
+  <div class="panel">${table([thc("Person"), thc("Access"), thc("Sign-in"), thc("Status"), thc("Last seen"), thc("")].join(""), list.map((u) => row([
+    `<div class="table-brand"><span class="avatar">${esc(initials(u.name || u.email))}</span><span class="person-cell"><b>${esc(u.name || "—")}${u.isMe ? ` <span class="you-tag">You</span>` : ""}</b><small>${esc(u.email)}</small></span></div>`,
+    pill(ROLE[u.role] || u.role),
+    u.hasPassword ? "Password or Microsoft" : "Microsoft only",
+    u.active ? pill("Active", "ready") : pill("Switched off", "draft"),
+    ago(u.lastSeenAt),
+    `<div class="row-actions">${btn("Edit", { variant: "ghost", size: "sm", a: reg(() => openPersonDialog(u)) })}${u.isMe ? "" : btn("Delete", { variant: "ghost", size: "sm", cls: "danger-text", a: reg(() => confirmDeletePerson(u)) })}</div>`,
+  ])).join(""))}</div>`;
+}
+
+function openPersonDialog(u = null) {
+  const f = u ? { name: u.name, email: u.email, role: u.role, active: u.active, password: "", busy: false, error: "" } : { name: "", email: "", role: "staff", active: true, password: "", busy: false, error: "" };
+  const okNow = () => !f.busy && f.name.trim() && (u || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim())) && (!f.password || f.password.length >= 8);
+  const upd = () => { const b = $("#person-save"); if (b) b.disabled = !okNow(); };
+  const roleOpts = Object.entries(ROLE_INFO).map(([k, [n]]) => ({ value: k, label: n }));
+  const render = () => `${dlgHeader(u ? "Edit person" : "Add a person", u ? esc(u.email) : "They can sign in with Microsoft, or with the password you set here.")}<form data-sub="${reg(submit)}">
+  <div class="form-field"><label for="p-name">Name</label>${input({ id: "p-name", value: f.name, inp: reg((v) => { f.name = v; upd(); }), attrs: 'maxlength="100" required' })}</div>
+  ${u ? "" : `<div class="form-field"><label for="p-email">Email</label>${input({ id: "p-email", type: "email", value: f.email, placeholder: "name@creativheads.com", inp: reg((v) => { f.email = v; upd(); }), attrs: 'required autocomplete="off"' })}</div>`}
+  <div class="form-field"><label>Access</label>${select(f.role, roleOpts, (v) => { f.role = v; renderDialog(); }, { label: "Access level" })}<p class="field-help">${ROLE_INFO[f.role][1]}</p></div>
+  ${u ? `<div class="form-field person-active"><div><label>Account is on</label><p class="field-help">Switching it off signs them out and stops them signing in. Nothing they did is lost.</p></div>${toggle(f.active, reg(() => { f.active = !f.active; renderDialog(); }), { label: "Account is on" })}</div>` : ""}
+  <div class="form-field"><label for="p-pass">${u ? "New password" : "Password"} <small>${u ? "leave empty to keep the current one" : "optional"}</small></label><div class="pass-row">${input({ id: "p-pass", value: f.password, placeholder: u ? "Unchanged" : "At least 8 characters", inp: reg((v) => { f.password = v; upd(); }), attrs: 'autocomplete="new-password"' })}${btn("Generate", { variant: "outline", a: reg(() => { f.password = genPassword(); renderDialog(); }) })}</div>
+  <p class="field-help">${f.password ? "Copy it now. It can’t be shown again, and you’ll need to pass it to them yourself." : u ? "Setting one signs them out everywhere else." : "Leave empty if they will only use Microsoft."}</p></div>
+  ${f.error ? `<p class="error-text" role="alert">${esc(f.error)}</p>` : ""}${dlgFooter(btn("Cancel", { variant: "outline", a: reg(closeDialog), disabled: f.busy }) + btn((f.busy ? spin() : ic("check")) + (u ? "Save changes" : "Add person"), { type: "submit", disabled: !okNow(), attrs: 'id="person-save"' }))}</form>`;
+  async function submit() {
+    if (!okNow()) return; f.busy = true; f.error = ""; st.dialog.locked = true; renderDialog();
+    try {
+      if (u) await api(`/br/users/${u.id}`, { name: f.name, role: f.role, active: f.active, ...(f.password ? { password: f.password } : {}) });
+      else await api("/br/users", { name: f.name, email: f.email, role: f.role, ...(f.password ? { password: f.password } : {}) });
+      await loadPeople(true); await load(); st.dialog.locked = false; closeDialog(); toast.success(u ? "Changes saved" : "Person added"); renderShell();
+    } catch (e) { f.error = e.message; f.busy = false; if (st.dialog) { st.dialog.locked = false; renderDialog(); } }
+  }
+  openDialog(render);
+}
+
+function confirmDeletePerson(u) {
+  let busy = false;
+  openDialog(() => `${alertHeader(`Delete ${esc(u.name || u.email)}?`, "They’ll be signed out and can’t sign in again. What they added stays in the workspace. To keep their account but stop access, switch it off instead.")}${alertFooter(btn("Cancel", { variant: "outline", a: reg(closeDialog), disabled: busy }) + btn(busy ? "Deleting…" : "Delete person", { disabled: busy, a: reg(async () => {
+    busy = true; st.dialog.locked = true; renderDialog();
+    try { await apiDelete(`/br/users/${u.id}`); await loadPeople(true); await load(); st.dialog.locked = false; closeDialog(); toast.success("Person deleted"); renderShell(); }
+    catch (e) { toast.error(e.message); busy = false; if (st.dialog) { st.dialog.locked = false; renderDialog(); } } }) }))}`, { alert: true });
+}
+
+/* ================= Settings ================= */
+function viewSettings() {
+  const ws = st.ws; const S = sets; const cn = ws.connections || {};
+  let content = "";
+  if (S.tab === "connections") content = `<div class="connection-grid">${[
+    { icon: "users", title: "Microsoft 365 sign-in", on: cn.microsoft, copy: "Staff sign in with their Microsoft account. Admin, Head and Staff roles apply.", steps: ["Register a single-tenant Microsoft Entra application.", "Add the tenant ID, client ID and secret in the hosting settings.", "Set the allowed domain and default role."] },
+    { icon: "upload", title: "Image & document storage", on: cn.storage, copy: "Reference images and uploaded documents are kept in private storage.", steps: ["Create a private bucket in Supabase.", "Add the Supabase URL and service key in the hosting settings.", "Files are only ever served after sign-in."] },
+    { icon: "braces", title: "Knowledge API for the SEO agent", on: cn.api, copy: "Lets the SEO site and other tools read brand knowledge. Read-only, and never includes internal notes, locked fields or team-only documents.", steps: ["Make a long random key for each tool.", "Add them as KB_API_KEYS in the hosting settings, like seo-agent:the-key.", "The tool sends it as Authorization: Bearer &lt;key&gt;."] },
+  ].map((x) => `<div class="panel connection-card"><span class="icon-tile">${ic(x.icon)}</span><h2>${x.title}</h2>${pill(x.on ? "Connected" : "Not connected", x.on ? "ready" : "draft")}<p>${x.copy}</p><ol>${x.steps.map((s) => `<li>${s}</li>`).join("")}</ol></div>`).join("")}</div>`;
+  else content = viewPeople();
+  return `${pageHead("WORKSPACE SETTINGS", "Set the right boundaries.", "See what’s connected and who has access.")}${tabs(S.tab, [["connections", "Connections"], ["people", "People & roles"]], (v) => { S.tab = v; renderShell(); }, { content })}`;
+}
+
+/* ================= sign-in ================= */
+const MS_LOGO = `<svg width="18" height="18" viewBox="0 0 21 21" aria-hidden="true"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>`;
+async function renderLogin(msg = "") {
+  closeDialog(); REG = new Map();
+  if (!st.pub) { try { st.pub = await (await fetch("/api/br/public", { cache: "no-store" })).json(); } catch { st.pub = { passwords: true }; } }
+  const ms = !!st.pub.microsoft, pw = st.pub.passwords !== false;
+  const passBlock = `<div class="form-field"><label for="li-email">Email</label>${input({ id: "li-email", type: "email", attrs: 'autocomplete="username" required' })}</div><div class="form-field"><label for="li-pass">Password</label>${input({ id: "li-pass", type: "password", attrs: 'autocomplete="current-password" required' })}</div>${btn("Sign in", { type: "submit", size: "lg", cls: "w-full", attrs: 'id="li-btn"' })}`;
+  $("#app").innerHTML = `<div class="br-login"><form class="br-login-card" id="br-login"><div class="wordmark br-login-mark"><span class="app-mark">${ic("book-open", { size: 22 })}</span><span>brandroom<span class="wordmark-sub">BY CREATIVHEADS®</span></span></div><h1>Good work starts with context.</h1><p>Sign in to your team workspace.</p>
+  <p class="error-text" id="li-err" role="alert"${msg ? "" : " hidden"}>${esc(msg)}</p>
+  ${ms ? `<a class="br-ms-button" href="/api/auth/microsoft">${MS_LOGO}<span>Sign in with Microsoft</span></a>` : ""}
+  ${ms && pw ? `<div class="br-or"><span>or</span></div><details class="br-pass-details"${msg ? " open" : ""}><summary>Sign in with a password</summary>${passBlock}</details>` : pw ? passBlock : ""}
+  ${!ms && !pw ? `<p class="hint">No sign-in method is set up yet. Add the Microsoft details in the hosting settings.</p>` : ""}</form></div>`;
+  const f = $("#br-login"); if (pw) $("#li-email")?.focus();
+  f.onsubmit = async (e) => { e.preventDefault(); const b = $("#li-btn"); if (!b) return; b.disabled = true; const er = $("#li-err"); er.hidden = true;
+    try { const r = await fetch("/api/login", { method: "POST", headers: { "content-type": "application/json", "x-requested-with": "app", "x-section": "kb" }, body: JSON.stringify({ email: $("#li-email").value, password: $("#li-pass").value }) }); const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || "Could not sign in."); await start(); }
+    catch (x) { er.textContent = x.message; er.hidden = false; b.disabled = false; } };
+}
+
+/* ================= start ================= */
+async function start() {
+  // A failed Microsoft sign-in comes back as /#error=…
+  const err = new URLSearchParams(location.hash.slice(1)).get("error");
+  if (err) { history.replaceState(null, "", location.pathname); return renderLogin(err); }
+  readHash(); st.ws = null; st.err = ""; renderShell();
+  try { await load(); renderShell(); }
+  catch (e) { if (e.status === 401) return; if (e.status === 403) { renderLogin(e.message); return; } st.err = e.message; renderShell(); }
+}
+start();

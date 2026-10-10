@@ -1,0 +1,15 @@
+# Things that must never be uploaded to Vercel
+.env
+.env.*
+!.env.example
+.local-db/
+.local-files/
+.git/
+.github/
+*.log
+
+# Only used on your own computer
+scripts/
+DEPLOY.md
+SECURITY.md
+README.md

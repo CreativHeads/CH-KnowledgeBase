@@ -21,7 +21,7 @@
       ]
     },
     {
-      "source": "/api/br/(?:documents|refs)/(.*)",
+      "source": "/((?!api/br/documents/)(?!api/br/refs/).*)",
       "headers": [
         { "key": "Content-Security-Policy", "value": "default-src 'none'; frame-ancestors 'none'" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },

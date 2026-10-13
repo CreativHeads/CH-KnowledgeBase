@@ -7,6 +7,9 @@ const storage = require("../lib/storage");
 const docs = require("../lib/documents");
 const kbapi = require("../lib/kbapi");
 const users = require("../lib/users");
+const libs = require("../lib/libraries");
+const onboard = require("../lib/onboard");
+const { ensure } = require("../lib/ensure");
 const { all, one, query } = require("../lib/db");
 
 const routes = [];
@@ -86,15 +89,20 @@ route("POST", "/api/br/media", async ({ req, user }) => {
   if (!buf.length || buf.length > 2.2e6) throw new HttpError(400, "Images must be under 2 MB (the app shrinks them to 1024px first).");
   if (!docs.sniff(b.mime, buf)) throw new HttpError(400, "That file is not really an image of the type it claims.");
 
-  const kind = ["Logo", "Product", "Packaging", "Location", "Reference"].includes(b.kind) ? b.kind : "Reference";
+  const kind = ["Logo", "Logo variant", "Product", "Packaging", "Location", "Past creative", "Reference"].includes(b.kind) ? b.kind : "Reference";
+  const verdict = ["do", "dont"].includes(b.verdict) ? b.verdict : "";
+  const posted = /^\d{4}-\d{2}-\d{2}$/.test(b.postedOn || "") ? b.postedOn : null;
   const ext = b.mime.split("/")[1].replace("jpeg", "jpg");
   const path = `${c.slug}/${crypto.randomUUID()}.${ext}`;
   await storage.upload(path, buf, b.mime);
 
   const name = String(b.name || "Reference").replace(/\.[a-z0-9]{2,5}$/i, "").slice(0, 120) || "Reference";
   const row = await one(
-    `INSERT INTO refs(client_id, kind, name, description, path, mime, size) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
-    [c.id, kind, name, String(b.description || "").slice(0, 600), path, b.mime, buf.length]);
+    `INSERT INTO refs(client_id, kind, name, description, path, mime, size, verdict, why, onedrive_url, platform, posted_on)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
+    [c.id, kind, name, String(b.description || "").slice(0, 600), path, b.mime, buf.length,
+      verdict, String(b.why || "").slice(0, 600), String(b.onedriveUrl || "").slice(0, 500),
+      String(b.platform || "").slice(0, 40), posted]);
   await query("UPDATE clients SET updated_at = now() WHERE id = $1", [c.id]);
   await ws.logActivity(user, c.id, `Added a reference image for ${c.name}.`);
   return { id: String(row.id) };
@@ -159,6 +167,12 @@ route("POST", "/api/br/documents", async ({ req, user }) => {
   return { document: docs.out(row, c.slug) };
 });
 
+route("GET", "/api/br/documents/:id/text", async ({ user, p }) => {
+  auth.need(user);
+  const d = await one("SELECT body, internal, status FROM documents WHERE id = $1", [Number(p.id)]);
+  if (!d || (d.internal && !auth.canEdit(user))) throw new HttpError(404, "Document not found.");
+  return { text: d.status === "ready" ? d.body : "" };
+});
 route("GET", "/api/br/documents/:id/file", async ({ res, user, p }) => {
   auth.need(user);
   const d = await one("SELECT * FROM documents WHERE id = $1", [Number(p.id)]);
@@ -188,6 +202,49 @@ route("DELETE", "/api/br/documents/:id", async ({ user, p }) => {
   return { ok: true };
 });
 
+route("GET", "/api/br/agency", async ({ user }) => { auth.need(user); return { items: await libs.listAgency(), libraries: libs.AGENCY }; });
+route("POST", "/api/br/agency", async ({ req, user }) => {
+  const b = await readBody(req);
+  if (b.action === "approve") { auth.needAdmin(user); return { item: await libs.approveAgency(b.id, user) }; }
+  if (b.action === "remove") { auth.needEditor(user); return libs.removeAgency(b.id); }
+  auth.needEditor(user);
+  return { item: await libs.saveAgency(b, user) };
+});
+
+route("GET", "/api/br/skills", async ({ user }) => { auth.need(user); return { skills: await libs.listSkills() }; });
+route("POST", "/api/br/skills", async ({ req, user }) => {
+  const b = await readBody(req);
+  if (b.action === "review") { auth.needEditor(user); return libs.reviewSkill(b, user); }
+  if (b.action === "publish") { auth.needAdmin(user); return libs.publishSkill(b, user); }
+  if (b.action === "rollback") { auth.needAdmin(user); return libs.rollbackSkill(b.versionId, user); }
+  auth.needEditor(user);
+  return libs.saveSkillVersion(b, user);
+});
+
+route("GET", "/api/br/keys", async ({ user }) => { auth.needAdmin(user); return { keys: await libs.listKeys(), scopes: libs.SCOPES }; });
+route("POST", "/api/br/keys", async ({ req, user }) => {
+  auth.needAdmin(user);
+  const b = await readBody(req);
+  if (b.action === "revoke") return libs.revokeKey(b.id);
+  return libs.createKey(b, user);
+});
+
+route("POST", "/api/br/suggestions/:id", async ({ req, user, p }) => {
+  auth.needEditor(user);
+  const b = await readBody(req);
+  return libs.decideSuggestion(p.id, b.accept !== false, user);
+});
+
+route("GET", "/api/br/onboarding", async ({ user }) => { auth.needEditor(user); return { sessions: await onboard.listSessions(user.id) }; });
+route("POST", "/api/br/onboarding", async ({ req, user }) => {
+  auth.needEditor(user);
+  const b = await readBody(req);
+  if (b.action === "answer") return { session: await onboard.answer(b, user) };
+  if (b.action === "draft") return { session: await onboard.setDraft(b, user) };
+  if (b.action === "apply") return onboard.apply(b, user);
+  return { session: await onboard.start(b, user) };
+});
+
 /* What the bot actually reads, documents included. Shown in the Writing context tab. */
 route("GET", "/api/br/context", async ({ user, q }) => {
   auth.need(user);
@@ -205,9 +262,14 @@ module.exports = async (req, res) => {
     try { pathname = decodeURIComponent(url.pathname); } catch { throw new HttpError(400, "That address is not valid."); }
 
     // The read-only knowledge API for other tools. It uses a key, not a browser session.
+    await ensure();
+    const q = Object.fromEntries(url.searchParams);
+    if (req.method === "GET" && /^\/api\/kb\/v1\/refs\/\d+$/.test(pathname)) return kbapi.sendRef(req, res, pathname, q);
     if (pathname === "/api/kb/v1" || pathname.startsWith("/api/kb/v1/")) {
+      if (req.method === "POST" && pathname.startsWith("/api/kb/v1/bot/"))
+        return json(res, 200, await kbapi.handlePost(pathname, await readBody(req), req));
       if (req.method !== "GET") throw new HttpError(405, "The knowledge API is read-only.");
-      return json(res, 200, await kbapi.handle(pathname, Object.fromEntries(url.searchParams), req));
+      return json(res, 200, await kbapi.handle(pathname, q, req));
     }
     // Cookies are SameSite=Lax, and the app adds this header, so a form posted from another site cannot act for you.
     if (!["GET", "HEAD"].includes(req.method) && req.headers["x-requested-with"] !== "app")

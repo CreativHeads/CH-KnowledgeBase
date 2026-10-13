@@ -116,25 +116,49 @@ function closeDialog() { const d = st.dialog; st.dialog = null; closePopover(); 
 /* ================= knowledge sections ================= */
 const F = (key, label, help, example, short = false) => ({ key, label, help, example, short });
 const SECTIONS = [
-  { id: "basics", name: "Brand basics", description: "Start with the story behind the brand.", fields: [F("about", "About the brand", "What they do, who they serve, and what sets them apart.", "A Kerala-based surface brand for thoughtful homes."), F("website", "Website", "The public website, if available.", "https://example.com", true)] },
-  { id: "voice", name: "Voice & tone", description: "Make every caption sound unmistakably like them.", fields: [F("tone", "Tone summary", "Describe the personality in one or two sentences.", "Warm and confident. Helpful, never pushy."), F("adjectives", "Voice adjectives", "Separate a few distinctive traits with commas.", "Considered, warm, quietly confident", true), F("soundsLike", "Sounds like", "A sentence that captures the brand.", "Beautiful surfaces. Made for real life."), F("doesNotSoundLike", "Does not sound like", "An example of what the brand would never say.", "HURRY! CRAZY DEALS!"), F("dos", "Do", "Writing habits to follow.", "Lead with an everyday benefit. Use simple words."), F("donts", "Don’t", "Writing habits to avoid.", "Avoid exaggerated claims and pressure to buy.")] },
+  { id: "basics", lib: "basics", name: "Brand basics", description: "Start with the story behind the brand.", fields: [F("about", "About the brand", "What they do, who they serve, and what sets them apart.", "A Kerala-based surface brand for thoughtful homes."), F("website", "Website", "The public website, if available.", "https://example.com", true)] },
+  { id: "voice", lib: "voice", name: "Voice & tone", description: "Make every caption sound unmistakably like them.", fields: [F("tone", "Tone summary", "Describe the personality in one or two sentences.", "Warm and confident. Helpful, never pushy."), F("adjectives", "Voice adjectives", "Separate a few distinctive traits with commas.", "Considered, warm, quietly confident", true), F("soundsLike", "Sounds like", "A sentence that captures the brand.", "Beautiful surfaces. Made for real life."), F("doesNotSoundLike", "Does not sound like", "An example of what the brand would never say.", "HURRY! CRAZY DEALS!"), F("dos", "Do", "Writing habits to follow.", "Lead with an everyday benefit. Use simple words."), F("donts", "Don’t", "Writing habits to avoid.", "Avoid exaggerated claims and pressure to buy.")] },
   { id: "audience", name: "Audience", description: "Write for people, with a clear sense of their needs.", fields: [F("audience", "Audience summary", "Who is most likely to care?", "Homeowners aged 28–45 in Kerala."), F("personas", "Personas & needs", "Include motivations, locations and objections.", "First-time homeowner · Kochi · wants durability, worries about cost.")] },
   { id: "products", name: "Products & USPs", description: "Keep product facts and benefits close at hand.", fields: [F("products", "Products or services", "One offering per line, with its key benefit.", "Stone tiles — a versatile surface for indoor spaces."), F("usps", "What makes them different", "Use claims the client has verified.", "Thoughtful design and local product support.")] },
-  { id: "messages", name: "Key messages", description: "The ideas this brand should be remembered for.", fields: [F("tagline", "Tagline", "The approved brand line.", "Made for everyday living.", true), F("messages", "Key messages", "One message per line.", "Materials that make a space feel like home."), F("validity", "Campaign validity", "Record start and end dates for time-sensitive copy.", "No active limited-time campaign.", true)] },
-  { id: "words", name: "Words to use & avoid", description: "A shared vocabulary keeps the voice consistent.", fields: [F("wordsUse", "Words to use", "Separate words with commas.", "thoughtful, everyday, considered", true), F("wordsAvoid", "Words to avoid", "Separate words with commas.", "cheap, guaranteed, No.1", true)] },
+  { id: "messages", lib: "voice", name: "Key messages", description: "The ideas this brand should be remembered for.", fields: [F("tagline", "Tagline", "The approved brand line.", "Made for everyday living.", true), F("messages", "Key messages", "One message per line.", "Materials that make a space feel like home."), F("validity", "Campaign validity", "Record start and end dates for time-sensitive copy.", "No active limited-time campaign.", true)] },
+  { id: "words", lib: "voice", name: "Words to use & avoid", description: "A shared vocabulary keeps the voice consistent.", fields: [F("wordsUse", "Words to use", "Separate words with commas.", "thoughtful, everyday, considered", true), F("wordsAvoid", "Words to avoid", "Separate words with commas.", "cheap, guaranteed, No.1", true), F("bannedClaims", "Banned claims", "Claims this brand must never make.", "No.1 in Kerala", true)] },
   { id: "languages", name: "Languages", description: "Match the language to the audience and the moment.", fields: [F("primaryLanguage", "Primary language", "English, Malayalam or Manglish.", "English", true), F("languageNotes", "Language guidelines", "Explain when to switch languages and which script to use.", "English for LinkedIn. Conversational Manglish for Instagram reels.")] },
-  { id: "social", name: "Hashtags & CTA", description: "Set the rules for the end of every caption.", fields: [F("hashtags", "Brand hashtags", "Separate tags with spaces.", "#Whitestone #ThoughtfulHomes", true), F("bannedHashtags", "Banned hashtags", "Leave empty when there are none.", "#CheapDeals", true), F("cta", "Preferred call to action", "Use an approved, repeatable next step.", "Explore the collection.", true), F("emoji", "Emoji rules", "Set a simple limit and preferred style.", "At most one emoji. Avoid urgency symbols.", true)] },
+  { id: "social", lib: "hashtags", name: "Hashtags & CTA", description: "Set the rules for the end of every caption.", fields: [F("hashtags", "Brand hashtags", "Separate tags with spaces.", "#Whitestone #ThoughtfulHomes", true), F("bannedHashtags", "Banned hashtags", "Leave empty when there are none.", "#CheapDeals", true), F("cta", "Preferred call to action", "Use an approved, repeatable next step.", "Explore the collection.", true), F("emoji", "Emoji rules", "Set a simple limit and preferred style.", "At most one emoji. Avoid urgency symbols.", true)] },
   { id: "platforms", name: "Platform rules", description: "Adapt the same voice to different formats.", fields: [F("platforms", "Active platforms", "Separate platform names with commas.", "Instagram, Facebook, LinkedIn", true), F("maxLength", "Maximum caption length", "A character limit for this brand.", "2200", true), F("format", "Format & media rules", "Hooks, aspect ratios, video length and hashtag counts.", "Instagram: hook first, 3 hashtags, 4:5 posts or 9:16 reels.")] },
-  { id: "compliance", name: "Compliance", description: "Keep the claims clear, supportable and approved.", fields: [F("compliance", "Claims & restrictions", "What needs evidence or client approval?", "No unverified superlatives or warranty promises."), F("disclaimer", "Required disclaimer", "Included verbatim in captions when present.", "Images are for illustration purposes only.")] },
+  { id: "compliance", lib: "voice", name: "Compliance", description: "Keep the claims clear, supportable and approved.", fields: [F("compliance", "Claims & restrictions", "What needs evidence or client approval?", "No unverified superlatives or warranty promises."), F("disclaimer", "Required disclaimer", "Included verbatim in captions when present.", "Images are for illustration purposes only.")] },
   { id: "seasonal", name: "Festivals & seasons", description: "Capture the moments that matter to this brand.", fields: [F("seasonal", "Seasonal opportunities", "Include dates, lead time and local considerations.", "Onam: plan 21 days ahead. Confirm current dates with the client.")] },
-  { id: "contacts", name: "Contacts & approvals", description: "Know who can give the final yes.", fields: [F("contacts", "Client contacts", "Name, role, email and phone.", "Marketing lead · marketing@example.com"), F("approvals", "Approval rules", "Who approves which work?", "Client marketing lead approves every caption before publishing.")] },
+  { id: "contacts", lib: "contacts", name: "Contacts & approvals", description: "Know who can give the final yes.", fields: [F("contacts", "Client contacts", "Name, role, email and phone.", "Marketing lead · marketing@example.com"), F("approvals", "Approval rules", "Who approves which work?", "Client marketing lead approves every caption before publishing."), F("approvalGroup", "Approval WhatsApp group", "The group name as it appears. Never an invite link.", "Brand X – Approvals", true), F("approvalTurnaround", "Usual turnaround", "Hours or working days.", "24 working hours", true)] },
   { id: "assets", name: "Asset links", description: "Point the team to the original files.", fields: [F("assets", "OneDrive or SharePoint links", "One labelled URL per line.", "Brand guide: https://example.com/brand-guide")] },
-  { id: "recognition", name: "Brand recognition", description: "Help match a message to the right brand.", fields: [F("aliases", "Names & aliases", "Short names, nicknames and common spellings.", "whitestone, white stone, wst", true), F("keywords", "Detection keywords", "Distinctive terms that appear in filenames or messages.", "stone tiles, surface collection", true), F("colours", "Brand colours", "Separate hex codes with commas.", "#303C35, #D5DDCC", true), F("logoRules", "Logo rules", "Placement, contrast and clear-space requirements.", "Use the primary mark with clear space on every side.")] },
+  { id: "recognition", lib: "basics", name: "Brand recognition", description: "Help match a creative to the right brand.", fields: [F("businessType", "Business type", "What kind of business this is.", "Tile showroom", true), F("aliases", "Names & aliases", "Short names, nicknames and common spellings.", "whitestone, white stone, wst", true), F("keywords", "Detection keywords", "Distinctive terms that appear in filenames or messages.", "stone tiles, surface collection", true), F("colours", "Brand colours", "Name and hex, separated by commas.", "Navy #0A3D62, Sand #E6D5B8", true), F("fonts", "Brand fonts", "The typefaces used on creatives.", "Heading: Fraunces. Body: Source Sans", true), F("logoRules", "Logo rules", "Placement, contrast and clear-space requirements.", "Use the primary mark with clear space on every side."), F("phones", "Public phone numbers", "As printed on posts, with the country code.", "+91 98470 00000", true), F("handles", "Social handles", "Platform and handle, one per line.", "Instagram: brandname", true), F("address", "Public address", "The address a customer would see.", "Kochi, Kerala", true), F("onedriveFolder", "OneDrive client folder", "The link to this client's folder.", "https://example.com/client-folder")] },
+  { id: "offers", lib: "offers", name: "Offers and prices", description: "Prices as they may appear on a creative, with the dates they are valid.", fields: [F("offers", "Current offers", "One offer per line: text, price, valid from, valid to.", "Monsoon offer: 10% off, valid till 31/10")] },
+  { id: "ads", lib: "ads", name: "Ads info", description: "Targets the client agreed. Never store an ads login, token or password.", fields: [F("adAccounts", "Ad accounts", "Platform, account name and the account id shown in the ads manager.", "Meta: Brand Leads, act_000", true), F("adBudgets", "Monthly budget", "The agreed budget, not live spend.", "As agreed with the client", true), F("adAreas", "Target areas", "Where the ads should run.", "Kochi + 20 km", true), F("adKpis", "KPIs", "The metric and the target.", "Cost per lead, as agreed", true)] },
+  { id: "seo", lib: "seo", name: "SEO", description: "The client-approved starting list. SEO Studio keeps the live rankings.", fields: [F("seoKeywords", "Target keywords", "Phrase, language and the page it belongs to.", "tile adhesive kochi — /products/adhesive"), F("seoCompetitors", "SEO competitors", "Name and website. These are not the private competitor notes.", "Example Tiles — example.com"), F("sitePages", "Key site pages", "URL, page type and the main keyword.", "/products/adhesive — product — tile adhesive")] },
+  { id: "competitors", name: "Competitor notes", description: "Private. Hidden from staff and from every bot.", fields: [F("competitors", "Competitor notes", "Relationship notes about competitors. Kept inside the team.", "Do not mention competitor names in captions.")] },
   { id: "internal", name: "Internal notes", description: "For the team only. Never included in the bot’s writing context.", fields: [F("internalNotes", "Private team notes", "Keep relationship and account notes here.", "Demo account. Confirm all brand details before use.")] },
 ];
 const filled = (c, k) => !!String(c.fields[k] || "").trim();
-const score = (c) => { const s = SECTIONS.filter((x) => x.id !== "internal"); return Math.round((s.filter((x) => x.fields.some((f) => filled(c, f.key))).length / s.length) * 100); };
-const missing = (c) => SECTIONS.filter((x) => x.id !== "internal" && !x.fields.some((f) => filled(c, f.key))).map((x) => x.name);
+const score = (c) => { const s = SECTIONS.filter((x) => x.id !== "internal" && x.id !== "competitors"); return Math.round((s.filter((x) => x.fields.some((f) => filled(c, f.key))).length / s.length) * 100); };
+const missing = (c) => SECTIONS.filter((x) => x.id !== "internal" && x.id !== "competitors" && !x.fields.some((f) => filled(c, f.key))).map((x) => x.name);
+const LIBRARIES = [["basics", "Brand basics"], ["voice", "Brand voice"], ["creatives", "Reference creatives"], ["offers", "Offers and prices"], ["hashtags", "Hashtags and caption style"], ["contacts", "Contacts and approval"], ["ads", "Ads info"], ["seo", "SEO"]];
+function libraryPct(c, id) {
+  if (id === "creatives") {
+    const refs = (st.ws?.refs || []).filter((r) => r.clientId === c.id);
+    const ex = (st.ws?.examples || []).filter((e) => e.clientId === c.id);
+    const got = (refs.length ? 1 : 0) + (ex.some((e) => e.verdict === "approved") ? 1 : 0) + (refs.some((r) => r.verdict === "do" || r.verdict === "dont") ? 1 : 0);
+    return Math.round(100 * got / 3);
+  }
+  const fields = SECTIONS.filter((s) => s.lib === id).flatMap((s) => s.fields);
+  if (!fields.length) return 0;
+  return Math.round(100 * fields.filter((f) => filled(c, f.key)).length / fields.length);
+}
+function libraryBars(c) {
+  return `<div class="lib-bars">${LIBRARIES.map(([id, name]) => { const n = libraryPct(c, id); return `<div class="lib-bar"><small><span>${esc(name)}</span><b>${n}%</b></small>${progress(n, { label: name })}</div>`; }).join("")}</div>`;
+}
+function suggestionBox(c) {
+  const rows = (st.ws?.suggestions || []).filter((s) => s.clientId === c.id);
+  if (!rows.length || !canEdit()) return "";
+  return `<div class="suggestion-box">${rows.map((s) => `<span>Possible alias: <b>${esc(s.suggestion)}</b></span>${btn("Accept", { size: "sm", a: reg(async () => { await api("/br/suggestions/" + s.id, { accept: true }); await load(); toast.success("Added to aliases"); }) })}${btn("Reject", { size: "sm", variant: "ghost", a: reg(async () => { await api("/br/suggestions/" + s.id, { accept: false }); await load(); }) })}`).join("")}</div>`;
+}
 function bundle(c, examples, platform = "Instagram", language = "English") {
   const brand = Object.fromEntries(Object.entries(c.fields).filter(([k]) => k !== "internalNotes" && !c.internalFields.includes(k)));
   return { client: c.name, platform, language, brand, examples: examples.filter((e) => e.clientId === c.id && !e.internal).slice(0, 8).map((e) => ({ verdict: e.verdict, text: e.text, reason: e.reason })) };
@@ -149,10 +173,11 @@ const spin = (size) => ic("loader-circle", { size: size || 24, cls: "spin" });
 const st = { me: null, ws: null, cfg: {}, pub: null, err: "", view: "clients", clientId: null, section: "voice", dialog: null, mobileOpen: false };
 const lib = { q: "", tab: "All clients", sort: "Recently updated", mode: "grid" };
 const det = { ctx: null, ctxKey: "", ctxLoading: null, tab: "overview", platform: "Instagram", language: "English", forId: null };
-const ed = { draft: null, dirty: false, saving: false, error: "", forId: null };
+const ed = { draft: null, dirty: false, saving: false, error: "", forId: null, qi: null, focusQ: false };
 const exs = { tab: "All examples", client: "all", q: "", busy: null };
 const sets = { tab: "connections" };
-const refsState = { kind: "Logo", description: "", file: null, busy: false, error: "" };
+const refsState = { kind: "Logo", description: "", verdict: "", why: "", onedrive: "", platform: "Instagram", file: null, busy: false, error: "" };
+const REF_KINDS = ["Logo", "Logo variant", "Product", "Packaging", "Location", "Past creative", "Reference"];
 
 async function load() {
   const ws = await api("/br/workspace"); st.ws = ws; st.me = ws.me; st.cfg = ws.config || {}; st.err = ""; return ws;
@@ -161,7 +186,7 @@ async function load() {
 // differ between the local app and the hosted one. The server tells us in workspace.config.
 const refUrl = (id) => (st.cfg.refBase || "/api/ck/refs/") + id + "/file";
 async function refresh() { await load(); renderShell(); }
-const VIEWS = ["clients", "client", "editor", "documents", "examples", "activity", "settings"];
+const VIEWS = ["clients", "client", "editor", "documents", "examples", "activity", "agency", "skills", "onboarding", "keys", "settings"];
 function go(view, id) {
   if (st.view === "editor" && ed.dirty && view !== "editor") { confirmLeave(() => { ed.dirty = false; go(view, id); }); return; }
   if (st.view === "editor" && view !== "editor") ed.draft = null;
@@ -186,11 +211,11 @@ function sidebarInner() {
   const group = (label, items) => `<div data-slot="sidebar-group" data-sidebar="group" class="relative flex w-full min-w-0 flex-col p-2"><div data-slot="sidebar-group-label" data-sidebar="group-label" class="${GROUP_LABEL}">${label}</div><ul data-slot="sidebar-menu" data-sidebar="menu" class="flex w-full min-w-0 flex-col gap-1">${items.map(item).join("")}</ul></div>`;
   const me = st.me || {};
   return `<div data-slot="sidebar-header" data-sidebar="header" class="flex flex-col gap-2 p-2"><button class="wordmark" data-a="${reg(() => go("clients"))}"><span class="app-mark">${ic("book-open", { size: 22 })}</span><span>brandroom<span class="wordmark-sub">BY CREATIVHEADS®</span></span></button><div class="workspace-name"><span class="workspace-logo">CH</span><span>CreativHeads Agency<small>Team workspace</small></span>${ic("chevrons-up-down", { size: 15 })}</div></div>
-  <div data-slot="sidebar-content" data-sidebar="content" class="flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden">${group("WORKSPACE", [["clients", "Clients", "layers"], ["documents", "Documents", "file-text"]])}${group("MANAGE", [["activity", "Activity", "clock-3"], ["settings", "Settings", "settings-2"]])}</div>
+  <div data-slot="sidebar-content" data-sidebar="content" class="flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden">${group("WORKSPACE", [["clients", "Clients", "layers"], ["documents", "Documents", "file-text"], ["agency", "Agency libraries", "shield-check"], ["skills", "Skills", "list"], ["onboarding", "Onboarding", "sparkles"]])}${group("MANAGE", [["activity", "Activity", "clock-3"]].concat(me.isAdmin ? [["keys", "Bot keys", "shield-check"]] : []).concat([["settings", "Settings", "settings-2"]]))}</div>
   <div data-slot="sidebar-footer" data-sidebar="footer" class="flex flex-col gap-2 p-2">
   <div class="account"><span class="avatar admin">${esc((me.name || "?")[0].toUpperCase())}</span><span><b>${esc(me.name || "")}</b><small>${esc(ROLE[me.role] || "Team")} · CreativHeads</small></span>${pill(esc((ROLE[me.role] || "TEAM").toUpperCase()))}</div></div>`;
 }
-const TITLES = { clients: "Clients", editor: "Edit brand", documents: "Documents", examples: "Examples library", activity: "Activity", settings: "Settings" };
+const TITLES = { clients: "Clients", editor: "Edit brand", documents: "Documents", examples: "Examples library", activity: "Activity", agency: "Agency libraries", skills: "Skills", onboarding: "Onboarding", keys: "Bot keys", settings: "Settings" };
 function renderShell() {
   closePopover(); REG = new Map(); if (st.dialog) renderDialog();
   const app = $("#app"); const ws = st.ws; const c = curClient();
@@ -205,6 +230,10 @@ function renderShell() {
   else if (st.view === "documents") main = viewAllDocuments();
   else if (st.view === "examples") main = viewExamples();
   else if (st.view === "activity") main = viewActivity();
+  else if (st.view === "agency") main = viewAgency();
+  else if (st.view === "skills") main = viewSkills();
+  else if (st.view === "onboarding") main = viewOnboarding();
+  else if (st.view === "keys") main = viewKeys();
   else if (st.view === "settings") main = viewSettings();
   const sheet = st.mobileOpen ? `<div data-state="open" data-slot="sheet-overlay" class="fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" data-a="${reg(() => { st.mobileOpen = false; renderShell(); })}"></div><div role="dialog" data-state="open" data-sidebar="sidebar" data-slot="sidebar" data-mobile="true" class="fixed z-50 flex flex-col gap-4 shadow-lg transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:animate-in data-[state=open]:duration-500 inset-y-0 left-0 h-full border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground app-sidebar" style="--sidebar-width: 18rem;"><div class="flex h-full w-full flex-col">${sidebarInner()}</div></div>` : "";
   app.innerHTML = `<div data-slot="sidebar-wrapper" style="--sidebar-width:244px;--sidebar-width-icon:3rem" class="group/sidebar-wrapper flex min-h-svh w-full has-data-[variant=inset]:bg-sidebar"><div class="group peer hidden text-sidebar-foreground md:block" data-state="expanded" data-collapsible="" data-variant="sidebar" data-side="left" data-slot="sidebar"><div data-slot="sidebar-gap" class="relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear group-data-[collapsible=offcanvas]:w-0 group-data-[side=right]:rotate-180 group-data-[collapsible=icon]:w-(--sidebar-width-icon)"></div><div data-slot="sidebar-container" class="fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l app-sidebar"><div data-sidebar="sidebar" data-slot="sidebar-inner" class="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow-sm">${sidebarInner()}</div></div></div>${sheet}
@@ -228,7 +257,7 @@ async function loadContext(c) {
 }
 
 /* Documents: the file is kept, and the words inside it become brand knowledge the bot reads. */
-const docState = { file: null, busy: false, error: "", busyId: null };
+const docState = { file: null, busy: false, error: "", busyId: null, openId: null, text: "" };
 const fileSize = (n) => (n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB");
 const DOC_TYPES = "application/pdf,text/plain,text/markdown,text/csv,.pdf,.txt,.md,.csv";
 
@@ -256,7 +285,7 @@ function viewDocuments(c) {
     <div class="doc-list">
       ${list.length ? list.map((d) => `<div class="doc-row panel">
         <span class="doc-icon">${ic(d.kind === "PDF" ? "file-text" : "braces", { size: 20 })}</span>
-        <div class="doc-main"><b>${esc(d.name)}</b><small>${esc(d.kind)} · ${fileSize(d.size)}${d.pages ? ` · ${d.pages} page${d.pages === 1 ? "" : "s"}` : ""} · ${dm(d.createdAt)}</small>${d.note ? `<p class="doc-note">${esc(d.note)}</p>` : ""}</div>
+        <div class="doc-main"><b>${esc(d.name)}</b><small>${esc(d.kind)} · ${fileSize(d.size)}${d.pages ? ` · ${d.pages} page${d.pages === 1 ? "" : "s"}` : ""} · ${dm(d.createdAt)}</small>${d.note ? `<p class="doc-note">${esc(d.note)}</p>` : ""}${docTextBlock(d)}</div>
         <div class="doc-side">${badge(d)}
           <div class="doc-actions">
             <a class="text-button" href="/api/br/documents/${d.id}/file" target="_blank" rel="noreferrer">Open</a>
@@ -303,7 +332,7 @@ function viewAllDocuments() {
     <div class="doc-list">
       ${list.length ? list.map((d) => { const c = ws.clients.find((x) => x.id === d.clientId); return `<div class="doc-row panel">
         <span class="doc-icon">${ic(d.kind === "PDF" ? "file-text" : "braces", { size: 20 })}</span>
-        <div class="doc-main"><b>${esc(d.name)}</b><small>${c ? `<button class="text-button" data-a="${reg(() => go("client", c.id))}">${esc(c.name)}</button> · ` : ""}${esc(d.kind)} · ${fileSize(d.size)}${d.pages ? ` · ${d.pages} page${d.pages === 1 ? "" : "s"}` : ""} · ${dm(d.createdAt)}</small>${d.note ? `<p class="doc-note">${esc(d.note)}</p>` : ""}</div>
+        <div class="doc-main"><b>${esc(d.name)}</b><small>${c ? `<button class="text-button" data-a="${reg(() => go("client", c.id))}">${esc(c.name)}</button> · ` : ""}${esc(d.kind)} · ${fileSize(d.size)}${d.pages ? ` · ${d.pages} page${d.pages === 1 ? "" : "s"}` : ""} · ${dm(d.createdAt)}</small>${d.note ? `<p class="doc-note">${esc(d.note)}</p>` : ""}${docTextBlock(d)}</div>
         <div class="doc-side">${badge(d)}
           <div class="doc-actions">
             <a class="text-button" href="/api/br/documents/${d.id}/file" target="_blank" rel="noreferrer">Open</a>
@@ -313,6 +342,18 @@ function viewAllDocuments() {
         </div></div>`; }).join("") : empty("file-text", A.q || A.client !== "all" ? "Nothing matches" : "Nothing written down yet.", A.q || A.client !== "all" ? "Try another name, or show all clients." : "Add a brand guide, price list or FAQ, and the bot can use what is inside it.")}
     </div>
   </div>`;
+}
+function docTextBlock(d) {
+  if (d.status !== "ready") return "";
+  const open = docState.openId === d.id;
+  return `<button type="button" class="text-button" data-a="${reg(() => showDocText(d))}">${open ? "Hide text" : "Show the text that was read"}</button>${open ? `<pre class="doc-text">${esc(docState.text || "")}</pre>` : ""}`;
+}
+async function showDocText(d) {
+  if (docState.openId === d.id) { docState.openId = null; docState.text = ""; return renderShell(); }
+  docState.openId = d.id; docState.text = "Reading…"; renderShell();
+  try { const r = await api(`/br/documents/${d.id}/text`); docState.text = r.text || "Nothing was read from this file."; }
+  catch (e) { docState.text = e.message; }
+  renderShell();
 }
 async function uploadDoc(c) {
   if (!c) return;
@@ -431,7 +472,7 @@ function viewClient(c) {
   const approved = ws.examples.filter((e) => e.clientId === c.id && e.verdict === "approved");
   let content = "";
   if (det.tab === "overview") content = `<div class="brand-overview"><section><div class="brand-voice-card" style="--brand: ${esc(c.colour)};"><div class="eyebrow">THE BRAND IN A FEW WORDS</div><h2>“${esc(c.fields.tagline || c.fields.soundsLike || "Every brand has a story to tell.")}”</h2><p>${esc(c.fields.about || "Add a short introduction to this brand.")}</p><div class="tone-tags">${(c.fields.adjectives || "Add a voice").split(",").map((t) => `<span>${esc(t.trim())}</span>`).join("")}</div></div>
-    <div class="section-title knowledge-title"><h2>Brand knowledge</h2><span>14 shared sections</span></div><div class="knowledge-grid">${SECTIONS.filter((s) => s.id !== "basics" && s.id !== "internal").map((s) => { const fs = s.fields.filter((f) => c.fields[f.key]); return `<div class="knowledge-block"><div class="section-title"><h3>${s.name}</h3>${canEdit() ? `<button aria-label="Edit ${s.name}" class="text-button" data-a="${reg(() => editClient(c, s.id))}">Edit</button>` : ""}</div>${fs.length ? fs.map((f) => `<div class="knowledge-field"><span>${f.label}${c.internalFields.includes(f.key) ? ic("lock", { size: 11 }) : ""}</span><p>${esc(c.fields[f.key])}</p></div>`).join("") : `<p class="not-added">A little more context needed. Add this section.</p>`}</div>`; }).join("")}</div></section>
+    <div class="section-title knowledge-title"><h2>Brand knowledge</h2><span>${LIBRARIES.length} libraries</span></div><div class="knowledge-grid">${SECTIONS.filter((s) => s.id !== "basics" && s.id !== "internal" && (canEdit() || s.id !== "competitors")).map((s) => { const fs = s.fields.filter((f) => c.fields[f.key]); return `<div class="knowledge-block"><div class="section-title"><h3>${s.name}</h3>${canEdit() ? `<button aria-label="Edit ${s.name}" class="text-button" data-a="${reg(() => editClient(c, s.id))}">Edit</button>` : ""}</div>${fs.length ? fs.map((f) => `<div class="knowledge-field"><span>${f.label}${c.internalFields.includes(f.key) ? ic("lock", { size: 11 }) : ""}</span><p>${esc(c.fields[f.key])}</p></div>`).join("") : `<p class="not-added">A little more context needed. Add this section.</p>`}</div>`; }).join("")}</div></section>
     <aside><div class="panel brand-sidecard"><h3>Brand palette</h3><div class="colour-swatches">${(c.fields.colours || c.colour).split(",").map((x) => x.trim()).filter((x) => /^#[a-f\d]{6}$/i.test(x)).map((x) => `<button data-a="${reg(() => copyText(x))}"><span style="background: ${x};"></span><small>${x}</small></button>`).join("")}</div><p>Click a colour to copy its hex code.</p></div>
     <div class="panel brand-sidecard"><h3>${ic("book-open", { size: 17 })}Caption examples</h3><b class="side-number">${approved.length}</b><p>approved examples for this brand</p>${approved.slice(0, 1).map((e) => `<blockquote>${esc(e.text)}</blockquote>`).join("")}</div>
     ${st.me?.canEdit ? `<div class="panel brand-sidecard internal-card"><h3>${ic("lock", { size: 16 })}Internal notes</h3><p>${esc(c.fields.internalNotes || "No internal notes yet.")}</p><small>Excluded from all writing context</small><button class="text-button" data-a="${reg(() => editClient(c, "internal"))}">Edit notes</button></div>` : ""}
@@ -445,7 +486,8 @@ function viewClient(c) {
     content = `<div class="bundle-head"><div><h2>What the bot can see</h2><p>Internal notes, locked fields and team-only documents are left out. This is exactly the context used for captions.</p></div><div class="inline-options">${select(det.platform, PLATFORMS, (v) => { det.platform = v; det.ctx = null; renderShell(); }, { label: "Context platform" })}${select(det.language, LANGUAGES, (v) => { det.language = v; det.ctx = null; renderShell(); }, { label: "Context language" })}${btn(ic("copy") + "Copy JSON", { variant: "outline", disabled: !json, a: reg(() => copyText(json)) })}</div></div><pre class="bundle-json">${json === null ? "Loading the writing context…" : esc(json)}</pre>`; }
   return `<button class="back-button" data-a="${reg(() => go("clients"))}">${ic("chevron-left", { size: 15 })}Client library</button>
   <div class="client-detail-head">${mark(c, "large")}<div><div class="detail-name"><h1>${esc(c.name)}</h1>${pill(c.status === "archived" ? "Archived" : n >= 80 ? "Complete" : "In progress", n >= 80 ? "ready" : "draft")}</div><p>${esc(c.industry)} <span>·</span> ${esc(c.location || "Location not added")}</p></div><div class="head-actions">${canEdit() ? btn(ic("file-text") + "Edit brand", { variant: "outline", a: reg(() => editClient(c)) }) : ""}${btn(ic("sparkles") + "Try in caption studio", { disabled: c.status === "archived", a: reg(() => { studio.client = c.id; go("studio"); }) })}</div></div>
-  <div class="client-meta"><span><span class="avatar tiny">${esc((c.lead || "?")[0])}</span>${esc(c.lead || "Unassigned")} · Account lead</span><span>${ic("clock-3", { size: 14 })}Updated ${dm(c.updatedAt)}</span><span class="detail-progress">Brand knowledge ${progress(n)}<b>${n}%</b></span></div>
+  <div class="client-meta"><span><span class="avatar tiny">${esc((c.lead || "?")[0])}</span>${esc(c.lead || "Unassigned")} · Account lead</span><span>${ic("clock-3", { size: 14 })}Updated ${dm(c.updatedAt)}</span><span class="detail-progress">Brand knowledge ${progress(n)}<b>${n}%</b></span></div>${libraryBars(c)}
+  ${suggestionBox(c)}
   ${tabs(det.tab, [["overview", "Brand overview"], ["references", `Reference images <span class="tab-count">${refs.length}</span>`], ["documents", "Documents"], ["notes", "Team Notes"], ["assets", "Brand Assets"], ["bundle", `Writing context ${ic("braces", { size: 15 })}`]], (v) => { det.tab = v; renderShell(); }, { cls: "detail-tabs", content })}`;
 }
 function confirmArchive(c) {
@@ -458,8 +500,8 @@ function viewRefs(c, refs) {
   const R = refsState; afterHooks.push(() => { const f = $("#ref-file"); if (f) f.onchange = () => { const x = f.files?.[0]; if (x && x.size > 2e7) { R.error = "Please choose an image under 20 MB."; renderShell(); return; } R.file = x || null; R.error = ""; renderShell(); }; });
   return `<div class="bundle-head"><div><h2>Give the team a visual reference.</h2><p>Logos, products, packaging and places that make this brand recognisable.</p></div>${pill(`${refs.length} images`)}</div>
   <div class="reference-layout">${canEdit() ? `<form class="reference-upload panel" data-sub="${reg(() => saveRef(c))}"><label class="dropzone">${ic("upload", { size: 26 })}<b>${esc(R.file ? R.file.name : "Choose a reference image")}</b><span>JPG, PNG or WebP · resized to 1024px</span><input type="file" id="ref-file" accept="image/jpeg,image/png,image/webp" aria-label="Reference image"></label>
-  <div class="form-field"><label>Reference type</label>${select(R.kind, ["Logo", "Product", "Packaging", "Location", "Reference"], (v) => { R.kind = v; renderShell(); }, { label: "Reference type" })}</div><div class="form-field"><label for="ref-description">Description or visible text</label>${textarea({ id: "ref-description", value: R.description, placeholder: "Primary logo on a light background…", inp: reg((v) => (R.description = v)) })}</div>${R.error ? `<p class="error-text">${esc(R.error)}</p>` : ""}${btn((R.busy ? spin() : ic("upload")) + "Save reference", { type: "submit", disabled: !R.file || R.busy })}</form>` : ""}
-  <div class="reference-grid">${refs.length ? refs.map((r) => `<div class="reference-card panel"><a href="${refUrl(r.id)}" target="_blank" rel="noreferrer"><img src="${refUrl(r.id)}" alt="${esc(r.description || r.name)}"></a><div>${pill(esc(r.kind))}<h3>${esc(r.name)}</h3><p>${esc(r.description || "No description added.")}</p></div></div>`).join("") : empty("image", "A picture gives a little more context.", "Upload the first reference for this brand. Images stay in this private workspace.")}</div></div>`;
+  <div class="form-field"><label>Reference type</label>${select(R.kind, REF_KINDS, (v) => { R.kind = v; renderShell(); }, { label: "Reference type" })}</div><div class="form-field"><label>Verdict</label>${select(R.verdict, [{ value: "", label: "Not a do or don't" }, { value: "do", label: "Do — copy this" }, { value: "dont", label: "Don't — avoid this" }], (v) => { R.verdict = v; renderShell(); }, { label: "Verdict" })}</div><div class="form-field"><label for="ref-why">Why</label>${input({ id: "ref-why", value: R.why, placeholder: "Logo too small, client rejected", inp: reg((v) => (R.why = v)) })}</div><div class="form-field"><label for="ref-drive">OneDrive link for the full video or post</label>${input({ id: "ref-drive", value: R.onedrive, placeholder: "https://…", inp: reg((v) => (R.onedrive = v)) })}</div><div class="form-field"><label for="ref-description">Description or visible text</label>${textarea({ id: "ref-description", value: R.description, placeholder: "Primary logo on a light background…", inp: reg((v) => (R.description = v)) })}</div>${R.error ? `<p class="error-text">${esc(R.error)}</p>` : ""}${btn((R.busy ? spin() : ic("upload")) + "Save reference", { type: "submit", disabled: !R.file || R.busy })}</form>` : ""}
+  <div class="reference-grid">${refs.length ? refs.map((r) => `<div class="reference-card panel"><a href="${refUrl(r.id)}" target="_blank" rel="noreferrer"><img src="${refUrl(r.id)}" alt="${esc(r.description || r.name)}"></a><div>${pill(esc(r.kind))}${r.verdict ? pill(r.verdict === "do" ? "Do" : "Don't", r.verdict === "do" ? "ready" : "rejected") : ""}<h3>${esc(r.name)}</h3><p>${esc(r.description || "No description added.")}</p>${r.why ? `<p>${esc(r.why)}</p>` : ""}${r.onedriveUrl ? `<a href="${esc(r.onedriveUrl)}" target="_blank" rel="noreferrer">Open in OneDrive</a>` : ""}</div></div>`).join("") : empty("image", "A picture gives a little more context.", "Upload the first reference for this brand. Images stay in this private workspace.")}</div></div>`;
 }
 async function shrink(file, max = 1024, limit = 2097152) {
   const bmp = await createImageBitmap(file); const k = Math.min(1, max / Math.max(bmp.width, bmp.height)); const cv = document.createElement("canvas");
@@ -472,35 +514,155 @@ async function shrink(file, max = 1024, limit = 2097152) {
 const blobB64 = (blob) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1]); fr.onerror = rej; fr.readAsDataURL(blob); });
 async function saveRef(c) {
   const R = refsState; if (!R.file) return; R.busy = true; R.error = ""; renderShell();
-  try { const im = await shrink(R.file); await api("/br/media", { clientId: c.id, kind: R.kind, description: R.description, name: R.file.name, ...im }); await load(); R.file = null; R.description = ""; toast.success("Reference image saved"); }
+  try { const im = await shrink(R.file); await api("/br/media", { clientId: c.id, kind: R.kind, description: R.description, verdict: R.verdict, why: R.why, onedriveUrl: R.onedrive, platform: R.platform, name: R.file.name, ...im }); await load(); R.file = null; R.description = ""; R.why = ""; R.onedrive = ""; R.verdict = ""; toast.success("Reference image saved"); }
   catch (e) { R.error = e.message; } finally { R.busy = false; renderShell(); }
 }
 
 /* ================= Editor ================= */
+const INTERVIEW = [
+  { section: "basics", key: "about", topic: "The business", ask: "What does this business do, in one sentence?", why: "The team and the bots start from this line.", example: "A Kerala learning studio that teaches practical digital skills." },
+  { section: "audience", key: "audience", topic: "The customer", ask: "Who is the customer, and what do they need?", why: "A caption should speak to a person, not to everyone.", example: "Students and job seekers who want skills they can use at work." },
+  { section: "products", key: "products", topic: "What they offer", ask: "What do they sell or offer, and what does it cost?", why: "Prices on a creative have to match what the client has approved.", example: "Digital marketing course. Confirm the current fee before publishing it." },
+  { section: "products", key: "usps", topic: "What to remember", ask: "What should people remember them for?", why: "This is the difference we are allowed to repeat.", example: "Hands-on projects, not theory-only classes." },
+  { section: "voice", key: "tone", topic: "How they sound", ask: "How should this brand sound?", why: "Every caption should be recognisable as theirs.", example: "Friendly, practical and confident. Never pushy." },
+  { section: "languages", key: "primaryLanguage", topic: "Language", ask: "Which language should we write in?", why: "English, Malayalam, Manglish, or a mix. Say which one is the default.", example: "English, with Malayalam when the post is for a local audience.", short: true },
+  { section: "languages", key: "languageNotes", topic: "When to switch", ask: "When should we switch language?", why: "The same brand can use a different language on a different platform.", example: "English on LinkedIn. Conversational Manglish on Instagram." },
+  { section: "words", key: "wordsAvoid", topic: "Never say", ask: "Which words or claims must never be used?", why: "A banned claim in a caption is a problem for the client.", example: "Guaranteed job. Guaranteed salary. No.1." },
+  { section: "recognition", key: "phones", topic: "How to reach them", ask: "What phone number, website and social handles are printed on their posts?", why: "Quality Check uses these to recognise the brand.", example: "+91 98470 00000, level8.in, Instagram: level8" },
+  { section: "recognition", key: "colours", topic: "Colours and fonts", ask: "What colours and fonts should we use?", why: "A creative in the wrong colours is easy to reject.", example: "Navy and white. Use the fonts named in the brand guide." },
+  { section: "social", key: "hashtags", topic: "Hashtags", ask: "Which hashtags should a caption use?", why: "These are the tags the client has approved.", example: "#Level8 #DigitalSkills", short: true },
+  { section: "social", key: "cta", topic: "The ending", ask: "What should a caption ask the reader to do?", why: "The ending should be the same kind of next step each time.", example: "Explore the courses.", short: true },
+  { section: "contacts", key: "contacts", topic: "Who approves", ask: "Who approves the work, and how fast do they usually reply?", why: "The team needs a person to ask, before anything goes live.", example: "The client representative, usually within one working day." },
+  { section: "platforms", key: "platforms", topic: "Where they post", ask: "Which platforms do they use, and how often do they post?", why: "The voice stays the same. The format changes.", example: "Instagram and LinkedIn, a few times a week." },
+  { section: "offers", key: "offers", topic: "A current offer", ask: "Is there a current offer? What is the price, and when does it end?", why: "An expired price must not appear on a creative.", example: "No active offer. If there is one, write the price and the last date." },
+  { section: "ads", key: "adBudgets", topic: "Ads", ask: "Do they run ads? If yes, what budget, area and goal were agreed?", why: "Store the target only. Never an ads login or password.", example: "Meta leads in Kochi. Budget as agreed with the client." },
+  { section: "seo", key: "seoKeywords", topic: "Search phrases", ask: "Which search phrases should the site be found for?", why: "This is the starting list. Live rankings stay in SEO Studio.", example: "digital marketing course kochi" },
+  { section: "messages", key: "tagline", topic: "The line", ask: "What line should people remember?", why: "This is the approved tagline.", example: "Learn today. Lead tomorrow.", short: true },
+  { section: "voice", key: "dos", topic: "Always do", ask: "What should we always do when we write for them?", why: "These are the writing habits to keep.", example: "Lead with a practical benefit. Use simple words." },
+  { section: "compliance", key: "compliance", topic: "Claims", ask: "What claims need proof before we publish?", why: "Unproven claims should not reach a caption.", example: "No job, salary, or ranking claims unless the client has confirmed them." },
+  { section: "seasonal", key: "seasonal", topic: "Seasons", ask: "Which festivals or seasons matter to them?", why: "The team needs the dates and how early to start.", example: "Onam: start three weeks ahead. Confirm the date with the client." },
+  { section: "competitors", key: "competitors", topic: "Competitors", ask: "Who do they compete with? These notes stay inside the team.", why: "Competitor notes are never sent to a bot.", example: "Do not name competitors in captions." },
+  { section: "internal", key: "internalNotes", topic: "Private notes", ask: "Anything the team should know that the bots must never see?", why: "This stays inside the team. It is never sent to a bot.", example: "Confirm every fee with the client before it is published." },
+];
+const FOLLOW = [
+  { key: "audience", when: /student|learner|job|graduate|customer|patient|buyer|parent|audience/i, ask: (s) => `You mentioned “${s}”. Who is the main customer, and what do they need?` },
+  { key: "products", when: /course|class|service|product|sell|training|treatment/i, ask: (s) => `You mentioned “${s}”. What do they sell or offer, and what does it cost?` },
+  { key: "offers", when: /price|fee|₹|rs\.?\s?\d|discount|%|offer|cost/i, ask: () => "You mentioned a price or an offer. What is the current offer, and when does it end?" },
+  { key: "usps", when: /known for|different|hands-on|practical|unlike|better/i, ask: (s) => `You mentioned “${s}”. What should people remember them for?` },
+  { key: "tone", when: /friendly|professional|warm|tone|sound|confident|formal/i, ask: () => "How should this brand sound?" },
+  { key: "primaryLanguage", when: /malayalam|english|manglish|language|hindi/i, ask: () => "You mentioned a language. Which language should we write in?" },
+  { key: "languageNotes", when: /malayalam|english|manglish|linkedin|instagram/i, ask: () => "When should we switch language?" },
+  { key: "wordsAvoid", when: /never|guaranteed|avoid|claim|do not say|don't say/i, ask: () => "Which words or claims must never be used?" },
+  { key: "platforms", when: /instagram|facebook|linkedin|youtube|reel|whatsapp|tiktok/i, ask: () => "You mentioned a platform. Which platforms do they use, and how often do they post?" },
+  { key: "hashtags", when: /#\w+|hashtag/i, ask: () => "Which hashtags should a caption use?" },
+  { key: "cta", when: /sign up|enquire|enroll|book|explore|whatsapp|call now/i, ask: () => "What should a caption ask the reader to do?" },
+  { key: "contacts", when: /approv|sign-?off|client will|manager/i, ask: () => "Who approves the work, and how fast do they usually reply?" },
+  { key: "phones", when: /phone|\+91|website|www\.|handle|@/i, ask: () => "What phone number, website and social handles are printed on their posts?" },
+  { key: "colours", when: /colour|color|font|logo|navy|#[0-9a-f]{3,6}/i, ask: () => "What colours and fonts should we use?" },
+  { key: "adBudgets", when: /\bads?\b|meta ads|google ads|campaign|budget/i, ask: () => "You mentioned ads. What budget, area and goal were agreed?" },
+  { key: "seoKeywords", when: /\bseo\b|google|keyword|search phrase|rank/i, ask: () => "Which search phrases should the site be found for?" },
+  { key: "seasonal", when: /onam|christmas|eid|diwali|festival|new year|vishu|ramadan/i, ask: () => "You mentioned a season or festival. Which ones matter, and how early should we plan?" },
+  { key: "compliance", when: /guaranteed|claim|medical|legal|proof|ranking/i, ask: () => "What claims need proof before we publish?" },
+  { key: "tagline", when: /tagline|slogan|learn today|line they use/i, ask: () => "What line should people remember?" },
+  { key: "competitors", when: /competitor|rival|other brand|other clinic/i, ask: () => "Who do they compete with? These notes stay inside the team." },
+];
+function clipAnswer(answer) {
+  const s = String(answer || "").replace(/\s+/g, " ").trim();
+  const cut = (s.split(/[.!?]/)[0] || s).trim();
+  return cut.length > 80 ? cut.slice(0, 80).replace(/\s+\S*$/, "") : cut;
+}
+function pickNext(client, asked, answer, fresh) {
+  const open = editorQuestions().filter((q) => !asked.has(q.key) && !String(client.fields[q.key] || "").trim());
+  const snip = clipAnswer(answer);
+  if (answer) {
+    const hit = FOLLOW.find((f) => f.when.test(answer) && open.some((q) => q.key === f.key));
+    if (hit) { const q = open.find((item) => item.key === hit.key); return { ...q, ask: hit.ask(snip) }; }
+  }
+  if (!open[0]) return null;
+  return fresh || !snip ? open[0] : { ...open[0], ask: `Got that. ${open[0].ask}` };
+}
+function buildChat(client) {
+  const qs = editorQuestions();
+  const messages = [{ role: "bot", text: `I'll learn ${client.name} in this chat. Answer in your own words. The next question follows what you just said, until the brand knowledge is covered.` }];
+  const asked = new Set();
+  let last = "";
+  for (const q of qs) {
+    const value = String(client.fields[q.key] || "").trim();
+    if (!value) continue;
+    messages.push({ role: "bot", text: q.ask, key: q.key });
+    messages.push({ role: "user", text: value, key: q.key });
+    asked.add(q.key);
+    last = value;
+  }
+  const next = pickNext(client, asked, last, true);
+  if (next) messages.push({ role: "bot", text: next.ask, key: next.key });
+  else messages.push({ role: "bot", text: `That covers the brand knowledge for ${client.name}.` });
+  return { messages, pending: next, index: next ? qs.findIndex((q) => q.key === next.key) : 0 };
+}
+function editorQuestions() {
+  return INTERVIEW.filter((q) => canEdit() || (q.section !== "internal" && q.section !== "competitors")).map((q) => ({
+    ...q, section: SECTIONS.find((s) => s.id === q.section) || SECTIONS[0], top: false, short: !!q.short, label: q.topic,
+  }));
+}
 function viewEditor(c) {
-  if (ed.forId !== c.id || !ed.draft) { ed.forId = c.id; ed.draft = JSON.parse(JSON.stringify(c)); ed.dirty = false; ed.error = ""; }
-  const a = ed.draft; const sec = SECTIONS.find((s) => s.id === st.section) || SECTIONS[0]; const idx = SECTIONS.findIndex((s) => s.id === sec.id);
-  const markDirty = () => { if (!ed.dirty) { ed.dirty = true; const b = $("#ed-state"); if (b) b.outerHTML = editorBadge(); } updateStepper(); };
-  const setField = (k) => reg((v) => { a.fields[k] = v; markDirty(); });
-  const setTop = (k) => reg((v) => { a[k] = v; markDirty(); const sv = $("#ed-save"); if (sv) sv.disabled = ed.saving || !a.name.trim(); });
-  const save = async () => { ed.saving = true; ed.error = ""; renderShell();
-    try { const r = await act({ action: "client.save", client: a }); await load(); ed.draft = JSON.parse(JSON.stringify(r.client)); ed.dirty = false; toast.success("Brand knowledge saved"); }
-    catch (e) { ed.error = e.message; } finally { ed.saving = false; renderShell(); } };
-  const pick = (id) => { st.section = id; renderShell(); };
-  return `<button class="back-button" data-a="${reg(() => (ed.dirty ? confirmLeave(() => { ed.dirty = false; ed.draft = null; go("client", c.id); }) : go("client", c.id)))}">${ic("chevron-left", { size: 15 })}Back to ${esc(c.name)}</button>
-  ${pageHead("GUIDED BRAND EDITOR", `Get to know ${esc(c.name)}.`, "Small details make a big difference. Save your progress as you go.", editorBadge())}
-  <div class="editor-layout"><nav class="section-stepper" id="ed-stepper">${stepper(a, sec, pick)}</nav>
-  <section class="editor-main panel"><div class="editor-title"><span>SECTION ${pad2(idx + 1)} OF ${SECTIONS.length}</span><h2>${sec.name}</h2><p>${sec.description}</p></div>
-  <form data-sub="${reg(save)}">${sec.id === "basics" ? `<div class="basics-fields">${["name", "industry", "location", "lead"].map((k) => `<div class="form-field"><label for="${k}">${{ name: "Client name", industry: "Industry", location: "Location", lead: "Account lead" }[k]}</label>${input({ id: k, value: a[k], inp: setTop(k), attrs: `maxlength="100"${k === "name" ? " required" : ""}${k === "lead" ? ' list="br-team"' : ""}` })}</div>`).join("")}<datalist id="br-team">${st.ws.team.map((t) => `<option value="${esc(t.name)}">`).join("")}</datalist></div>` : ""}
-  ${sec.fields.map((f) => `<div class="guided-field"><div class="field-input"><div class="field-label"><label for="${f.key}">${f.label}</label>${f.key !== "internalNotes" ? `<label class="lock-control">${ic("lock", { size: 12 })}<span>Internal</span>${toggle(a.internalFields.includes(f.key), reg((ev, el) => { const on = el.dataset.state !== "checked"; a.internalFields = on ? [...a.internalFields, f.key] : a.internalFields.filter((x) => x !== f.key); const s = on ? "checked" : "unchecked"; el.dataset.state = s; el.setAttribute("aria-checked", on); el.firstElementChild.dataset.state = s; markDirty(); }), { size: "sm", label: `Keep ${f.label} internal` })}</label>` : ""}</div><p class="field-help">${f.help}</p>${f.short ? input({ id: f.key, value: a.fields[f.key] || "", placeholder: f.example, inp: setField(f.key), attrs: 'maxlength="12000"' }) : textarea({ id: f.key, value: a.fields[f.key] || "", placeholder: "Add the brand’s details…", inp: setField(f.key), attrs: 'maxlength="12000"' })}</div><aside class="field-example"><span>${ic("sparkles", { size: 12 })}AN EXAMPLE</span><p>${f.example}</p></aside></div>`).join("")}
-  ${ed.error ? `<p class="error-text" role="alert">${esc(ed.error)}</p>` : ""}<div class="editor-actions">${btn("Previous section", { variant: "outline", disabled: idx === 0, a: reg(() => pick(SECTIONS[idx - 1].id)) })}<div>${btn((ed.saving ? spin() : ic("check")) + "Save changes", { type: "submit", disabled: ed.saving || !a.name.trim(), attrs: 'id="ed-save"' })}${idx < SECTIONS.length - 1 ? btn("Next section", { variant: "ghost", a: reg(() => pick(SECTIONS[idx + 1].id)) }) : ""}</div></div></form></section></div>`;
+  if (ed.forId !== c.id || !ed.draft) { ed.forId = c.id; ed.draft = JSON.parse(JSON.stringify(c)); ed.dirty = false; ed.error = ""; ed.qi = null; ed.messages = null; ed.pending = null; ed.reply = ""; }
+  const a = ed.draft;
+  if (!ed.messages) { const built = buildChat(a); ed.messages = built.messages; ed.pending = built.pending; ed.qi = built.index; }
+  const asked = () => new Set(ed.messages.filter((m) => m.role === "user" && m.key).map((m) => m.key));
+  const askTopic = (i) => {
+    const q = editorQuestions()[i]; if (!q) return;
+    if (ed.pending?.key === q.key && ed.messages.at(-1)?.role === "bot" && ed.messages.at(-1)?.key === q.key) return;
+    const has = String(a.fields[q.key] || "").trim();
+    const ask = has ? `Want to change this? ${q.ask}` : q.ask;
+    ed.pending = { ...q, ask }; ed.qi = i; ed.messages.push({ role: "bot", text: ask, key: q.key }); ed.focusQ = true; renderShell();
+  };
+  const send = async () => {
+    const text = ed.reply.trim();
+    if (!text || !ed.pending || ed.saving) return;
+    const key = ed.pending.key;
+    a.fields[key] = text;
+    ed.messages.push({ role: "user", text, key });
+    ed.reply = "";
+    const next = pickNext(a, asked(), text);
+    ed.pending = next;
+    ed.qi = next ? editorQuestions().findIndex((q) => q.key === next.key) : ed.qi;
+    ed.messages.push({ role: "bot", text: next ? next.ask : "That covers the brand knowledge. Your answers are saved.", key: next?.key });
+    ed.saving = true; ed.focusQ = true; ed.error = ""; renderShell();
+    try { const r = await act({ action: "client.save", client: a }); await load(); ed.draft = JSON.parse(JSON.stringify(r.client)); ed.dirty = false; }
+    catch (e) { ed.error = e.message; ed.dirty = true; }
+    finally { ed.saving = false; renderShell(); }
+  };
+  const skip = () => {
+    if (!ed.pending || ed.saving) return;
+    const key = ed.pending.key;
+    ed.messages.push({ role: "user", text: "Skip this one.", key });
+    const next = pickNext(a, asked(), "");
+    ed.pending = next;
+    ed.qi = next ? editorQuestions().findIndex((q) => q.key === next.key) : ed.qi;
+    ed.messages.push({ role: "bot", text: next ? next.ask : "That covers the brand knowledge.", key: next?.key });
+    ed.focusQ = true; renderShell();
+  };
+  afterHooks.push(() => {
+    const log = document.getElementById("chat-log"); if (log) log.scrollTop = log.scrollHeight;
+    const box = document.getElementById("chat-reply");
+    if (box) box.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); box.form?.requestSubmit(); } });
+    if (ed.focusQ && box) { ed.focusQ = false; box.focus(); }
+  });
+  const log = ed.messages.map((m) => `<div class="chat-msg ${m.role}"><span class="chat-who">${m.role === "bot" ? "Brandroom" : "You"}</span>${esc(m.text)}</div>`).join("");
+  return `<button class="back-button" data-a="${reg(() => (ed.dirty ? confirmLeave(() => { ed.dirty = false; ed.draft = null; ed.messages = null; go("client", c.id); }) : go("client", c.id)))}">${ic("chevron-left", { size: 15 })}Back to ${esc(c.name)}</button>
+  ${pageHead("BRAND INTERVIEW", `Get to know ${esc(c.name)}.`, "A chat. Each answer leads to the next relevant question, until the brand knowledge is covered.", editorBadge())}
+  <div class="editor-layout"><nav class="section-stepper" id="ed-stepper">${stepper(a, ed.pending?.key, askTopic)}</nav>
+  <section class="editor-main panel chat-panel"><div id="chat-log" class="chat-log">${log}</div>
+  ${ed.error ? `<p class="error-text" role="alert">${esc(ed.error)}</p>` : ""}
+  ${ed.pending ? `<form class="chat-compose" data-sub="${reg(send)}">${textarea({ id: "chat-reply", value: ed.reply, rows: 2, placeholder: "Type your answer…", inp: reg((v) => { ed.reply = v; const b = document.getElementById("chat-send"); if (b) b.disabled = ed.saving || !v.trim(); }) })}<div class="chat-actions">${btn("Skip", { variant: "ghost", a: reg(skip), disabled: ed.saving })}${btn(ed.saving ? "Saving…" : "Send", { type: "submit", disabled: ed.saving || !ed.reply.trim(), attrs: 'id="chat-send"' })}</div></form>` : `<p class="hint">The brand knowledge is covered. Choose a topic on the left to change an answer.</p>`}</section></div>`;
 }
 const editorBadge = () => `<span id="ed-state" class="pill ${ed.dirty ? "draft" : "ready"}">${ed.dirty ? "Unsaved changes" : ic("check", { size: 13 }) + "All changes saved"}</span>`;
-function stepper(a, sec, pick) {
+function stepper(a, key, pick) {
   const n = score(a);
-  return `<div class="stepper-progress"><b>${n}% complete</b>${progress(n, { label: "Brand completeness" })}</div>${SECTIONS.map((s, i) => { const done = s.fields.some((f) => filled(a, f.key)); return `<button class="${sec.id === s.id ? "active" : ""}" data-a="${reg(() => pick(s.id))}"><span class="${done ? "done" : ""}">${s.id === "internal" ? ic("lock", { size: 12 }) : done ? ic("check", { size: 13 }) : pad2(i + 1)}</span>${s.name}</button>`; }).join("")}`;
+  const qs = editorQuestions();
+  return `<div class="stepper-progress"><b>${n}% complete</b>${progress(n, { label: "Brand completeness" })}</div>${qs.map((q, i) => { const done = !!String(a.fields[q.key] || "").trim(); const locked = q.section.id === "internal" || q.section.id === "competitors"; return `<button type="button" class="${q.key === key ? "active" : ""}" data-a="${reg(() => pick(i))}"><span class="step-mark ${done ? "done" : ""}">${locked ? ic("lock", { size: 12 }) : done ? ic("check", { size: 13 }) : pad2(i + 1)}</span><span class="step-name">${esc(q.topic)}</span></button>`; }).join("")}`;
 }
-function updateStepper() { const el = $("#ed-stepper"); if (!el || !ed.draft) return; const sec = SECTIONS.find((s) => s.id === st.section) || SECTIONS[0]; el.innerHTML = stepper(ed.draft, sec, (id) => { st.section = id; renderShell(); }); }
+function updateStepper() { const el = $("#ed-stepper"); if (!el || !ed.draft) return; el.innerHTML = stepper(ed.draft, ed.pending?.key, (i) => { const q = editorQuestions()[i]; if (!q || (ed.pending?.key === q.key && ed.messages?.at(-1)?.key === q.key)) return; const has = String(ed.draft.fields[q.key] || "").trim(); const ask = has ? `Want to change this? ${q.ask}` : q.ask; ed.pending = { ...q, ask }; ed.qi = i; ed.messages.push({ role: "bot", text: ask, key: q.key }); ed.focusQ = true; renderShell(); }); }
 
 /* ================= Examples ================= */
 function viewExamples() {
@@ -634,6 +796,72 @@ async function renderLogin(msg = "") {
     try { const r = await fetch("/api/login", { method: "POST", headers: { "content-type": "application/json", "x-requested-with": "app", "x-section": "kb" }, body: JSON.stringify({ email: $("#li-email").value, password: $("#li-pass").value }) }); const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.error || "Could not sign in."); await start(); }
     catch (x) { er.textContent = x.message; er.hidden = false; b.disabled = false; } };
+}
+
+/* ================= Libraries, skills, onboarding, keys ================= */
+const AGENCY_LIBS = [["qc", "QC checklist"], ["template", "Templates"], ["sop", "Process SOPs"], ["media", "Music and stock"]];
+const ag = { library: "qc", items: null, title: "", body: "", busy: false, error: "" };
+const skState = { skills: null, slug: "", body: "", note: "", busy: false, error: "" };
+const ob = { sessions: null, current: null, answer: "", name: "", website: "", instagram: "", busy: false, error: "" };
+const ky = { keys: null, name: "", picked: { clients: true }, revealed: "", busy: false, error: "" };
+const SKILL_SCOPES = ["caption-writing", "qc-check-scoring", "client-detection", "compression-dispatch", "asset-filing", "reminders", "ad-alerts", "seo-tasks"];
+
+function viewAgency() {
+  if (ag.items === null) { ag.items = false; api("/br/agency").then((d) => { ag.items = d.items || []; renderShell(); }).catch((e) => { ag.error = e.message; ag.items = []; renderShell(); }); }
+  if (ag.items === false) return `<p class="hint">Loading agency libraries…</p>`;
+  const items = ag.items.filter((i) => i.library === ag.library);
+  return `<div class="bundle-head"><div><h2>Agency libraries</h2><p>One set for the whole agency. A change goes live only after an admin approves it.</p></div></div>
+  ${tabs(ag.library, AGENCY_LIBS, (v) => { ag.library = v; ag.title = ""; ag.body = ""; renderShell(); }, { cls: "filter-tabs" })}
+  ${ag.error ? `<p class="error-text">${esc(ag.error)}</p>` : ""}
+  <div class="v21-list">${items.map((i) => `<article class="panel v21-card"><div class="v21-card-top">${pill(i.status === "approved" ? "Live" : "Draft", i.status === "approved" ? "ready" : "draft")}<h3>${esc(i.title)}</h3></div><p class="v21-body">${esc(i.body)}</p>${canEdit() ? `<div class="v21-actions">${btn("Edit", { variant: "outline", size: "sm", a: reg(() => { ag.title = i.title; ag.body = i.body; ag.editing = i.id; renderShell(); }) })}${st.me?.isAdmin && i.status !== "approved" ? btn("Approve", { size: "sm", a: reg(async () => { await api("/br/agency", { action: "approve", id: i.id }); ag.items = null; renderShell(); }) }) : ""}${btn("Remove", { variant: "ghost", size: "sm", a: reg(async () => { await api("/br/agency", { action: "remove", id: i.id }); ag.items = null; renderShell(); }) })}</div>` : ""}</article>`).join("") || `<p class="hint">Nothing here yet.</p>`}</div>
+  ${canEdit() ? `<form class="panel v21-card" data-sub="${reg(async () => { ag.busy = true; ag.error = ""; try { await api("/br/agency", { id: ag.editing, library: ag.library, title: ag.title, body: ag.body }); ag.title = ""; ag.body = ""; ag.editing = null; ag.items = null; toast.success("Saved as a draft"); } catch (e) { ag.error = e.message; } finally { ag.busy = false; renderShell(); } })}"><h3>${ag.editing ? "Edit item" : "New item"}</h3><div class="form-field"><label for="ag-title">Title</label>${input({ id: "ag-title", value: ag.title, inp: reg((v) => (ag.title = v)) })}</div><div class="form-field"><label for="ag-body">Text</label>${textarea({ id: "ag-body", value: ag.body, rows: 6, inp: reg((v) => (ag.body = v)) })}</div>${btn(ag.busy ? "Saving…" : "Save draft", { type: "submit", disabled: ag.busy })}</form>` : ""}`;
+}
+function viewSkills() {
+  if (skState.skills === null) { skState.skills = false; api("/br/skills").then((d) => { skState.skills = d.skills || []; if (!skState.slug && skState.skills[0]) { skState.slug = skState.skills[0].slug; const v = skState.skills[0].versions.at(-1); skState.body = v?.body || ""; } renderShell(); }).catch((e) => { skState.error = e.message; skState.skills = []; renderShell(); }); }
+  if (skState.skills === false) return `<p class="hint">Loading skills…</p>`;
+  const skill = skState.skills.find((s) => s.slug === skState.slug) || skState.skills[0];
+  const live = skill?.versions.find((v) => v.version === skill.liveVersion);
+  const draft = skill?.versions.filter((v) => v.status === "draft" || v.status === "in_review").at(-1);
+  return `<div class="bundle-head"><div><h2>Skills</h2><p>Step-by-step instructions the bots load. Only an approved version is served, and it cannot be edited afterwards.</p></div></div>
+  ${skState.error ? `<p class="error-text">${esc(skState.error)}</p>` : ""}
+  <div class="v21-split"><div class="v21-list">${skState.skills.map((s) => `<button class="panel v21-card ${s.slug === skill?.slug ? "active" : ""}" data-a="${reg(() => { skState.slug = s.slug; const v = s.versions.filter((x) => x.status !== "retired").at(-1) || s.versions.at(-1); skState.body = v?.body || ""; renderShell(); })}"><b>${esc(s.name)}</b><small>${esc(s.usedBy)} · ${s.liveVersion ? "live v" + s.liveVersion : "no live version"}</small></button>`).join("")}</div>
+  ${skill ? `<div class="panel v21-card"><h3>${esc(skill.name)}</h3><p class="hint">${live ? "Live version " + live.version : "Nothing is live yet."}</p>
+  ${canEdit() ? `<div class="form-field"><label for="sk-body">Draft</label>${textarea({ id: "sk-body", value: skState.body, rows: 16, inp: reg((v) => (skState.body = v)) })}</div><div class="form-field"><label for="sk-note">What changed</label>${input({ id: "sk-note", value: skState.note, inp: reg((v) => (skState.note = v)) })}</div><div class="v21-actions">${btn("Save draft", { a: reg(async () => { await api("/br/skills", { slug: skill.slug, body: skState.body, changeNote: skState.note }); skState.skills = null; toast.success("Draft saved"); renderShell(); }) })}${draft ? btn("Approve as reviewer", { variant: "outline", a: reg(async () => { await api("/br/skills", { action: "review", versionId: draft.id, decision: "approve" }); skState.skills = null; renderShell(); }) }) : ""}${st.me?.isAdmin && draft ? btn("Publish", { a: reg(async () => { await api("/br/skills", { action: "publish", versionId: draft.id, onBehalf: true, comment: "Approved in Brandroom" }); skState.skills = null; toast.success("Published"); renderShell(); }) }) : ""}${st.me?.isAdmin && live ? skill.versions.filter((v) => v.status === "retired").slice(-1).map((v) => btn("Roll back to v" + v.version, { variant: "ghost", a: reg(async () => { await api("/br/skills", { action: "rollback", versionId: v.id }); skState.skills = null; renderShell(); }) })).join("") : ""}</div>` : `<pre class="v21-body">${esc(live?.body || "")}</pre>`}
+  </div>` : ""}</div>`;
+}
+function viewOnboarding() {
+  if (!canEdit()) return empty("lock", "Heads run onboarding", "Staff can read the libraries once a head has approved them.");
+  if (ob.sessions === null) { ob.sessions = false; api("/br/onboarding").then((d) => { ob.sessions = d.sessions || []; ob.current = ob.sessions.find((s) => s.status !== "completed") || null; renderShell(); }).catch((e) => { ob.error = e.message; ob.sessions = []; renderShell(); }); }
+  if (ob.sessions === false) return `<p class="hint">Loading…</p>`;
+  const s = ob.current;
+  if (!s) return `<div class="bundle-head"><div><h2>Onboarding interview</h2><p>Drafts a new client from its website and your answers. Nothing is saved to the client until you approve it.</p></div></div>
+    ${ob.error ? `<p class="error-text">${esc(ob.error)}</p>` : ""}
+    <form class="panel v21-card" data-sub="${reg(async () => { ob.busy = true; ob.error = ""; try { const d = await api("/br/onboarding", { businessName: ob.name, website: ob.website, instagram: ob.instagram }); ob.current = d.session; ob.sessions = null; } catch (e) { ob.error = e.message; } finally { ob.busy = false; renderShell(); } })}">
+    <div class="form-field"><label for="ob-name">Business name</label>${input({ id: "ob-name", value: ob.name, inp: reg((v) => (ob.name = v)) })}</div>
+    <div class="form-field"><label for="ob-web">Website</label>${input({ id: "ob-web", value: ob.website, placeholder: "example.com", inp: reg((v) => (ob.website = v)) })}</div>
+    <div class="form-field"><label for="ob-ig">Instagram handle</label>${input({ id: "ob-ig", value: ob.instagram, placeholder: "brandname", inp: reg((v) => (ob.instagram = v)) })}</div>
+    ${btn(ob.busy ? "Reading the public page…" : "Start", { type: "submit", disabled: ob.busy })}</form>`;
+  const q = s.question;
+  return `<div class="bundle-head"><div><h2>${esc(s.businessName)}</h2><p>${s.businessType ? esc(s.businessType) + " · " : ""}${s.status === "interviewing" ? (s.remaining + " questions left, at most") : "Review the drafts. Nothing is live until you apply them."}</p></div></div>
+  ${q ? `<form class="panel interview" data-sub="${reg(async () => { const d = await api("/br/onboarding", { action: "answer", id: s.id, text: ob.answer }); ob.current = d.session; ob.answer = ""; renderShell(); })}"><div class="interview-kicker"><span>Question ${pad2(s.questionIndex + 1)}</span><span>${esc(q.why)}</span></div><p class="interview-why">Why we ask · ${esc(q.why)}</p><div class="interview-ask"><h2>${esc(q.label)}</h2></div>${textarea({ id: "ob-answer", value: ob.answer, rows: 5, placeholder: "Type the answer…", inp: reg((v) => (ob.answer = v)) })}<div class="interview-actions"><span></span><div>${btn("Skip", { variant: "ghost", a: reg(async () => { const d = await api("/br/onboarding", { action: "answer", id: s.id, skip: true }); ob.current = d.session; renderShell(); }) })}${btn("Next question", { type: "submit" })}</div></div></form>` : ""}
+  <div class="v21-list">${(s.drafts || []).map((d) => `<article class="panel v21-card"><div class="v21-card-top">${pill(d.status, d.status === "rejected" ? "rejected" : "ready")}<small>${esc(d.source)} · ${esc(d.confidence)}</small></div><b>${esc(d.field)}</b><p class="v21-body">${esc(d.value)}</p>${d.status !== "rejected" ? `<div class="v21-actions">${btn(d.status === "pending" ? "Approve" : "Approved", { size: "sm", a: reg(async () => { const r = await api("/br/onboarding", { action: "draft", id: s.id, draftId: d.id, status: "approved" }); ob.current = r.session; renderShell(); }) })}${btn("Reject", { size: "sm", variant: "ghost", a: reg(async () => { const r = await api("/br/onboarding", { action: "draft", id: s.id, draftId: d.id, status: "rejected" }); ob.current = r.session; renderShell(); }) })}</div>` : ""}</article>`).join("")}</div>
+  ${btn("Apply approved drafts", { disabled: ob.busy, a: reg(async () => { ob.busy = true; try { const r = await onboardApply(s.id); toast.success("Client updated"); go("client", r.client.id); } catch (e) { ob.error = e.message; toast.error(e.message); } finally { ob.busy = false; } }) })}
+  ${ob.error ? `<p class="error-text">${esc(ob.error)}</p>` : ""}`;
+}
+async function onboardApply(id) { const r = await api("/br/onboarding", { action: "apply", id }); await load(); ob.sessions = null; ob.current = null; return r; }
+function viewKeys() {
+  if (!st.me?.isAdmin) return empty("lock", "Admins manage bot keys", "Each bot gets its own key. The full key is shown once.");
+  if (ky.keys === null) { ky.keys = false; api("/br/keys").then((d) => { ky.keys = d.keys || []; ky.scopeList = d.scopes || []; renderShell(); }).catch((e) => { ky.error = e.message; ky.keys = []; renderShell(); }); }
+  if (ky.keys === false) return `<p class="hint">Loading keys…</p>`;
+  const scopes = (ky.scopeList || []).concat(SKILL_SCOPES.map((s) => "skill:" + s));
+  return `<div class="bundle-head"><div><h2>Bot keys</h2><p>One read-only key per bot. Copy it into that bot’s hosting settings. It is not shown again.</p></div></div>
+  ${ky.revealed ? `<p class="panel v21-card"><b>Copy this key now.</b><br><code>${esc(ky.revealed)}</code></p>` : ""}
+  ${ky.error ? `<p class="error-text">${esc(ky.error)}</p>` : ""}
+  <div class="v21-list">${ky.keys.map((k) => `<article class="panel v21-card"><b>${esc(k.name)}</b> <code>${esc(k.prefix)}…</code> ${pill(k.active ? "Active" : "Revoked", k.active ? "ready" : "rejected")}<p class="hint">${esc((k.scopes || []).join(", "))}${k.lastUsedAt ? " · last used " + dm(k.lastUsedAt) : ""}</p>${k.active ? btn("Revoke", { size: "sm", variant: "outline", a: reg(async () => { await api("/br/keys", { action: "revoke", id: k.id }); ky.keys = null; renderShell(); }) }) : ""}</article>`).join("") || `<p class="hint">No bot keys yet. Tools named in KB_API_KEYS still work.</p>`}</div>
+  <form class="panel v21-card" data-sub="${reg(async () => { ky.busy = true; ky.error = ""; try { const picked = scopes.filter((s) => ky.picked[s]); const d = await api("/br/keys", { name: ky.name, scopes: picked, days: 365 }); ky.revealed = d.key; ky.name = ""; ky.keys = null; } catch (e) { ky.error = e.message; } finally { ky.busy = false; renderShell(); } })}">
+  <div class="form-field"><label for="ky-name">Key name</label>${input({ id: "ky-name", value: ky.name, placeholder: "Quality Check Bot", inp: reg((v) => (ky.name = v)) })}</div>
+  <div class="scope-grid">${scopes.map((s) => `<label class="scope-item"><input type="checkbox" ${ky.picked[s] ? "checked" : ""} data-a="${reg(() => { ky.picked[s] = !ky.picked[s]; renderShell(); })}"> ${esc(s)}</label>`).join("")}</div>
+  ${btn(ky.busy ? "Creating…" : "Create key", { type: "submit", disabled: ky.busy })}</form>`;
 }
 
 /* ================= start ================= */

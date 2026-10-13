@@ -113,3 +113,151 @@ create table if not exists login_attempts (
   window_start timestamptz not null default now()
 );
 alter table login_attempts enable row level security;
+
+-- v2.1: client libraries, agency libraries, skills, bot keys, onboarding.
+-- Safe to run again. Nothing here removes existing brand data.
+
+alter table refs add column if not exists verdict text not null default '';
+alter table refs add column if not exists why text not null default '';
+alter table refs add column if not exists onedrive_url text not null default '';
+alter table refs add column if not exists platform text not null default '';
+alter table refs add column if not exists posted_on date;
+
+create table if not exists agency_items (
+  id           bigserial primary key,
+  library      text not null check (library in ('qc','template','sop','media')),
+  title        text not null,
+  body         text not null default '',
+  meta         jsonb not null default '{}'::jsonb,
+  status       text not null default 'draft' check (status in ('draft','approved')),
+  approved_by  bigint references users(id) on delete set null,
+  approved_at  timestamptz,
+  updated_by   bigint references users(id) on delete set null,
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+create index if not exists agency_items_library_idx on agency_items(library, status);
+alter table agency_items enable row level security;
+
+create table if not exists skills (
+  id               bigserial primary key,
+  slug             text not null unique check (slug ~ '^[a-z0-9-]+$'),
+  name             text not null,
+  category         text not null default '',
+  description      text not null default '',
+  used_by          text not null default '',
+  live_version_id  bigint,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now()
+);
+alter table skills enable row level security;
+
+create table if not exists skill_versions (
+  id            bigserial primary key,
+  skill_id      bigint not null references skills(id) on delete cascade,
+  version       integer not null check (version > 0),
+  body_md       text not null,
+  change_note   text not null default '',
+  status        text not null default 'draft' check (status in ('draft','in_review','approved','retired')),
+  content_hash  text not null default '',
+  drafted_by    bigint references users(id) on delete set null,
+  approved_by   bigint references users(id) on delete set null,
+  approved_at   timestamptz,
+  created_at    timestamptz not null default now(),
+  unique (skill_id, version)
+);
+create index if not exists skill_versions_skill_idx on skill_versions(skill_id, version desc);
+alter table skill_versions enable row level security;
+
+create table if not exists skill_reviews (
+  id          bigserial primary key,
+  version_id  bigint not null references skill_versions(id) on delete cascade,
+  user_id     bigint references users(id) on delete set null,
+  decision    text not null check (decision in ('approve','request_changes')),
+  comment     text not null default '',
+  created_at  timestamptz not null default now()
+);
+alter table skill_reviews enable row level security;
+
+create table if not exists api_keys (
+  id                  bigserial primary key,
+  name                text not null,
+  key_prefix          text not null,
+  key_hash            text not null unique,
+  scopes              text[] not null default '{}',
+  all_clients         boolean not null default true,
+  rate_limit_per_min  integer not null default 60 check (rate_limit_per_min between 1 and 600),
+  expires_at          timestamptz,
+  active              boolean not null default true,
+  revoked_at          timestamptz,
+  last_used_at        timestamptz,
+  created_by          bigint references users(id) on delete set null,
+  created_at          timestamptz not null default now()
+);
+alter table api_keys enable row level security;
+
+create table if not exists api_access_log (
+  id           bigserial primary key,
+  api_key_id   bigint references api_keys(id) on delete set null,
+  key_prefix   text not null default '',
+  endpoint     text not null,
+  client_slug  text,
+  status_code  integer not null,
+  error        text,
+  ip           text,
+  created_at   timestamptz not null default now()
+);
+create index if not exists api_access_log_key_idx on api_access_log(api_key_id, created_at desc);
+alter table api_access_log enable row level security;
+
+create table if not exists alias_suggestions (
+  id          bigserial primary key,
+  client_id   bigint not null references clients(id) on delete cascade,
+  suggestion  text not null,
+  source      text not null default 'ocr',
+  status      text not null default 'pending' check (status in ('pending','accepted','rejected')),
+  decided_by  bigint references users(id) on delete set null,
+  created_at  timestamptz not null default now(),
+  unique (client_id, suggestion)
+);
+alter table alias_suggestions enable row level security;
+
+create table if not exists settings (
+  key    text primary key,
+  value  jsonb not null
+);
+alter table settings enable row level security;
+insert into settings(key, value) values ('ai_monthly_cap_usd', '25')
+on conflict (key) do nothing;
+
+create table if not exists ai_usage_log (
+  id             bigserial primary key,
+  api_key_id     bigint references api_keys(id) on delete set null,
+  client_slug    text,
+  model          text not null default '',
+  purpose        text not null default '',
+  skill_slug     text,
+  skill_version  integer,
+  status         text not null default 'reserved' check (status in ('reserved','done','failed')),
+  est_cost_usd   numeric(12,5) not null default 0,
+  cost_usd       numeric(12,5),
+  created_at     timestamptz not null default now(),
+  completed_at   timestamptz
+);
+alter table ai_usage_log enable row level security;
+
+create table if not exists onboarding_sessions (
+  id             bigserial primary key,
+  client_id      bigint references clients(id) on delete set null,
+  business_name  text not null,
+  website        text not null default '',
+  instagram      text not null default '',
+  business_type  text not null default '',
+  status         text not null default 'interviewing' check (status in ('interviewing','reviewing','completed','abandoned')),
+  question_index integer not null default 0,
+  drafts         jsonb not null default '[]'::jsonb,
+  started_by     bigint references users(id) on delete set null,
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now()
+);
+alter table onboarding_sessions enable row level security;

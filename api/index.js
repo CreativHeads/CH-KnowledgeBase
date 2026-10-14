@@ -79,6 +79,20 @@ route("POST", "/api/br/workspace", async ({ req, user }) => {
   }
 });
 
+route("POST", "/api/br/clients/:id/delete", async ({ req, user, p }) => {
+  auth.needAdmin(user);
+  const b = await readBody(req);
+  const c = await ws.clientOr404(p.id);
+  if (String(b.confirm || "").trim().toLowerCase() !== c.name.trim().toLowerCase())
+    throw new HttpError(400, "Type the client name exactly to delete it.");
+  const files = await all(
+    "SELECT path FROM refs WHERE client_id = $1 UNION ALL SELECT path FROM documents WHERE client_id = $1 AND path IS NOT NULL", [c.id]);
+  await query("DELETE FROM clients WHERE id = $1", [c.id]);
+  for (const f of files) if (f.path) await storage.remove(f.path);
+  await ws.logActivity(user, null, `Deleted the client ${c.name}, with ${files.length} stored ${files.length === 1 ? "file" : "files"}.`);
+  return { ok: true };
+});
+
 /* ---------- reference images ---------- */
 route("POST", "/api/br/media", async ({ req, user }) => {
   auth.needEditor(user);

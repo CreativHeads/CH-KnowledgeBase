@@ -180,3 +180,16 @@ body{background:var(--background)}
   .scope-item input[type=checkbox]{width:18px;height:18px}
   .knowledge-block .section-title .text-button,.brand-sidecard .text-button{padding:10px 12px;margin:-10px -12px}
 }
+
+/* client delete */
+.client-danger{display:flex;flex-direction:column;gap:6px}
+.client-danger .archive-button{justify-content:flex-start}
+.delete-client{color:#b42318}
+.delete-client:hover{background:#fef3f2;color:#912018}
+.btn-danger,.btn-danger:hover{background:#d92d20;color:#fff}
+.btn-danger:hover{background:#b42318}
+.delete-list{font-size:14px;color:var(--muted-foreground,#555);margin:4px 0 14px}
+.delete-list ul{margin:6px 0 8px 18px;list-style:disc}
+.delete-list li{margin:2px 0}
+.delete-list+.form-field{display:grid;gap:6px;margin-bottom:14px}
+.delete-list+.form-field label{font-size:14px}

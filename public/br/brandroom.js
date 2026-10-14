@@ -679,7 +679,7 @@ async function saveReview(keep) {
   ed.messages.push({ role: "user", text: chosen.length ? `Saved ${chosen.length} ${chosen.length === 1 ? "detail" : "details"} from the website.` : "Discard the website details." });
   const asked = new Set(ed.messages.filter((m) => m.role === "user" && m.key).map((m) => m.key));
   let next = pickNext(a, asked, "", true);
-  if (next && st.cfg?.ai) { ed.thinking = true; renderShell(); next = await aiAsk(a, next, ""); ed.thinking = false; }
+  if (next && st.cfg?.ai) { ed.thinking = true; renderShell(); next = await aiAsk(a, next, "", asked, ""); ed.thinking = false; }
   ed.pending = next;
   ed.qi = next ? Math.max(0, editorQuestions().findIndex((q) => q.key === next.key)) : ed.qi;
   ed.messages.push({ role: "bot", text: next ? `${chosen.length ? "Saved. Now the things the website didn't say.\n\n" : ""}${next.ask}` : `That covers the brand knowledge for ${a.name}.`, key: next?.key });
@@ -690,14 +690,15 @@ async function saveReview(keep) {
   catch (e) { ed.error = e.message; ed.dirty = true; }
   finally { ed.saving = false; renderShell(); }
 }
-async function aiAsk(a, q, last) {
+async function aiAsk(a, q, last, asked, answered) {
   if (!st.cfg?.ai || !q || q.suggest) return q;
-  const base = editorQuestions().find((x) => x.key === q.key) || q;
   const known = {};
   for (const [k, v] of Object.entries(a.fields || {})) if (String(v || "").trim() && !/internal|competitor|locked/i.test(k)) known[k] = String(v).slice(0, 400);
+  const open = editorQuestions().filter((x) => !asked.has(x.key) && !String(a.fields[x.key] || "").trim()).map((x) => ({ field: x.key, ask: x.ask }));
   try {
-    const r = await api("/br/onboarding", { action: "ask", field: q.key, base: base.ask, why: base.why || "", last: last || "", name: a.name, businessType: a.fields?.businessType || "", known });
-    return r.ai && r.ask ? { ...q, ask: r.ask } : q;
+    const r = await api("/br/onboarding", { action: "ask", open, answered: answered || "", last: last || "", name: a.name, businessType: a.fields?.businessType || "", known });
+    const match = r.ai && editorQuestions().find((x) => x.key === r.field);
+    return match && !asked.has(match.key) ? { ...match, ask: r.ask } : q;
   } catch { return q; }
 }
 function startQuestions(a, lead) {
@@ -751,7 +752,7 @@ function editorQuestions() {
   }));
 }
 function viewEditor(c) {
-  if (ed.forId !== c.id || !ed.draft) { ed.forId = c.id; ed.draft = JSON.parse(JSON.stringify(c)); ed.dirty = false; ed.error = ""; ed.qi = null; ed.messages = null; ed.pending = null; ed.reply = ""; ed.intake = null; ed.queue = []; ed.review = null; ed.thinking = false; }
+  if (ed.forId !== c.id || !ed.draft) { ed.forId = c.id; ed.draft = JSON.parse(JSON.stringify(c)); ed.dirty = false; ed.error = ""; ed.qi = null; ed.messages = null; ed.pending = null; ed.reply = ""; ed.intake = null; ed.queue = []; ed.review = null; ed.thinking = false; ed.aiOpened = false; }
   const a = ed.draft;
   if (!ed.messages) {
     if (!String(a.fields.website || "").trim() && canEdit()) {
@@ -759,6 +760,18 @@ function viewEditor(c) {
       ed.qi = 0; openIntake(a, false);
     } else {
       const built = buildChat(a); ed.messages = built.messages; ed.pending = built.pending; ed.qi = built.index;
+      if (st.cfg?.ai && ed.pending && !ed.aiOpened) {
+        ed.aiOpened = true;
+        const askedNow = new Set(ed.messages.filter((m) => m.role === "user" && m.key).map((m) => m.key));
+        const last = [...ed.messages].reverse().find((m) => m.role === "user" && m.key);
+        aiAsk(a, ed.pending, last?.text || "", askedNow, last?.key || "").then((q) => {
+          if (!q?.ask || !ed.pending || (q.key === ed.pending.key && q.ask === ed.pending.ask)) return;
+          if (ed.messages.at(-1)?.role === "bot") {
+            ed.messages[ed.messages.length - 1] = { role: "bot", text: q.ask, key: q.key };
+            ed.pending = q; ed.qi = Math.max(0, editorQuestions().findIndex((x) => x.key === q.key)); renderShell();
+          }
+        });
+      }
     }
   }
   const asked = () => new Set(ed.messages.filter((m) => m.role === "user" && m.key).map((m) => m.key));
@@ -789,7 +802,7 @@ function viewEditor(c) {
     let picked = nextConfirm(a) || (suggest ? pickNext(a, asked(), "", true) : pickNext(a, asked(), value));
     if (picked && !picked.suggest && st.cfg?.ai) {
       ed.thinking = true; renderShell();
-      picked = await aiAsk(a, picked, suggest ? "" : value);
+      picked = await aiAsk(a, picked, suggest ? "" : value, asked(), suggest ? "" : key);
       ed.thinking = false;
     }
     const next = handover(ed.pending, picked);
@@ -801,11 +814,18 @@ function viewEditor(c) {
     catch (e) { ed.error = e.message; ed.dirty = true; }
     finally { ed.saving = false; renderShell(); }
   };
-  const skip = () => {
-    if (!ed.pending || ed.saving) return;
+  const skip = async () => {
+    if (!ed.pending || ed.saving || ed.thinking) return;
     const key = ed.pending.key;
     ed.messages.push({ role: "user", text: "Skip this one.", key: ed.pending.suggest ? undefined : key });
-    const next = handover(ed.pending, nextConfirm(a) || pickNext(a, asked(), "", true));
+    let picked = nextConfirm(a) || pickNext(a, asked(), "", true);
+    if (picked && !picked.suggest && st.cfg?.ai) {
+      ed.thinking = true; renderShell();
+      const last = [...ed.messages].reverse().find((m) => m.role === "user" && m.key && !/^skip this one\.?$/i.test(m.text));
+      picked = await aiAsk(a, picked, last?.text || "", asked(), last?.key || "");
+      ed.thinking = false;
+    }
+    const next = handover(ed.pending, picked);
     ed.pending = next;
     ed.qi = next ? editorQuestions().findIndex((q) => q.key === next.key) : ed.qi;
     ed.messages.push({ role: "bot", text: next ? next.ask : "That covers the brand knowledge.", key: next?.key });

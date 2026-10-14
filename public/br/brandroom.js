@@ -3,6 +3,7 @@
 
 /* ================= icons (lucide) ================= */
 const ICONS = {"archive":"<rect width=\"20\" height=\"5\" x=\"2\" y=\"3\" rx=\"1\"/><path d=\"M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8\"/><path d=\"M10 12h4\"/>","book-open":"<path d=\"M12 5v16\"/><path d=\"M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z\"/>","braces":"<path d=\"M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1\"/><path d=\"M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1\"/>","check-check":"<path d=\"M18 6 7 17l-5-5\"/><path d=\"m22 10-7.5 7.5L13 16\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>","chevron-down":"<path d=\"m6 9 6 6 6-6\"/>","chevron-left":"<path d=\"m15 18-6-6 6-6\"/>","chevron-right":"<path d=\"m9 18 6-6-6-6\"/>","chevron-up":"<path d=\"m18 15-6-6-6 6\"/>","chevrons-up-down":"<path d=\"m7 15 5 5 5-5\"/><path d=\"m7 9 5-5 5 5\"/>","circle-alert":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\"/><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\"/>","circle-check":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/>","clock-3":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 6v6h4\"/>","copy":"<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>","file-text":"<path d=\"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z\"/><path d=\"M14 2v5a1 1 0 0 0 1 1h5\"/><path d=\"M10 9H8\"/><path d=\"M16 13H8\"/><path d=\"M16 17H8\"/>","image":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" ry=\"2\"/><circle cx=\"9\" cy=\"9\" r=\"2\"/><path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\"/>","info":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 16v-4\"/><path d=\"M12 8h.01\"/>","layers":"<path d=\"M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z\"/><path d=\"M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12\"/><path d=\"M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17\"/>","layout-grid":"<rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\"/>","list":"<path d=\"M3 5h.01\"/><path d=\"M3 12h.01\"/><path d=\"M3 19h.01\"/><path d=\"M8 5h13\"/><path d=\"M8 12h13\"/><path d=\"M8 19h13\"/>","loader-circle":"<path d=\"M21 12a9 9 0 1 1-6.219-8.56\"/>","lock":"<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/>","message-square":"<path d=\"M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z\"/>","panel-left":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M9 3v18\"/>","plug":"<path d=\"M12 22v-5\"/><path d=\"M15 8V2\"/><path d=\"M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z\"/><path d=\"M9 8V2\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","refresh-cw":"<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"/><path d=\"M8 16H3v5\"/>","scissors":"<circle cx=\"6\" cy=\"6\" r=\"3\"/><path d=\"M8.12 8.12 12 12\"/><path d=\"M20 4 8.12 15.88\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><path d=\"M14.8 14.8 20 20\"/>","search":"<path d=\"m21 21-4.34-4.34\"/><circle cx=\"11\" cy=\"11\" r=\"8\"/>","settings-2":"<path d=\"M14 17H5\"/><path d=\"M19 7h-9\"/><circle cx=\"17\" cy=\"17\" r=\"3\"/><circle cx=\"7\" cy=\"7\" r=\"3\"/>","shield-check":"<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/>","sparkles":"<path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\"/><path d=\"M20 2v4\"/><path d=\"M22 4h-4\"/><circle cx=\"4\" cy=\"20\" r=\"2\"/>","star":"<path d=\"M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z\"/>","tag":"<path d=\"M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z\"/><circle cx=\"7.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/>","upload":"<path d=\"M12 3v12\"/><path d=\"m17 8-5-5-5 5\"/><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/>","users":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><path d=\"M16 3.128a4 4 0 0 1 0 7.744\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/>","video":"<path d=\"m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5\"/><rect x=\"2\" y=\"6\" width=\"14\" height=\"12\" rx=\"2\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","zap":"<path d=\"M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z\"/>",
+  "globe": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"/><path d=\"M2 12h20\"/>",
   "log-out": "<path d=\"m16 17 5-5-5-5\"/><path d=\"M21 12H9\"/><path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"/>",
   "external-link": "<path d=\"M15 3h6v6\"/><path d=\"M10 14 21 3\"/><path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"/>"};
 const ic = (name, { size = 24, cls = "", fill = "none" } = {}) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fill}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-${name}${cls ? " " + cls : ""}" aria-hidden="true">${ICONS[name] || ""}</svg>`;
@@ -173,7 +174,7 @@ const spin = (size) => ic("loader-circle", { size: size || 24, cls: "spin" });
 const st = { me: null, ws: null, cfg: {}, pub: null, err: "", view: "clients", clientId: null, section: "voice", dialog: null, mobileOpen: false };
 const lib = { q: "", tab: "All clients", sort: "Recently updated", mode: "grid" };
 const det = { ctx: null, ctxKey: "", ctxLoading: null, tab: "overview", platform: "Instagram", language: "English", forId: null };
-const ed = { draft: null, dirty: false, saving: false, error: "", forId: null, qi: null, focusQ: false };
+const ed = { draft: null, dirty: false, saving: false, error: "", forId: null, qi: null, focusQ: false, intake: null, queue: [] };
 const exs = { tab: "All examples", client: "all", q: "", busy: null };
 const sets = { tab: "connections" };
 const refsState = { kind: "Logo", description: "", verdict: "", why: "", onedrive: "", platform: "Instagram", file: null, busy: false, error: "" };
@@ -485,7 +486,7 @@ function viewClient(c) {
     if (json === null) loadContext(c);
     content = `<div class="bundle-head"><div><h2>What the bot can see</h2><p>Internal notes, locked fields and team-only documents are left out. This is exactly the context used for captions.</p></div><div class="inline-options">${select(det.platform, PLATFORMS, (v) => { det.platform = v; det.ctx = null; renderShell(); }, { label: "Context platform" })}${select(det.language, LANGUAGES, (v) => { det.language = v; det.ctx = null; renderShell(); }, { label: "Context language" })}${btn(ic("copy") + "Copy JSON", { variant: "outline", disabled: !json, a: reg(() => copyText(json)) })}</div></div><pre class="bundle-json">${json === null ? "Loading the writing context…" : esc(json)}</pre>`; }
   return `<button class="back-button" data-a="${reg(() => go("clients"))}">${ic("chevron-left", { size: 15 })}Client library</button>
-  <div class="client-detail-head">${mark(c, "large")}<div><div class="detail-name"><h1>${esc(c.name)}</h1>${pill(c.status === "archived" ? "Archived" : n >= 80 ? "Complete" : "In progress", n >= 80 ? "ready" : "draft")}</div><p>${esc(c.industry)} <span>·</span> ${esc(c.location || "Location not added")}</p></div><div class="head-actions">${canEdit() ? btn(ic("file-text") + "Edit brand", { variant: "outline", a: reg(() => editClient(c)) }) : ""}${btn(ic("sparkles") + "Try in caption studio", { disabled: c.status === "archived", a: reg(() => { studio.client = c.id; go("studio"); }) })}</div></div>
+  <div class="client-detail-head">${mark(c, "large")}<div><div class="detail-name"><h1>${esc(c.name)}</h1>${pill(c.status === "archived" ? "Archived" : n >= 80 ? "Complete" : "In progress", n >= 80 ? "ready" : "draft")}</div><p>${esc(c.industry)} <span>·</span> ${esc(c.location || "Location not added")}</p></div><div class="head-actions">${canEdit() ? btn(ic("file-text") + "Edit brand", { variant: "outline", a: reg(() => editClient(c)) }) : ""}${btn(ic("braces") + "Preview bot bundle", { a: reg(() => { det.tab = "bundle"; renderShell(); }) })}</div></div>
   <div class="client-meta"><span><span class="avatar tiny">${esc((c.lead || "?")[0])}</span>${esc(c.lead || "Unassigned")} · Account lead</span><span>${ic("clock-3", { size: 14 })}Updated ${dm(c.updatedAt)}</span><span class="detail-progress">Brand knowledge ${progress(n)}<b>${n}%</b></span></div>${libraryBars(c)}
   ${suggestionBox(c)}
   ${tabs(det.tab, [["overview", "Brand overview"], ["references", `Reference images <span class="tab-count">${refs.length}</span>`], ["documents", "Documents"], ["notes", "Team Notes"], ["assets", "Brand Assets"], ["bundle", `Writing context ${ic("braces", { size: 15 })}`]], (v) => { det.tab = v; renderShell(); }, { cls: "detail-tabs", content })}`;
@@ -599,15 +600,102 @@ function buildChat(client) {
   else messages.push({ role: "bot", text: `That covers the brand knowledge for ${client.name}.` });
   return { messages, pending: next, index: next ? qs.findIndex((q) => q.key === next.key) : 0 };
 }
+const FOUND_ORDER = ["about", "tagline", "phones", "handles", "address", "platforms", "colours", "audience", "products", "usps", "tone", "seasonal", "seoKeywords"];
+const FOUND_LABEL = { about: "What they do", tagline: "Their line", phones: "Phone numbers", handles: "Social accounts", address: "Address", platforms: "Where they post", colours: "Brand colour", audience: "The customer", products: "What they offer", usps: "What to remember", tone: "How they sound", seasonal: "Seasons", seoKeywords: "Search phrases" };
+const YES = /^(y|yes|yeah|yep|ok|okay|correct|right|true|that'?s right|looks good|haan|athe|sheri)\b/i;
+const NO = /^(n|no|nope|wrong|not right|skip|incorrect)\b\.?$/i;
+function confirmQuestion(f) {
+  const label = FOUND_LABEL[f.key] || f.key;
+  const q = INTERVIEW.find((x) => x.key === f.key);
+  const ask = `From the website. ${label}:\n${f.value}\n\nIs this right? Reply “yes”, or type the correct version.`;
+  return { key: f.key, topic: q?.topic || label, ask, suggest: f.value, section: SECTIONS.find((s) => s.id === q?.section) || SECTIONS[0], short: false, label };
+}
+const handover = (prev, next) => (prev?.suggest && next && !next.suggest ? { ...next, ask: `That's everything from the website. Now the things it didn't say.\n\n${next.ask}` } : next);
+function nextConfirm(a) {
+  while (ed.queue.length) {
+    const f = ed.queue.shift();
+    if (!String(a.fields[f.key] || "").trim()) return confirmQuestion(f);
+  }
+  return null;
+}
+function openIntake(c, render = true) {
+  const a = ed.draft || c;
+  ed.intake = { name: a.name || "", website: a.fields.website || "", instagram: (String(a.fields.handles || "").match(/instagram:\s*@?([\w.]+)/i) || [])[1] || "", busy: false, error: "" };
+  ed.messages = (ed.messages || []).filter((m) => m.role !== "intake");
+  ed.messages.push({ role: "bot", text: `Let's start with the basics: the business name, the website and the Instagram handle. I'll read the website first, so I only ask about what it doesn't already say.` });
+  ed.messages.push({ role: "intake" });
+  ed.pending = null;
+  if (render) renderShell();
+}
+function intakeBubble() {
+  const I = ed.intake; if (!I) return "";
+  const toggle = () => { const b = document.getElementById("intake-read"); if (b) b.disabled = I.busy || !I.website.trim() || !I.name.trim(); };
+  return `<form class="chat-msg bot intake-card" data-sub="${reg(() => runIntake())}"><span class="chat-who">Brandroom</span>
+  <div class="form-field"><label for="intake-name">Business name</label>${input({ id: "intake-name", value: I.name, placeholder: "e.g. White Stone Aligners", inp: reg((v) => { I.name = v; toggle(); }), attrs: 'maxlength="100"' + (I.busy ? " disabled" : "") })}</div>
+  <div class="form-field"><label for="intake-site">Website</label>${input({ id: "intake-site", value: I.website, placeholder: "example.com", inp: reg((v) => { I.website = v; toggle(); }), attrs: 'inputmode="url" autocomplete="url"' + (I.busy ? " disabled" : "") })}</div>
+  <div class="form-field"><label for="intake-ig">Instagram</label>${input({ id: "intake-ig", value: I.instagram, placeholder: "@handle", inp: reg((v) => { I.instagram = v; }), attrs: I.busy ? "disabled" : "" })}</div>
+  ${I.error ? `<p class="error-text" role="alert">${esc(I.error)}</p>` : ""}
+  <div class="intake-actions">${btn("Skip, just ask me", { variant: "ghost", disabled: I.busy, a: reg(() => skipIntake()) })}${btn((I.busy ? spin(15) + "Reading the website…" : ic("globe", { size: 15 }) + "Read website"), { type: "submit", disabled: I.busy || !I.website.trim() || !I.name.trim(), attrs: 'id="intake-read"' })}</div></form>`;
+}
+function startQuestions(a, lead) {
+  const asked = new Set(ed.messages.filter((m) => m.role === "user" && m.key).map((m) => m.key));
+  const next = nextConfirm(a) || pickNext(a, asked, "", true);
+  ed.pending = next;
+  ed.qi = next ? Math.max(0, editorQuestions().findIndex((q) => q.key === next.key)) : ed.qi;
+  if (lead) ed.messages.push({ role: "bot", text: lead });
+  ed.messages.push({ role: "bot", text: next ? next.ask : `That covers the brand knowledge for ${a.name}.`, key: next?.key });
+  ed.focusQ = true;
+}
+function skipIntake() {
+  const a = ed.draft; ed.intake = null;
+  ed.messages = ed.messages.filter((m) => m.role !== "intake");
+  startQuestions(a, "");
+  renderShell();
+}
+async function runIntake() {
+  const I = ed.intake, a = ed.draft; if (!I || I.busy || !a) return;
+  I.busy = true; I.error = ""; renderShell();
+  let r;
+  try { r = await api("/br/onboarding", { action: "scan", businessName: I.name.trim(), website: I.website.trim(), instagram: I.instagram.trim() }); }
+  catch (e) { I.busy = false; I.error = e.message + " Check the address, or skip and answer the questions."; renderShell(); return; }
+  ed.messages = ed.messages.filter((m) => m.role !== "intake");
+  ed.messages.push({ role: "user", text: [I.name.trim(), r.website, r.instagram ? "@" + r.instagram : ""].filter(Boolean).join("\n") });
+  if (I.name.trim() && I.name.trim() !== a.name) a.name = I.name.trim();
+  const hostOf = (v) => String(v || "").toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split(/[/?#]/)[0];
+  if (hostOf(a.fields.website) !== hostOf(r.website)) a.fields.website = r.website;
+  const hasHandles = String(a.fields.handles || "").trim();
+  if (r.instagram && hasHandles && !new RegExp("instagram:\\s*@?" + r.instagram.replace(/\./g, "\\."), "i").test(hasHandles))
+    a.fields.handles = `${hasHandles}\nInstagram: ${r.instagram}`;
+  if (r.businessType && !String(a.fields.businessType || "").trim()) a.fields.businessType = r.businessType;
+  const fresh = r.facts.filter((f) => !String(a.fields[f.key] || "").trim()).sort((x, y) => FOUND_ORDER.indexOf(x.key) - FOUND_ORDER.indexOf(y.key));
+  ed.queue = fresh;
+  const names = fresh.map((f) => (FOUND_LABEL[f.key] || f.key).toLowerCase());
+  const lead = fresh.length
+    ? `I read ${r.site} (${r.pages} ${r.pages === 1 ? "page" : "pages"}) and found ${names.length === 1 ? names[0] : names.slice(0, -1).join(", ") + " and " + names.at(-1)}. I'll check each one with you. Nothing from the website is saved until you say yes.`
+    : `I read ${r.site}, but it didn't say anything new I could use. Let's go through the questions.`;
+  ed.intake = null;
+  startQuestions(a, lead);
+  ed.saving = true; renderShell();
+  try { const s = await act({ action: "client.save", client: a }); await load(); ed.draft = JSON.parse(JSON.stringify(s.client)); ed.dirty = false; }
+  catch (e) { ed.error = e.message; ed.dirty = true; }
+  finally { ed.saving = false; renderShell(); }
+}
 function editorQuestions() {
   return INTERVIEW.filter((q) => canEdit() || (q.section !== "internal" && q.section !== "competitors")).map((q) => ({
     ...q, section: SECTIONS.find((s) => s.id === q.section) || SECTIONS[0], top: false, short: !!q.short, label: q.topic,
   }));
 }
 function viewEditor(c) {
-  if (ed.forId !== c.id || !ed.draft) { ed.forId = c.id; ed.draft = JSON.parse(JSON.stringify(c)); ed.dirty = false; ed.error = ""; ed.qi = null; ed.messages = null; ed.pending = null; ed.reply = ""; }
+  if (ed.forId !== c.id || !ed.draft) { ed.forId = c.id; ed.draft = JSON.parse(JSON.stringify(c)); ed.dirty = false; ed.error = ""; ed.qi = null; ed.messages = null; ed.pending = null; ed.reply = ""; ed.intake = null; ed.queue = []; }
   const a = ed.draft;
-  if (!ed.messages) { const built = buildChat(a); ed.messages = built.messages; ed.pending = built.pending; ed.qi = built.index; }
+  if (!ed.messages) {
+    if (!String(a.fields.website || "").trim() && canEdit()) {
+      ed.messages = [{ role: "bot", text: `I'll learn ${a.name} in this chat. Answer in your own words. The next question follows what you just said, until the brand knowledge is covered.` }];
+      ed.qi = 0; openIntake(a, false);
+    } else {
+      const built = buildChat(a); ed.messages = built.messages; ed.pending = built.pending; ed.qi = built.index;
+    }
+  }
   const asked = () => new Set(ed.messages.filter((m) => m.role === "user" && m.key).map((m) => m.key));
   const askTopic = (i) => {
     const q = editorQuestions()[i]; if (!q) return;
@@ -616,16 +704,26 @@ function viewEditor(c) {
     const ask = has ? `Want to change this? ${q.ask}` : q.ask;
     ed.pending = { ...q, ask }; ed.qi = i; ed.messages.push({ role: "bot", text: ask, key: q.key }); ed.focusQ = true; renderShell();
   };
-  const send = async () => {
-    const text = ed.reply.trim();
+  const send = async (forced) => {
+    const text = (typeof forced === "string" ? forced : ed.reply).trim();
     if (!text || !ed.pending || ed.saving) return;
     const key = ed.pending.key;
-    a.fields[key] = text;
-    ed.messages.push({ role: "user", text, key });
+    const suggest = ed.pending.suggest;
+    const rejected = suggest && NO.test(text);
+    const value = suggest && YES.test(text) ? suggest : text;
+    ed.messages.push({ role: "user", text, key: rejected ? undefined : key });
     ed.reply = "";
-    const next = pickNext(a, asked(), text);
+    if (rejected) {
+      const next = handover(ed.pending, nextConfirm(a) || pickNext(a, asked(), "", true));
+      ed.pending = next;
+      ed.qi = next ? Math.max(0, editorQuestions().findIndex((q) => q.key === next.key)) : ed.qi;
+      ed.messages.push({ role: "bot", text: next ? `Left out. ${next.ask}` : "That covers the brand knowledge.", key: next?.key });
+      ed.focusQ = true; renderShell(); return;
+    }
+    a.fields[key] = value;
+    const next = handover(ed.pending, nextConfirm(a) || (suggest ? pickNext(a, asked(), "", true) : pickNext(a, asked(), value)));
     ed.pending = next;
-    ed.qi = next ? editorQuestions().findIndex((q) => q.key === next.key) : ed.qi;
+    ed.qi = next ? Math.max(0, editorQuestions().findIndex((q) => q.key === next.key)) : ed.qi;
     ed.messages.push({ role: "bot", text: next ? next.ask : "That covers the brand knowledge. Your answers are saved.", key: next?.key });
     ed.saving = true; ed.focusQ = true; ed.error = ""; renderShell();
     try { const r = await act({ action: "client.save", client: a }); await load(); ed.draft = JSON.parse(JSON.stringify(r.client)); ed.dirty = false; }
@@ -635,8 +733,8 @@ function viewEditor(c) {
   const skip = () => {
     if (!ed.pending || ed.saving) return;
     const key = ed.pending.key;
-    ed.messages.push({ role: "user", text: "Skip this one.", key });
-    const next = pickNext(a, asked(), "");
+    ed.messages.push({ role: "user", text: "Skip this one.", key: ed.pending.suggest ? undefined : key });
+    const next = handover(ed.pending, nextConfirm(a) || pickNext(a, asked(), "", true));
     ed.pending = next;
     ed.qi = next ? editorQuestions().findIndex((q) => q.key === next.key) : ed.qi;
     ed.messages.push({ role: "bot", text: next ? next.ask : "That covers the brand knowledge.", key: next?.key });
@@ -648,13 +746,18 @@ function viewEditor(c) {
     if (box) box.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); box.form?.requestSubmit(); } });
     if (ed.focusQ && box) { ed.focusQ = false; box.focus(); }
   });
-  const log = ed.messages.map((m) => `<div class="chat-msg ${m.role}"><span class="chat-who">${m.role === "bot" ? "Brandroom" : "You"}</span>${esc(m.text)}</div>`).join("");
+  const log = ed.messages.map((m) => m.role === "intake" ? intakeBubble() : `<div class="chat-msg ${m.role}"><span class="chat-who">${m.role === "bot" ? "Brandroom" : "You"}</span>${esc(m.text)}</div>`).join("")
+    + (ed.intake?.busy ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} Reading the website. This takes a few seconds…</div>` : "");
+  const quick = ed.pending?.suggest ? `<div class="chat-quick">${btn(ic("check", { size: 14 }) + "Yes, that's right", { size: "sm", variant: "outline", disabled: ed.saving, a: reg(() => send("yes")) })}${btn("No, leave it out", { size: "sm", variant: "ghost", disabled: ed.saving, a: reg(() => send("no")) })}</div>` : "";
   return `<button class="back-button" data-a="${reg(() => (ed.dirty ? confirmLeave(() => { ed.dirty = false; ed.draft = null; ed.messages = null; go("client", c.id); }) : go("client", c.id)))}">${ic("chevron-left", { size: 15 })}Back to ${esc(c.name)}</button>
   ${pageHead("BRAND INTERVIEW", `Get to know ${esc(c.name)}.`, "A chat. Each answer leads to the next relevant question, until the brand knowledge is covered.", editorBadge())}
   <div class="editor-layout"><nav class="section-stepper" id="ed-stepper">${stepper(a, ed.pending?.key, askTopic)}</nav>
   <section class="editor-main panel chat-panel"><div id="chat-log" class="chat-log">${log}</div>
   ${ed.error ? `<p class="error-text" role="alert">${esc(ed.error)}</p>` : ""}
-  ${ed.pending ? `<form class="chat-compose" data-sub="${reg(send)}">${textarea({ id: "chat-reply", value: ed.reply, rows: 2, placeholder: "Type your answer…", inp: reg((v) => { ed.reply = v; const b = document.getElementById("chat-send"); if (b) b.disabled = ed.saving || !v.trim(); }) })}<div class="chat-actions">${btn("Skip", { variant: "ghost", a: reg(skip), disabled: ed.saving })}${btn(ed.saving ? "Saving…" : "Send", { type: "submit", disabled: ed.saving || !ed.reply.trim(), attrs: 'id="chat-send"' })}</div></form>` : `<p class="hint">The brand knowledge is covered. Choose a topic on the left to change an answer.</p>`}</section></div>`;
+  ${ed.intake ? `<p class="hint">Fill in the details above, or skip and answer the questions.</p>` : ""}
+  ${!ed.intake && canEdit() ? `<div class="chat-tools"><button type="button" class="text-button" data-a="${reg(() => openIntake(c))}">${ic("globe", { size: 14 })}${String(a.fields.website || "").trim() ? "Read the website again" : "Read a website"}</button></div>` : ""}
+  ${ed.intake ? "" : quick}
+  ${ed.intake ? "" : ed.pending ? `<form class="chat-compose" data-sub="${reg(send)}">${textarea({ id: "chat-reply", value: ed.reply, rows: 2, placeholder: ed.pending.suggest ? "Type “yes”, or the correct version…" : "Type your answer…", inp: reg((v) => { ed.reply = v; const b = document.getElementById("chat-send"); if (b) b.disabled = ed.saving || !v.trim(); }) })}<div class="chat-actions">${btn("Skip", { variant: "ghost", a: reg(skip), disabled: ed.saving })}${btn(ed.saving ? "Saving…" : "Send", { type: "submit", disabled: ed.saving || !ed.reply.trim(), attrs: 'id="chat-send"' })}</div></form>` : `<p class="hint">The brand knowledge is covered. Choose a topic on the left to change an answer.</p>`}</section></div>`;
 }
 const editorBadge = () => `<span id="ed-state" class="pill ${ed.dirty ? "draft" : "ready"}">${ed.dirty ? "Unsaved changes" : ic("check", { size: 13 }) + "All changes saved"}</span>`;
 function stepper(a, key, pick) {

@@ -242,6 +242,7 @@ route("POST", "/api/br/onboarding", async ({ req, user }) => {
   if (b.action === "answer") return { session: await onboard.answer(b, user) };
   if (b.action === "draft") return { session: await onboard.setDraft(b, user) };
   if (b.action === "apply") return onboard.apply(b, user);
+  if (b.action === "scan") return onboard.scanSite(b);
   return { session: await onboard.start(b, user) };
 });
 
@@ -264,7 +265,7 @@ module.exports = async (req, res) => {
     // The read-only knowledge API for other tools. It uses a key, not a browser session.
     await ensure();
     const q = Object.fromEntries(url.searchParams);
-    if (req.method === "GET" && /^\/api\/kb\/v1\/refs\/\d+$/.test(pathname)) return kbapi.sendRef(req, res, pathname, q);
+    if (req.method === "GET" && /^\/api\/kb\/v1\/refs\/\d+$/.test(pathname)) return await kbapi.sendRef(req, res, pathname, q);
     if (pathname === "/api/kb/v1" || pathname.startsWith("/api/kb/v1/")) {
       if (req.method === "POST" && pathname.startsWith("/api/kb/v1/bot/"))
         return json(res, 200, await kbapi.handlePost(pathname, await readBody(req), req));

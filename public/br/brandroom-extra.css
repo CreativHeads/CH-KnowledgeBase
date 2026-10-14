@@ -98,6 +98,19 @@ body{background:var(--background)}
 .chat-compose textarea{flex:1;min-width:0;min-height:48px;max-height:120px}
 .chat-actions{display:flex;gap:8px;align-items:center;flex:none}
 .chat-panel .hint{margin:8px 0 0;color:#7c8baa;font-size:13px}
+.intake-card{display:flex;flex-direction:column;gap:10px;width:min(100%,460px);max-width:min(100%,460px);white-space:normal}
+.intake-card .form-field{display:flex;flex-direction:column;gap:5px;margin:0}
+.intake-card input[data-slot=input]{height:38px}
+.intake-card label{font-size:12px;font-weight:600;color:#56627a}
+.intake-card input{background:#fff}
+.intake-card .error-text{margin:0;font-size:12.5px}
+.intake-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:2px}
+.intake-actions [data-slot=button]{gap:6px}
+.chat-msg .spin{vertical-align:-2px;margin-right:4px}
+.chat-tools{display:flex;justify-content:flex-start;padding:2px 0 8px}
+.chat-tools .text-button{display:inline-flex;align-items:center;gap:6px;font-size:12.5px}
+.chat-quick{display:flex;flex-wrap:wrap;gap:8px;padding:0 0 10px}
+.chat-quick [data-slot=button]{gap:6px}
 .section-stepper>button{align-items:center}
 .section-stepper>button>span.step-mark{margin-top:0}
 .section-stepper>button>span.step-name{width:auto;height:auto;min-width:0;flex:1;border:0;border-radius:0;background:none;display:block;place-items:unset;color:inherit;font-size:12.5px;line-height:1.35;font-weight:inherit}
@@ -114,6 +127,8 @@ body{background:var(--background)}
   .section-stepper>button>span.step-name{flex:none;white-space:nowrap}
   .chat-panel{height:auto;padding:12px}
   .chat-log{max-height:min(48vh,420px);flex:none}
+  .chat-log:has(.intake-card){max-height:none}
+  .intake-card{width:100%;max-width:100%}
   .chat-msg{max-width:92%}
   .chat-compose{flex-wrap:wrap}
   .chat-compose textarea{flex:1 1 100%}
@@ -161,4 +176,7 @@ body{background:var(--background)}
   .breadcrumbs strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:42vw}
   .v21-card,.panel{min-width:0}
   .scope-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .scope-item{min-height:40px;gap:10px}
+  .scope-item input[type=checkbox]{width:18px;height:18px}
+  .knowledge-block .section-title .text-button,.brand-sidecard .text-button{padding:10px 12px;margin:-10px -12px}
 }

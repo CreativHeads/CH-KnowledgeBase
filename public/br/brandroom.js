@@ -619,7 +619,7 @@ function buildChat(client) {
   else messages.push({ role: "bot", text: `That covers the brand knowledge for ${client.name}.` });
   return { messages, pending: next, index: next ? qs.findIndex((q) => q.key === next.key) : 0 };
 }
-const FOUND_ORDER = ["about", "tagline", "phones", "handles", "address", "platforms", "colours", "audience", "products", "usps", "tone", "seasonal", "seoKeywords"];
+const FOUND_ORDER = ["about", "tagline", "products", "offers", "audience", "personas", "usps", "messages", "tone", "adjectives", "wordsUse", "primaryLanguage", "cta", "phones", "handles", "address", "platforms", "colours", "keywords", "aliases", "seasonal", "seoKeywords", "hashtags", "compliance", "disclaimer"];
 const FOUND_LABEL = { about: "What they do", tagline: "Their line", phones: "Phone numbers", handles: "Social accounts", address: "Address", platforms: "Where they post", colours: "Brand colour", audience: "The customer", products: "What they offer", usps: "What to remember", tone: "How they sound", seasonal: "Seasons", seoKeywords: "Search phrases" };
 const YES = /^(y|yes|yeah|yep|ok|okay|correct|right|true|that'?s right|looks good|haan|athe|sheri)\b/i;
 const NO = /^(n|no|nope|wrong|not right|skip|incorrect)\b\.?$/i;
@@ -656,6 +656,50 @@ function intakeBubble() {
   ${I.error ? `<p class="error-text" role="alert">${esc(I.error)}</p>` : ""}
   <div class="intake-actions">${btn("Skip, just ask me", { variant: "ghost", disabled: I.busy, a: reg(() => skipIntake()) })}${btn((I.busy ? spin(15) + "Reading the website…" : ic("globe", { size: 15 }) + "Read website"), { type: "submit", disabled: I.busy || !I.website.trim() || !I.name.trim(), attrs: 'id="intake-read"' })}</div></form>`;
 }
+function fieldLabel(key) {
+  return FOUND_LABEL[key] || SECTIONS.flatMap((s) => s.fields).find((f) => f.key === key)?.label || INTERVIEW.find((q) => q.key === key)?.topic || key;
+}
+function reviewBubble() {
+  const R = ed.review; if (!R) return "";
+  const on = R.items.filter((i) => i.on && i.value.trim()).length;
+  const rows = R.items.map((it, n) => `<div class="review-item${it.on ? "" : " off"}">
+    <label class="review-head"><input type="checkbox"${it.on ? " checked" : ""}${R.busy ? " disabled" : ""} data-in="${reg((v, el) => { it.on = el.checked; renderShell(); })}"><b>${esc(it.label)}</b>${it.confidence === "low" ? `<span class="review-guess">best guess</span>` : ""}</label>
+    ${textarea({ id: "review-" + n, value: it.value, rows: Math.min(6, Math.max(1, it.value.split("\n").length, Math.ceil(it.value.length / 70))), inp: reg((v) => { it.value = v; }), attrs: it.on && !R.busy ? "" : "disabled" })}
+  </div>`).join("");
+  return `<div class="chat-msg bot review-card"><span class="chat-who">From ${esc(R.site)}</span>${rows}
+  <div class="intake-actions">${btn("Discard all", { variant: "ghost", disabled: R.busy, a: reg(() => saveReview(false)) })}${btn(R.busy ? spin(15) + "Saving…" : ic("check", { size: 15 }) + `Save ${on} ${on === 1 ? "detail" : "details"}`, { disabled: R.busy, a: reg(() => saveReview(true)) })}</div></div>`;
+}
+async function saveReview(keep) {
+  const R = ed.review, a = ed.draft; if (!R || R.busy || !a) return;
+  const chosen = keep ? R.items.filter((i) => i.on && i.value.trim()) : [];
+  for (const it of chosen) a.fields[it.key] = it.value.trim();
+  R.busy = true; renderShell();
+  ed.messages = ed.messages.filter((m) => m.role !== "review");
+  ed.review = null;
+  ed.messages.push({ role: "user", text: chosen.length ? `Saved ${chosen.length} ${chosen.length === 1 ? "detail" : "details"} from the website.` : "Discard the website details." });
+  const asked = new Set(ed.messages.filter((m) => m.role === "user" && m.key).map((m) => m.key));
+  let next = pickNext(a, asked, "", true);
+  if (next && st.cfg?.ai) { ed.thinking = true; renderShell(); next = await aiAsk(a, next, ""); ed.thinking = false; }
+  ed.pending = next;
+  ed.qi = next ? Math.max(0, editorQuestions().findIndex((q) => q.key === next.key)) : ed.qi;
+  ed.messages.push({ role: "bot", text: next ? `${chosen.length ? "Saved. Now the things the website didn't say.\n\n" : ""}${next.ask}` : `That covers the brand knowledge for ${a.name}.`, key: next?.key });
+  ed.focusQ = true;
+  if (!chosen.length) { renderShell(); return; }
+  ed.saving = true; renderShell();
+  try { const s = await act({ action: "client.save", client: a }); await load(); ed.draft = JSON.parse(JSON.stringify(s.client)); ed.dirty = false; }
+  catch (e) { ed.error = e.message; ed.dirty = true; }
+  finally { ed.saving = false; renderShell(); }
+}
+async function aiAsk(a, q, last) {
+  if (!st.cfg?.ai || !q || q.suggest) return q;
+  const base = editorQuestions().find((x) => x.key === q.key) || q;
+  const known = {};
+  for (const [k, v] of Object.entries(a.fields || {})) if (String(v || "").trim() && !/internal|competitor|locked/i.test(k)) known[k] = String(v).slice(0, 400);
+  try {
+    const r = await api("/br/onboarding", { action: "ask", field: q.key, base: base.ask, why: base.why || "", last: last || "", name: a.name, businessType: a.fields?.businessType || "", known });
+    return r.ai && r.ask ? { ...q, ask: r.ask } : q;
+  } catch { return q; }
+}
 function startQuestions(a, lead) {
   const asked = new Set(ed.messages.filter((m) => m.role === "user" && m.key).map((m) => m.key));
   const next = nextConfirm(a) || pickNext(a, asked, "", true);
@@ -688,12 +732,14 @@ async function runIntake() {
   if (r.businessType && !String(a.fields.businessType || "").trim()) a.fields.businessType = r.businessType;
   const fresh = r.facts.filter((f) => !String(a.fields[f.key] || "").trim()).sort((x, y) => FOUND_ORDER.indexOf(x.key) - FOUND_ORDER.indexOf(y.key));
   ed.queue = fresh;
-  const names = fresh.map((f) => (FOUND_LABEL[f.key] || f.key).toLowerCase());
-  const lead = fresh.length
-    ? `I read ${r.site} (${r.pages} ${r.pages === 1 ? "page" : "pages"}) and found ${names.length === 1 ? names[0] : names.slice(0, -1).join(", ") + " and " + names.at(-1)}. I'll check each one with you. Nothing from the website is saved until you say yes.`
-    : `I read ${r.site}, but it didn't say anything new I could use. Let's go through the questions.`;
   ed.intake = null;
-  startQuestions(a, lead);
+  if (fresh.length) {
+    ed.queue = [];
+    ed.review = { site: r.site, pages: r.pages, busy: false, items: fresh.map((f) => ({ key: f.key, label: fieldLabel(f.key), value: f.value, confidence: f.confidence, on: true })) };
+    ed.messages.push({ role: "bot", text: `I read ${r.site} (${r.pages} ${r.pages === 1 ? "page" : "pages"}) and filled in ${fresh.length} ${fresh.length === 1 ? "detail" : "details"}. Check them below, fix anything that's off, untick anything wrong, then save. After that I'll only ask what the website didn't say.` });
+    ed.messages.push({ role: "review" });
+    ed.pending = null;
+  } else startQuestions(a, `I read ${r.site}, but it didn't say anything new I could use. Let's go through the questions.`);
   ed.saving = true; renderShell();
   try { const s = await act({ action: "client.save", client: a }); await load(); ed.draft = JSON.parse(JSON.stringify(s.client)); ed.dirty = false; }
   catch (e) { ed.error = e.message; ed.dirty = true; }
@@ -705,7 +751,7 @@ function editorQuestions() {
   }));
 }
 function viewEditor(c) {
-  if (ed.forId !== c.id || !ed.draft) { ed.forId = c.id; ed.draft = JSON.parse(JSON.stringify(c)); ed.dirty = false; ed.error = ""; ed.qi = null; ed.messages = null; ed.pending = null; ed.reply = ""; ed.intake = null; ed.queue = []; }
+  if (ed.forId !== c.id || !ed.draft) { ed.forId = c.id; ed.draft = JSON.parse(JSON.stringify(c)); ed.dirty = false; ed.error = ""; ed.qi = null; ed.messages = null; ed.pending = null; ed.reply = ""; ed.intake = null; ed.queue = []; ed.review = null; ed.thinking = false; }
   const a = ed.draft;
   if (!ed.messages) {
     if (!String(a.fields.website || "").trim() && canEdit()) {
@@ -725,7 +771,7 @@ function viewEditor(c) {
   };
   const send = async (forced) => {
     const text = (typeof forced === "string" ? forced : ed.reply).trim();
-    if (!text || !ed.pending || ed.saving) return;
+    if (!text || !ed.pending || ed.saving || ed.thinking) return;
     const key = ed.pending.key;
     const suggest = ed.pending.suggest;
     const rejected = suggest && NO.test(text);
@@ -740,7 +786,13 @@ function viewEditor(c) {
       ed.focusQ = true; renderShell(); return;
     }
     a.fields[key] = value;
-    const next = handover(ed.pending, nextConfirm(a) || (suggest ? pickNext(a, asked(), "", true) : pickNext(a, asked(), value)));
+    let picked = nextConfirm(a) || (suggest ? pickNext(a, asked(), "", true) : pickNext(a, asked(), value));
+    if (picked && !picked.suggest && st.cfg?.ai) {
+      ed.thinking = true; renderShell();
+      picked = await aiAsk(a, picked, suggest ? "" : value);
+      ed.thinking = false;
+    }
+    const next = handover(ed.pending, picked);
     ed.pending = next;
     ed.qi = next ? Math.max(0, editorQuestions().findIndex((q) => q.key === next.key)) : ed.qi;
     ed.messages.push({ role: "bot", text: next ? next.ask : "That covers the brand knowledge. Your answers are saved.", key: next?.key });
@@ -765,8 +817,9 @@ function viewEditor(c) {
     if (box) box.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); box.form?.requestSubmit(); } });
     if (ed.focusQ && box) { ed.focusQ = false; box.focus(); }
   });
-  const log = ed.messages.map((m) => m.role === "intake" ? intakeBubble() : `<div class="chat-msg ${m.role}"><span class="chat-who">${m.role === "bot" ? "Brandroom" : "You"}</span>${esc(m.text)}</div>`).join("")
-    + (ed.intake?.busy ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} Reading the website. This takes a few seconds…</div>` : "");
+  const log = ed.messages.map((m) => m.role === "intake" ? intakeBubble() : m.role === "review" ? reviewBubble() : `<div class="chat-msg ${m.role}"><span class="chat-who">${m.role === "bot" ? "Brandroom" : "You"}</span>${esc(m.text)}</div>`).join("")
+    + (ed.intake?.busy ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} Reading the website. This takes a few seconds…</div>` : "")
+    + (ed.thinking ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} Thinking of the next question…</div>` : "");
   const quick = ed.pending?.suggest ? `<div class="chat-quick">${btn(ic("check", { size: 14 }) + "Yes, that's right", { size: "sm", variant: "outline", disabled: ed.saving, a: reg(() => send("yes")) })}${btn("No, leave it out", { size: "sm", variant: "ghost", disabled: ed.saving, a: reg(() => send("no")) })}</div>` : "";
   return `<button class="back-button" data-a="${reg(() => (ed.dirty ? confirmLeave(() => { ed.dirty = false; ed.draft = null; ed.messages = null; go("client", c.id); }) : go("client", c.id)))}">${ic("chevron-left", { size: 15 })}Back to ${esc(c.name)}</button>
   ${pageHead("BRAND INTERVIEW", `Get to know ${esc(c.name)}.`, "A chat. Each answer leads to the next relevant question, until the brand knowledge is covered.", editorBadge())}

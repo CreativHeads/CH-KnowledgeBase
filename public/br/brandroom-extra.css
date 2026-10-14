@@ -193,3 +193,15 @@ body{background:var(--background)}
 .delete-list li{margin:2px 0}
 .delete-list+.form-field{display:grid;gap:6px;margin-bottom:14px}
 .delete-list+.form-field label{font-size:14px}
+
+/* website review card in the editor chat */
+.review-card{display:flex;flex-direction:column;gap:12px;width:min(100%,600px);max-width:min(100%,600px);white-space:normal}
+.review-item{display:flex;flex-direction:column;gap:6px}
+.review-item.off .review-head b{text-decoration:line-through;color:#8a94a8}
+.review-head{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#3c475c;cursor:pointer}
+.review-head input{width:16px;height:16px;accent-color:#3b5bdb}
+.review-guess{font-size:11px;font-weight:600;color:#9a6700;background:#fff8e1;border:1px solid #f5e1a4;border-radius:999px;padding:1px 7px}
+.review-item textarea{background:#fff;font-size:13.5px;min-height:38px}
+.review-item.off textarea{opacity:.55}
+.chat-log:has(.review-card){max-height:none}
+@media (max-width:767px){.review-card{width:100%;max-width:100%}}

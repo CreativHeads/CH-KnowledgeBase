@@ -47,6 +47,7 @@ const config = () => ({
   refBase: "/api/br/refs/",
   microsoft: auth.msConfigured(),
   cloud: true,
+  ai: onboard.aiProvider(),
   seoUrl: process.env.SEO_URL || "",
   connections: {
     microsoft: auth.msConfigured(),
@@ -257,6 +258,7 @@ route("POST", "/api/br/onboarding", async ({ req, user }) => {
   if (b.action === "draft") return { session: await onboard.setDraft(b, user) };
   if (b.action === "apply") return onboard.apply(b, user);
   if (b.action === "scan") return onboard.scanSite(b);
+  if (b.action === "ask") return onboard.askNext(b);
   return { session: await onboard.start(b, user) };
 });
 

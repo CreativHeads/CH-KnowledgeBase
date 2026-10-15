@@ -540,18 +540,21 @@ async function saveRef(c) {
 
 /* ================= Editor ================= */
 const INTERVIEW = [
-  { section: "basics", key: "about", topic: "The business", ask: "What does this business do, in one sentence?", why: "The team and the bots start from this line.", example: "A Kerala learning studio that teaches practical digital skills." },
-  { section: "audience", key: "audience", topic: "The customer", ask: "Who is the customer, and what do they need?", why: "A caption should speak to a person, not to everyone.", example: "Students and job seekers who want skills they can use at work." },
-  { section: "products", key: "products", topic: "What they offer", ask: "What do they sell or offer, and what does it cost?", why: "Prices on a creative have to match what the client has approved.", example: "Digital marketing course. Confirm the current fee before publishing it." },
-  { section: "products", key: "usps", topic: "What to remember", ask: "What should people remember them for?", why: "This is the difference we are allowed to repeat.", example: "Hands-on projects, not theory-only classes." },
-  { section: "voice", key: "tone", topic: "How they sound", ask: "How should this brand sound?", why: "Every caption should be recognisable as theirs.", example: "Friendly, practical and confident. Never pushy." },
-  { section: "languages", key: "primaryLanguage", topic: "Language", ask: "Which language should we write in?", why: "English, Malayalam, Manglish, or a mix. Say which one is the default.", example: "English, with Malayalam when the post is for a local audience.", short: true },
+  { section: "basics", key: "about", topic: "The business", ask: "In one line, what should a caption say this business does, and in which city?", why: "The team and the bots start from this line.", example: "A Kottakkal learning studio that teaches practical digital skills." },
+  { section: "audience", key: "audience", topic: "The customer", ask: "Who in their city should the caption speak to?", why: "A caption should speak to a person, not to everyone.", example: "Students and job seekers in Malappuram who want skills they can use at work." },
+  { section: "products", key: "products", topic: "What they offer", ask: "Which product or service should the next posts sell, and what price are we allowed to print?", why: "Prices on a creative have to match what the client has approved.", example: "Digital marketing course. Confirm the current fee before publishing it." },
+  { section: "products", key: "usps", topic: "What to remember", ask: "What one difference should every caption repeat?", why: "This is the difference we are allowed to repeat.", example: "Hands-on projects, not theory-only classes." },
+  { section: "voice", key: "tone", topic: "How they sound", ask: "Should the caption sound formal, friendly, or local Manglish?", why: "Every caption should be recognisable as theirs.", example: "Friendly, practical and confident. Never pushy." },
+  { section: "languages", key: "primaryLanguage", topic: "Language", ask: "What language should the caption be in: English, Malayalam, or Manglish?", why: "English, Malayalam, Manglish, or a mix. Say which one is the default.", example: "English, with Malayalam when the post is for a local audience.", short: true },
   { section: "languages", key: "languageNotes", topic: "When to switch", ask: "When should we switch language?", why: "The same brand can use a different language on a different platform.", example: "English on LinkedIn. Conversational Manglish on Instagram." },
   { section: "words", key: "wordsAvoid", topic: "Never say", ask: "Which words or claims must never be used?", why: "A banned claim in a caption is a problem for the client.", example: "Guaranteed job. Guaranteed salary. No.1." },
   { section: "recognition", key: "phones", topic: "How to reach them", ask: "What phone number, website and social handles are printed on their posts?", why: "Quality Check uses these to recognise the brand.", example: "+91 98470 00000, level8.in, Instagram: level8" },
-  { section: "recognition", key: "colours", topic: "Colours and fonts", ask: "What colours and fonts should we use?", why: "A creative in the wrong colours is easy to reject.", example: "Navy and white. Use the fonts named in the brand guide." },
+  { section: "recognition", key: "colours", topic: "Colours", ask: "Which brand colours must the creative use?", why: "A creative in the wrong colours is easy to reject.", example: "Navy #0A3D62 and white." },
+  { section: "recognition", key: "fonts", topic: "Fonts", ask: "Which fonts must the creative use?", why: "Quality Check compares the creative with the brand fonts.", example: "Heading: the font in the brand guide.", short: true },
+  { section: "recognition", key: "logoRules", topic: "Logo", ask: "Where should the logo sit on a post, and what must we never do with it?", why: "Quality Check looks at logo placement.", example: "Top left, on a light background. Never stretch it." },
   { section: "social", key: "hashtags", topic: "Hashtags", ask: "Which hashtags should a caption use?", why: "These are the tags the client has approved.", example: "#Level8 #DigitalSkills", short: true },
-  { section: "social", key: "cta", topic: "The ending", ask: "What should a caption ask the reader to do?", why: "The ending should be the same kind of next step each time.", example: "Explore the courses.", short: true },
+  { section: "social", key: "cta", topic: "The ending", ask: "What should the caption ask the reader to do: call, WhatsApp, book, or visit?", why: "The ending should be the same kind of next step each time.", example: "WhatsApp the clinic to book.", short: true },
+  { section: "compliance", key: "disclaimer", topic: "Disclaimer", ask: "What disclaimer must appear on a caption or an ad, word for word?", why: "Quality Check looks for this line.", example: "Results vary. This is not a medical guarantee.", short: true },
   { section: "contacts", key: "contacts", topic: "Who approves", ask: "Who approves the work, and how fast do they usually reply?", why: "The team needs a person to ask, before anything goes live.", example: "The client representative, usually within one working day." },
   { section: "platforms", key: "platforms", topic: "Where they post", ask: "Which platforms do they use, and how often do they post?", why: "The voice stays the same. The format changes.", example: "Instagram and LinkedIn, a few times a week." },
   { section: "offers", key: "offers", topic: "A current offer", ask: "Is there a current offer? What is the price, and when does it end?", why: "An expired price must not appear on a creative.", example: "No active offer. If there is one, write the price and the last date." },
@@ -619,7 +622,7 @@ function buildChat(client) {
   else messages.push({ role: "bot", text: `That covers the brand knowledge for ${client.name}.` });
   return { messages, pending: next, index: next ? qs.findIndex((q) => q.key === next.key) : 0 };
 }
-const FOUND_ORDER = ["about", "tagline", "products", "offers", "audience", "personas", "usps", "messages", "tone", "adjectives", "wordsUse", "primaryLanguage", "cta", "phones", "handles", "address", "platforms", "colours", "keywords", "aliases", "seasonal", "seoKeywords", "hashtags", "compliance", "disclaimer"];
+const FOUND_ORDER = ["about", "tagline", "products", "offers", "audience", "personas", "usps", "messages", "tone", "adjectives", "wordsUse", "primaryLanguage", "cta", "phones", "handles", "address", "platforms", "colours", "fonts", "logoRules", "keywords", "aliases", "seasonal", "seoKeywords", "hashtags", "compliance", "disclaimer", "bannedClaims"];
 const FOUND_LABEL = { about: "What they do", tagline: "Their line", phones: "Phone numbers", handles: "Social accounts", address: "Address", platforms: "Where they post", colours: "Brand colour", audience: "The customer", products: "What they offer", usps: "What to remember", tone: "How they sound", seasonal: "Seasons", seoKeywords: "Search phrases" };
 const YES = /^(y|yes|yeah|yep|ok|okay|correct|right|true|that'?s right|looks good|haan|athe|sheri)\b/i;
 const NO = /^(n|no|nope|wrong|not right|skip|incorrect)\b\.?$/i;
@@ -641,20 +644,34 @@ function openIntake(c, render = true) {
   const a = ed.draft || c;
   ed.intake = { name: a.name || "", website: a.fields.website || "", instagram: (String(a.fields.handles || "").match(/instagram:\s*@?([\w.]+)/i) || [])[1] || "", busy: false, error: "" };
   ed.messages = (ed.messages || []).filter((m) => m.role !== "intake");
-  ed.messages.push({ role: "bot", text: `Let's start with the basics: the business name, the website and the Instagram handle. I'll read the website first, so I only ask about what it doesn't already say.` });
+  ed.messages.push({ role: "bot", text: `Let's start with the business name, the website and the Instagram handle. You can also upload a brochure or another document. I'll read those first, then ask only what the team still needs for captions and quality checks.` });
   ed.messages.push({ role: "intake" });
   ed.pending = null;
   if (render) renderShell();
 }
+function intakeReady(I) { return !!(I && I.name.trim() && (I.website.trim() || (I.files || []).length)); }
 function intakeBubble() {
   const I = ed.intake; if (!I) return "";
-  const toggle = () => { const b = document.getElementById("intake-read"); if (b) b.disabled = I.busy || !I.website.trim() || !I.name.trim(); };
+  const toggle = () => { const b = document.getElementById("intake-read"); if (b) b.disabled = I.busy || !intakeReady(I); };
+  const fileNames = (I.files || []).map((f) => f.name).join(", ");
+  const label = (I.files || []).length && I.website.trim() ? "Read website and documents" : (I.files || []).length ? "Read documents" : "Read website";
+  afterHooks.push(() => {
+    const f = document.getElementById("intake-file");
+    if (!f || !ed.intake) return;
+    f.onchange = () => {
+      const chosen = [...f.files].slice(0, 2);
+      const bad = chosen.find((x) => x.size > 3e6 || !/\.(pdf|txt|md|csv)$/i.test(x.name));
+      if (bad) { ed.intake.error = bad.size > 3e6 ? "Each file needs to be under 3 MB." : "Use a PDF, text, Markdown or CSV file."; ed.intake.files = []; renderShell(); return; }
+      ed.intake.files = chosen; ed.intake.error = ""; renderShell();
+    };
+  });
   return `<form class="chat-msg bot intake-card" data-sub="${reg(() => runIntake())}"><span class="chat-who">Brandroom</span>
   <div class="form-field"><label for="intake-name">Business name</label>${input({ id: "intake-name", value: I.name, placeholder: "e.g. White Stone Aligners", inp: reg((v) => { I.name = v; toggle(); }), attrs: 'maxlength="100"' + (I.busy ? " disabled" : "") })}</div>
   <div class="form-field"><label for="intake-site">Website</label>${input({ id: "intake-site", value: I.website, placeholder: "example.com", inp: reg((v) => { I.website = v; toggle(); }), attrs: 'inputmode="url" autocomplete="url"' + (I.busy ? " disabled" : "") })}</div>
   <div class="form-field"><label for="intake-ig">Instagram</label>${input({ id: "intake-ig", value: I.instagram, placeholder: "@handle", inp: reg((v) => { I.instagram = v; }), attrs: I.busy ? "disabled" : "" })}</div>
+  <div class="form-field"><label for="intake-file">Brochure or other document</label><input id="intake-file" type="file" accept=".pdf,.txt,.md,.csv,application/pdf,text/plain,text/csv,text/markdown" multiple ${I.busy ? "disabled" : ""}><small>${fileNames ? esc(fileNames) : "PDF, text or CSV. Up to 2 files."}</small></div>
   ${I.error ? `<p class="error-text" role="alert">${esc(I.error)}</p>` : ""}
-  <div class="intake-actions">${btn("Skip, just ask me", { variant: "ghost", disabled: I.busy, a: reg(() => skipIntake()) })}${btn((I.busy ? spin(15) + "Reading the website…" : ic("globe", { size: 15 }) + "Read website"), { type: "submit", disabled: I.busy || !I.website.trim() || !I.name.trim(), attrs: 'id="intake-read"' })}</div></form>`;
+  <div class="intake-actions">${btn("Skip, just ask me", { variant: "ghost", disabled: I.busy, a: reg(() => skipIntake()) })}${btn((I.busy ? spin(15) + "Reading…" : ic("globe", { size: 15 }) + label), { type: "submit", disabled: I.busy || !intakeReady(I), attrs: 'id="intake-read"' })}</div></form>`;
 }
 function fieldLabel(key) {
   return FOUND_LABEL[key] || SECTIONS.flatMap((s) => s.fields).find((f) => f.key === key)?.label || INTERVIEW.find((q) => q.key === key)?.topic || key;
@@ -679,10 +696,15 @@ async function saveReview(keep) {
   ed.messages.push({ role: "user", text: chosen.length ? `Saved ${chosen.length} ${chosen.length === 1 ? "detail" : "details"} from the website.` : "Discard the website details." });
   const asked = new Set(ed.messages.filter((m) => m.role === "user" && m.key).map((m) => m.key));
   let next = pickNext(a, asked, "", true);
-  if (next && st.cfg?.ai) { ed.thinking = true; renderShell(); next = await aiAsk(a, next, "", asked, ""); ed.thinking = false; }
+  if (next && st.cfg?.ai) {
+    ed.thinking = true; renderShell();
+    const found = chosen.slice(0, 6).map((it) => `${it.label}: ${it.value.replace(/\s+/g, " ").slice(0, 140)}`).join("; ");
+    next = await aiAsk(a, next, found, asked, chosen[0]?.key || "");
+    ed.thinking = false;
+  }
   ed.pending = next;
   ed.qi = next ? Math.max(0, editorQuestions().findIndex((q) => q.key === next.key)) : ed.qi;
-  ed.messages.push({ role: "bot", text: next ? `${chosen.length ? "Saved. Now the things the website didn't say.\n\n" : ""}${next.ask}` : `That covers the brand knowledge for ${a.name}.`, key: next?.key });
+  ed.messages.push({ role: "bot", text: next ? `${chosen.length ? "Saved. Now what we still need for captions and quality checks.\n\n" : ""}${next.ask}` : `That covers the brand knowledge for ${a.name}.`, key: next?.key });
   ed.focusQ = true;
   if (!chosen.length) { renderShell(); return; }
   ed.saving = true; renderShell();
@@ -720,24 +742,35 @@ async function runIntake() {
   const I = ed.intake, a = ed.draft; if (!I || I.busy || !a) return;
   I.busy = true; I.error = ""; renderShell();
   let r;
-  try { r = await api("/br/onboarding", { action: "scan", businessName: I.name.trim(), website: I.website.trim(), instagram: I.instagram.trim() }); }
+  let extraText = "";
+  try {
+    for (const file of I.files || []) {
+      const mime = /\.pdf$/i.test(file.name) ? "application/pdf" : /\.csv$/i.test(file.name) ? "text/csv" : /\.md$/i.test(file.name) ? "text/markdown" : "text/plain";
+      const up = await api("/br/documents", { clientId: a.id, name: file.name, mime, data: await blobB64(file) });
+      const text = up.document?.id ? await api(`/br/documents/${up.document.id}/text`).catch(() => ({ text: "" })) : { text: "" };
+      if (text.text) extraText += `\n\n${file.name}\n${String(text.text).slice(0, 8000)}`;
+      else I.error = (I.error ? I.error + " " : "") + `${file.name} was saved, but no text could be read from it.`;
+    }
+    r = await api("/br/onboarding", { action: "scan", businessName: I.name.trim(), website: I.website.trim(), instagram: I.instagram.trim(), extraText });
+  }
   catch (e) { I.busy = false; I.error = e.message + " Check the address, or skip and answer the questions."; renderShell(); return; }
   ed.messages = ed.messages.filter((m) => m.role !== "intake");
   ed.messages.push({ role: "user", text: [I.name.trim(), r.website, r.instagram ? "@" + r.instagram : ""].filter(Boolean).join("\n") });
   if (I.name.trim() && I.name.trim() !== a.name) a.name = I.name.trim();
   const hostOf = (v) => String(v || "").toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split(/[/?#]/)[0];
-  if (hostOf(a.fields.website) !== hostOf(r.website)) a.fields.website = r.website;
+  if (r.website && hostOf(a.fields.website) !== hostOf(r.website)) a.fields.website = r.website;
   const hasHandles = String(a.fields.handles || "").trim();
   if (r.instagram && hasHandles && !new RegExp("instagram:\\s*@?" + r.instagram.replace(/\./g, "\\."), "i").test(hasHandles))
     a.fields.handles = `${hasHandles}\nInstagram: ${r.instagram}`;
   if (r.businessType && !String(a.fields.businessType || "").trim()) a.fields.businessType = r.businessType;
+  const readFrom = [r.website ? r.site : "", (I.files || []).map((f) => f.name).join(", ")].filter(Boolean).join(" and ");
   const fresh = r.facts.filter((f) => !String(a.fields[f.key] || "").trim()).sort((x, y) => FOUND_ORDER.indexOf(x.key) - FOUND_ORDER.indexOf(y.key));
   ed.queue = fresh;
   ed.intake = null;
   if (fresh.length) {
     ed.queue = [];
     ed.review = { site: r.site, pages: r.pages, busy: false, items: fresh.map((f) => ({ key: f.key, label: fieldLabel(f.key), value: f.value, confidence: f.confidence, on: true })) };
-    ed.messages.push({ role: "bot", text: `I read ${r.site} (${r.pages} ${r.pages === 1 ? "page" : "pages"}) and filled in ${fresh.length} ${fresh.length === 1 ? "detail" : "details"}. Check them below, fix anything that's off, untick anything wrong, then save. After that I'll only ask what the website didn't say.` });
+    ed.messages.push({ role: "bot", text: `I read ${readFrom} and filled in ${fresh.length} ${fresh.length === 1 ? "detail" : "details"}. Check them below, fix anything that's off, untick anything wrong, then save. After that I'll only ask what we still need for captions and quality checks.` });
     ed.messages.push({ role: "review" });
     ed.pending = null;
   } else startQuestions(a, `I read ${r.site}, but it didn't say anything new I could use. Let's go through the questions.`);
@@ -752,7 +785,7 @@ function editorQuestions() {
   }));
 }
 function viewEditor(c) {
-  if (ed.forId !== c.id || !ed.draft) { ed.forId = c.id; ed.draft = JSON.parse(JSON.stringify(c)); ed.dirty = false; ed.error = ""; ed.qi = null; ed.messages = null; ed.pending = null; ed.reply = ""; ed.intake = null; ed.queue = []; ed.review = null; ed.thinking = false; ed.aiOpened = false; }
+  if (ed.forId !== c.id || !ed.draft) { ed.forId = c.id; ed.draft = JSON.parse(JSON.stringify(c)); ed.dirty = false; ed.error = ""; ed.qi = null; ed.messages = null; ed.pending = null; ed.reply = ""; ed.intake = null; ed.queue = []; ed.review = null; ed.thinking = false; ed.aiOpened = false; ed.uploading = false; }
   const a = ed.draft;
   if (!ed.messages) {
     if (!String(a.fields.website || "").trim() && canEdit()) {
@@ -831,15 +864,40 @@ function viewEditor(c) {
     ed.messages.push({ role: "bot", text: next ? next.ask : "That covers the brand knowledge.", key: next?.key });
     ed.focusQ = true; renderShell();
   };
+  const saveChatFile = async (file) => {
+    if (!file || ed.uploading) return;
+    ed.uploading = true; ed.error = ""; renderShell();
+    try {
+      const image = /^image\/(jpeg|png|webp)$/.test(file.type) || /\.(jpe?g|png|webp)$/i.test(file.name);
+      if (image) {
+        if (file.size > 2e7) throw new Error("Please choose an image under 20 MB.");
+        const im = await shrink(file);
+        const kind = /logo/i.test(file.name) ? "Logo" : /pack/i.test(file.name) ? "Packaging" : /product/i.test(file.name) ? "Product" : "Reference";
+        await api("/br/media", { clientId: c.id, kind, name: file.name, description: `${kind} added from the brand chat.`, ...im });
+        ed.messages.push({ role: "user", text: `Saved ${kind.toLowerCase()}: ${file.name}` });
+      } else if (/\.(pdf|txt|md|csv)$/i.test(file.name)) {
+        if (file.size > 3e6) throw new Error("Each document needs to be under 3 MB.");
+        const mime = /\.pdf$/i.test(file.name) ? "application/pdf" : /\.csv$/i.test(file.name) ? "text/csv" : /\.md$/i.test(file.name) ? "text/markdown" : "text/plain";
+        await api("/br/documents", { clientId: c.id, name: file.name, mime, data: await blobB64(file) });
+        ed.messages.push({ role: "user", text: `Saved document: ${file.name}` });
+      } else throw new Error("Use a JPG, PNG or WebP image, or a PDF, text or CSV file.");
+      await load();
+      toast.success(`${file.name} saved`);
+    } catch (e) { ed.error = e.message; }
+    finally { ed.uploading = false; renderShell(); }
+  };
   afterHooks.push(() => {
     const log = document.getElementById("chat-log"); if (log) log.scrollTop = log.scrollHeight;
+    const file = document.getElementById("chat-file");
+    if (file) file.onchange = () => { const chosen = file.files?.[0]; file.value = ""; if (chosen) saveChatFile(chosen); };
     const box = document.getElementById("chat-reply");
     if (box) box.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); box.form?.requestSubmit(); } });
     if (ed.focusQ && box) { ed.focusQ = false; box.focus(); }
   });
   const log = ed.messages.map((m) => m.role === "intake" ? intakeBubble() : m.role === "review" ? reviewBubble() : `<div class="chat-msg ${m.role}"><span class="chat-who">${m.role === "bot" ? "Brandroom" : "You"}</span>${esc(m.text)}</div>`).join("")
     + (ed.intake?.busy ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} Reading the website. This takes a few seconds…</div>` : "")
-    + (ed.thinking ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} Thinking of the next question…</div>` : "");
+    + (ed.thinking ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} Thinking of the next question…</div>` : "")
+    + (ed.uploading ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} Saving the file…</div>` : "");
   const quick = ed.pending?.suggest ? `<div class="chat-quick">${btn(ic("check", { size: 14 }) + "Yes, that's right", { size: "sm", variant: "outline", disabled: ed.saving, a: reg(() => send("yes")) })}${btn("No, leave it out", { size: "sm", variant: "ghost", disabled: ed.saving, a: reg(() => send("no")) })}</div>` : "";
   return `<button class="back-button" data-a="${reg(() => (ed.dirty ? confirmLeave(() => { ed.dirty = false; ed.draft = null; ed.messages = null; go("client", c.id); }) : go("client", c.id)))}">${ic("chevron-left", { size: 15 })}Back to ${esc(c.name)}</button>
   ${pageHead("BRAND INTERVIEW", `Get to know ${esc(c.name)}.`, "A chat. Each answer leads to the next relevant question, until the brand knowledge is covered.", editorBadge())}
@@ -847,7 +905,7 @@ function viewEditor(c) {
   <section class="editor-main panel chat-panel"><div id="chat-log" class="chat-log">${log}</div>
   ${ed.error ? `<p class="error-text" role="alert">${esc(ed.error)}</p>` : ""}
   ${ed.intake ? `<p class="hint">Fill in the details above, or skip and answer the questions.</p>` : ""}
-  ${!ed.intake && canEdit() ? `<div class="chat-tools"><button type="button" class="text-button" data-a="${reg(() => openIntake(c))}">${ic("globe", { size: 14 })}${String(a.fields.website || "").trim() ? "Read the website again" : "Read a website"}</button></div>` : ""}
+  ${!ed.intake && canEdit() ? `<div class="chat-tools"><button type="button" class="text-button" data-a="${reg(() => openIntake(c))}">${ic("globe", { size: 14 })}${String(a.fields.website || "").trim() ? "Read the website again" : "Read a website"}</button><label class="text-button">${ic("upload", { size: 14 })}Add logo or file<input id="chat-file" type="file" accept="image/jpeg,image/png,image/webp,.pdf,.txt,.md,.csv,application/pdf,text/plain" ${ed.uploading ? "disabled" : ""}></label></div>` : ""}
   ${ed.intake ? "" : quick}
   ${ed.intake ? "" : ed.pending ? `<form class="chat-compose" data-sub="${reg(send)}">${textarea({ id: "chat-reply", value: ed.reply, rows: 2, placeholder: ed.pending.suggest ? "Type “yes”, or the correct version…" : "Type your answer…", inp: reg((v) => { ed.reply = v; const b = document.getElementById("chat-send"); if (b) b.disabled = ed.saving || !v.trim(); }) })}<div class="chat-actions">${btn("Skip", { variant: "ghost", a: reg(skip), disabled: ed.saving })}${btn(ed.saving ? "Saving…" : "Send", { type: "submit", disabled: ed.saving || !ed.reply.trim(), attrs: 'id="chat-send"' })}</div></form>` : `<p class="hint">The brand knowledge is covered. Choose a topic on the left to change an answer.</p>`}</section></div>`;
 }

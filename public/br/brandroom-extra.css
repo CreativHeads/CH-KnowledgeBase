@@ -102,6 +102,10 @@ body{background:var(--background)}
 .intake-card .form-field{display:flex;flex-direction:column;gap:5px;margin:0}
 .intake-card input[data-slot=input]{height:38px}
 .intake-card label{font-size:12px;font-weight:600;color:#56627a}
+.chat-tools .text-button{position:relative;cursor:pointer}
+.chat-tools input[type=file]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+.intake-card input[type=file]{font-size:13px}
+.intake-card small{color:#6b7280;font-size:12px}
 .intake-card input{background:#fff}
 .intake-card .error-text{margin:0;font-size:12.5px}
 .intake-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:2px}

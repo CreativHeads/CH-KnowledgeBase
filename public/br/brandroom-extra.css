@@ -198,6 +198,20 @@ body{background:var(--background)}
 .delete-list+.form-field{display:grid;gap:6px;margin-bottom:14px}
 .delete-list+.form-field label{font-size:14px}
 
+/* brief overview collected from chat answers */
+.brief-overview{display:flex;flex-direction:column;gap:8px}
+.brief-overview h2{margin:0;font-size:22px;line-height:1.3;font-weight:650}
+.brief-row{display:grid;grid-template-columns:112px 1fr;gap:10px;align-items:start;font-size:13.5px;line-height:1.45}
+.brief-row span{color:var(--muted-foreground);font-size:12px;font-weight:600;padding-top:1px}
+.brief-row p{margin:0}
+.chat-overview{border-bottom:1px solid var(--border);padding:14px 16px 12px;background:#f7f9fd}
+.chat-overview .eyebrow{font-size:11px;letter-spacing:.08em;color:#8b95a8;margin-bottom:4px}
+.chat-overview .hint{margin:0 0 10px;font-size:12.5px}
+.chat-overview .brief-overview h2{font-size:16px}
+.chat-panel{display:flex;flex-direction:column;min-height:0}
+.chat-panel .chat-log{flex:1}
+@media (max-width:700px){.brief-row{grid-template-columns:1fr;gap:2px}}
+
 /* website review card in the editor chat */
 .review-card{display:flex;flex-direction:column;gap:12px;width:min(100%,600px);max-width:min(100%,600px);white-space:normal}
 .review-item{display:flex;flex-direction:column;gap:6px}

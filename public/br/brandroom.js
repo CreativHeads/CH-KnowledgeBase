@@ -467,12 +467,40 @@ function openAddClient() {
 }
 
 /* ================= Client detail ================= */
+function briefBit(v, n = 160) {
+  const lines = String(v || "").split(/\n/).map((s) => s.replace(/\s+/g, " ").trim()).filter(Boolean).slice(0, 3);
+  const s = lines.join(" · ");
+  if (s.length <= n) return s;
+  return s.slice(0, n).replace(/\s+\S*$/, "") + "…";
+}
+function briefOverview(c) {
+  const f = c.fields || {};
+  const rows = [
+    ["What they do", f.about, 220],
+    ["Where", f.address || c.location, 120],
+    ["What they offer", f.products, 180],
+    ["Remember", f.usps, 160],
+    ["Customer", f.audience, 160],
+    ["Voice", f.tone, 160],
+    ["Language", [f.primaryLanguage, f.languageNotes].filter(Boolean).join(". "), 140],
+    ["Ask them to", f.cta, 120],
+    ["Caption", f.format || f.maxLength, 180],
+    ["Hashtags", f.hashtags, 160],
+  ].map(([label, value, n]) => [label, briefBit(value, n)]).filter(([, value]) => value);
+  const line = briefBit(f.tagline || f.soundsLike, 120);
+  return { line, rows };
+}
+function overviewCard(c) {
+  const b = briefOverview(c);
+  if (!b.line && !b.rows.length) return `<p class="not-added">Answer a few questions and a short overview will collect here.</p>`;
+  return `<div class="brief-overview">${b.line ? `<h2>“${esc(b.line)}”</h2>` : ""}${b.rows.map(([label, value]) => `<div class="brief-row"><span>${esc(label)}</span><p>${esc(value)}</p></div>`).join("")}</div>`;
+}
 function viewClient(c) {
   const ws = st.ws; if (det.forId !== c.id) { det.forId = c.id; det.tab = "overview"; }
   const n = score(c); const refs = ws.refs.filter((r) => r.clientId === c.id);
   const approved = ws.examples.filter((e) => e.clientId === c.id && e.verdict === "approved");
   let content = "";
-  if (det.tab === "overview") content = `<div class="brand-overview"><section><div class="brand-voice-card" style="--brand: ${esc(c.colour)};"><div class="eyebrow">THE BRAND IN A FEW WORDS</div><h2>“${esc(c.fields.tagline || c.fields.soundsLike || "Every brand has a story to tell.")}”</h2><p>${esc(c.fields.about || "Add a short introduction to this brand.")}</p><div class="tone-tags">${(c.fields.adjectives || "Add a voice").split(",").map((t) => `<span>${esc(t.trim())}</span>`).join("")}</div></div>
+  if (det.tab === "overview") content = `<div class="brand-overview"><section><div class="brand-voice-card" style="--brand: ${esc(c.colour)};"><div class="eyebrow">THE BRAND IN A FEW WORDS</div>${overviewCard(c)}<div class="tone-tags">${String(c.fields.adjectives || "").split(",").map((t) => t.trim()).filter((t) => t && t.length < 28).slice(0, 6).map((t) => `<span>${esc(t)}</span>`).join("")}</div></div>
     <div class="section-title knowledge-title"><h2>Brand knowledge</h2><span>${LIBRARIES.length} libraries</span></div><div class="knowledge-grid">${SECTIONS.filter((s) => s.id !== "basics" && s.id !== "internal" && (canEdit() || s.id !== "competitors")).map((s) => { const fs = s.fields.filter((f) => c.fields[f.key]); return `<div class="knowledge-block"><div class="section-title"><h3>${s.name}</h3>${canEdit() ? `<button aria-label="Edit ${s.name}" class="text-button" data-a="${reg(() => editClient(c, s.id))}">Edit</button>` : ""}</div>${fs.length ? fs.map((f) => `<div class="knowledge-field"><span>${f.label}${c.internalFields.includes(f.key) ? ic("lock", { size: 11 }) : ""}</span><p>${esc(c.fields[f.key])}</p></div>`).join("") : `<p class="not-added">A little more context needed. Add this section.</p>`}</div>`; }).join("")}</div></section>
     <aside><div class="panel brand-sidecard"><h3>Brand palette</h3><div class="colour-swatches">${(c.fields.colours || c.colour).split(",").map((x) => x.trim()).filter((x) => /^#[a-f\d]{6}$/i.test(x)).map((x) => `<button data-a="${reg(() => copyText(x))}"><span style="background: ${x};"></span><small>${x}</small></button>`).join("")}</div><p>Click a colour to copy its hex code.</p></div>
     <div class="panel brand-sidecard"><h3>${ic("book-open", { size: 17 })}Caption examples</h3><b class="side-number">${approved.length}</b><p>approved examples for this brand</p>${approved.slice(0, 1).map((e) => `<blockquote>${esc(e.text)}</blockquote>`).join("")}</div>
@@ -831,11 +859,23 @@ function viewEditor(c) {
       ed.messages.push({ role: "bot", text: next ? `Left out. ${next.ask}` : "That covers the brand knowledge.", key: next?.key });
       ed.focusQ = true; renderShell(); return;
     }
-    a.fields[key] = value;
-    let picked = nextConfirm(a) || (suggest ? pickNext(a, asked(), "", true) : pickNext(a, asked(), value));
+    let saved = value;
+    if (st.cfg?.ai && !suggest) {
+      ed.thinking = "check"; renderShell();
+      try {
+        const known = {};
+        for (const [k, v] of Object.entries(a.fields || {})) if (String(v || "").trim() && !/internal|competitor|locked/i.test(k)) known[k] = String(v).slice(0, 400);
+        const learned = await api("/br/onboarding", { action: "learn", field: key, question: ed.pending.ask || "", answer: value, name: a.name, known });
+        for (const u of learned.updates || []) if (u.field && u.value) a.fields[u.field] = u.value;
+        saved = a.fields[key] || value;
+        if (learned.note) ed.messages.push({ role: "bot", text: learned.note });
+      } catch { a.fields[key] = value; }
+      ed.thinking = false;
+    } else a.fields[key] = value;
+    let picked = nextConfirm(a) || (suggest ? pickNext(a, asked(), "", true) : pickNext(a, asked(), saved));
     if (picked && !picked.suggest && st.cfg?.ai) {
-      ed.thinking = true; renderShell();
-      picked = await aiAsk(a, picked, suggest ? "" : value, asked(), suggest ? "" : key);
+      ed.thinking = "next"; renderShell();
+      picked = await aiAsk(a, picked, suggest ? "" : saved, asked(), suggest ? "" : key);
       ed.thinking = false;
     }
     const next = handover(ed.pending, picked);
@@ -896,13 +936,13 @@ function viewEditor(c) {
   });
   const log = ed.messages.map((m) => m.role === "intake" ? intakeBubble() : m.role === "review" ? reviewBubble() : `<div class="chat-msg ${m.role}"><span class="chat-who">${m.role === "bot" ? "Brandroom" : "You"}</span>${esc(m.text)}</div>`).join("")
     + (ed.intake?.busy ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} Reading the website. This takes a few seconds…</div>` : "")
-    + (ed.thinking ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} Thinking of the next question…</div>` : "")
+    + (ed.thinking ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} ${ed.thinking === "check" ? "Checking the answer…" : "Thinking of the next question…"}</div>` : "")
     + (ed.uploading ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} Saving the file…</div>` : "");
   const quick = ed.pending?.suggest ? `<div class="chat-quick">${btn(ic("check", { size: 14 }) + "Yes, that's right", { size: "sm", variant: "outline", disabled: ed.saving, a: reg(() => send("yes")) })}${btn("No, leave it out", { size: "sm", variant: "ghost", disabled: ed.saving, a: reg(() => send("no")) })}</div>` : "";
   return `<button class="back-button" data-a="${reg(() => (ed.dirty ? confirmLeave(() => { ed.dirty = false; ed.draft = null; ed.messages = null; go("client", c.id); }) : go("client", c.id)))}">${ic("chevron-left", { size: 15 })}Back to ${esc(c.name)}</button>
   ${pageHead("BRAND INTERVIEW", `Get to know ${esc(c.name)}.`, "A chat. Each answer leads to the next relevant question, until the brand knowledge is covered.", editorBadge())}
   <div class="editor-layout"><nav class="section-stepper" id="ed-stepper">${stepper(a, ed.pending?.key, askTopic)}</nav>
-  <section class="editor-main panel chat-panel"><div id="chat-log" class="chat-log">${log}</div>
+  <section class="editor-main panel chat-panel"><div class="chat-overview"><div class="eyebrow">OVERVIEW</div><p class="hint">Collected from the answers. It updates each time you send one.</p>${overviewCard(a)}</div><div id="chat-log" class="chat-log">${log}</div>
   ${ed.error ? `<p class="error-text" role="alert">${esc(ed.error)}</p>` : ""}
   ${ed.intake ? `<p class="hint">Fill in the details above, or skip and answer the questions.</p>` : ""}
   ${!ed.intake && canEdit() ? `<div class="chat-tools"><button type="button" class="text-button" data-a="${reg(() => openIntake(c))}">${ic("globe", { size: 14 })}${String(a.fields.website || "").trim() ? "Read the website again" : "Read a website"}</button><label class="text-button">${ic("upload", { size: 14 })}Add logo or file<input id="chat-file" type="file" accept="image/jpeg,image/png,image/webp,.pdf,.txt,.md,.csv,application/pdf,text/plain" ${ed.uploading ? "disabled" : ""}></label></div>` : ""}

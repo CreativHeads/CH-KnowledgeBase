@@ -259,6 +259,7 @@ route("POST", "/api/br/onboarding", async ({ req, user }) => {
   if (b.action === "apply") return onboard.apply(b, user);
   if (b.action === "scan") return onboard.scanSite(b);
   if (b.action === "ask") return onboard.askNext(b);
+  if (b.action === "learn") return onboard.learnAnswer(b);
   return { session: await onboard.start(b, user) };
 });
 

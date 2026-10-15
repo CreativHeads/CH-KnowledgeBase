@@ -481,26 +481,30 @@ function kbSections(c) {
   });
 }
 function jumpKb(id) { document.getElementById("kb-" + id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
-function kbSummaryText(c) {
+function factLines(v, n) {
+  return String(v || "").split(/\n/).map((s) => s.replace(/\s+/g, " ").trim()).filter(Boolean).slice(0, n);
+}
+function kbBusiness(c) {
   const f = c.fields || {};
-  const about = String(f.about || "").replace(/\s+/g, " ").trim();
-  const known = String(f.usps || "").split(/\n/).map((s) => s.trim()).filter(Boolean).join(", ");
-  const where = String(f.address || c.location || "").replace(/\s+/g, " ").trim();
-  const parts = [];
-  if (about) parts.push(about);
-  else if (f.tagline) parts.push(String(f.tagline).trim());
-  if (known && !about.toLowerCase().includes(known.slice(0, 24).toLowerCase())) parts.push(known.endsWith(".") ? known : known + ".");
-  if (where && !about.toLowerCase().includes(where.split("|")[0].trim().toLowerCase())) parts.push(where + ".");
-  return parts.join(" ");
+  const about = String(f.about || f.tagline || "").replace(/\s+/g, " ").trim();
+  const contact = [f.phones, f.website].map((v) => String(v || "").replace(/\s+/g, " ").trim()).filter(Boolean).join(" · ");
+  const rows = [
+    ["Services", factLines(f.products, 8).join(" · ")],
+    ["Locations", String(f.address || c.location || "").replace(/\s+/g, " ").trim()],
+    ["Audience", briefBit(f.audience, 220)],
+    ["Credentials", factLines(f.usps, 6).join(" · ")],
+    ["Contact", contact],
+  ].filter(([, value]) => value);
+  return { about, rows };
 }
 function kbArticle(c) {
   const all = kbSections(c);
   const filled = all.filter((s) => s.filled);
   const empty = all.filter((s) => !s.filled);
-  const summary = kbSummaryText(c);
-  const lead = summary
-    ? `<div class="kb-summary"><div class="eyebrow">OVERVIEW</div><p>${esc(summary)}</p></div>`
-    : `<p class="not-added">The overview appears here once the first facts are saved.</p>`;
+  const biz = kbBusiness(c);
+  const lead = biz.about || biz.rows.length
+    ? `<div class="kb-summary"><div class="eyebrow">OVERVIEW</div>${biz.about ? `<p>${esc(biz.about)}</p>` : ""}${biz.rows.length ? `<dl class="kb-facts">${biz.rows.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>` : ""}</div>`
+    : `<p class="not-added">The overview appears here once the business facts are saved.</p>`;
   if (!filled.length) return lead;
   const jump = `<div class="kb-jump">${filled.map((s) => `<button type="button" data-a="${reg(() => jumpKb(s.id))}">${esc(s.name)}</button>`).join("")}</div>`;
   const grid = `<div class="knowledge-grid">${filled.map((s) => `<div class="knowledge-block" id="kb-${s.id}"><div class="section-title"><h3>${esc(s.name)}</h3>${canEdit() ? `<button aria-label="Edit ${s.name}" class="text-button" data-a="${reg(() => editClient(c, s.id))}">Edit</button>` : ""}</div>${s.fields.map((f) => `<div class="knowledge-field"><span>${esc(f.label)}${c.internalFields.includes(f.key) ? ic("lock", { size: 11 }) : ""}</span><p>${esc(c.fields[f.key])}</p></div>`).join("")}</div>`).join("")}</div>`;
@@ -508,9 +512,9 @@ function kbArticle(c) {
   return `${lead}${jump}${grid}${gap}`;
 }
 function chatOverview(c) {
-  const summary = kbSummaryText(c);
-  if (!summary) return `<p class="not-added">The overview appears here once the first facts are saved.</p>`;
-  return `<p class="kb-chat-sum">${esc(summary)}</p>`;
+  const biz = kbBusiness(c);
+  if (!biz.about && !biz.rows.length) return `<p class="not-added">The overview appears here once the business facts are saved.</p>`;
+  return `<div class="kb-chat-sum">${biz.about ? `<p>${esc(briefBit(biz.about, 220))}</p>` : ""}${biz.rows.map(([label, value]) => `<p><b>${esc(label)}.</b> ${esc(briefBit(value, 140))}</p>`).join("")}</div>`;
 }
 function viewClient(c) {
   const ws = st.ws; if (det.forId !== c.id) { det.forId = c.id; det.tab = "overview"; }

@@ -202,6 +202,11 @@ body{background:var(--background)}
 .kb-summary{margin:0 0 14px;padding:22px 24px;border:1px solid var(--border);border-radius:12px;background:#fff}
 .kb-summary .eyebrow{margin-bottom:8px}
 .kb-summary p{margin:0;max-width:78ch;font-size:15px;line-height:1.55}
+.kb-facts{display:flex;flex-direction:column;gap:8px;margin:14px 0 0}
+.kb-facts div{display:grid;grid-template-columns:108px 1fr;gap:12px}
+.kb-facts dt{font-size:12px;font-weight:650;color:#667085}
+.kb-facts dd{margin:0;font-size:14px;line-height:1.45}
+@media (max-width:700px){.kb-facts div{grid-template-columns:1fr;gap:2px}}
 .kb-jump{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
 .kb-jump button{padding:5px 10px;border:1px solid var(--border);border-radius:99px;background:#fff;font:inherit;font-size:12.5px;cursor:pointer}
 .kb-jump button:hover{background:var(--accent)}
@@ -212,7 +217,8 @@ body{background:var(--background)}
 .kb-gap div{display:flex;flex-wrap:wrap;gap:6px}
 .kb-gap button,.kb-gap span{padding:4px 10px;border:1px solid var(--border);border-radius:99px;background:#fff;font:inherit;font-size:12px;color:#667085}
 .kb-gap button{cursor:pointer}
-.kb-chat-sum{margin:0;font-size:13.5px;line-height:1.5}
+.kb-chat-sum p{margin:0 0 4px;font-size:13.5px;line-height:1.45}
+.kb-chat-sum p:last-child{margin:0}
 .chat-overview{border-bottom:1px solid var(--border);padding:14px 16px 12px;background:#f7f9fd}
 .chat-overview .eyebrow{font-size:11px;letter-spacing:.08em;color:#8b95a8;margin-bottom:4px}
 .chat-overview .hint{margin:0 0 10px;font-size:12.5px}

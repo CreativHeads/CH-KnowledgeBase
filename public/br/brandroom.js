@@ -472,14 +472,7 @@ function briefBit(v, n = 160) {
   if (s.length <= n) return s;
   return s.slice(0, n).replace(/\s+\S*$/, "") + "…";
 }
-const CHAPTERS = [
-  ["The business", ["basics", "messages", "audience", "products", "offers"]],
-  ["How the brand sounds", ["voice", "words", "languages"]],
-  ["Caption rules", ["social", "platforms", "seasonal", "compliance"]],
-  ["Look and logo", ["recognition"]],
-  ["How the account runs", ["contacts", "ads", "seo", "assets", "competitors"]],
-];
-const READ_ORDER = CHAPTERS.flatMap(([, ids]) => ids);
+const READ_ORDER = ["basics", "audience", "products", "messages", "offers", "voice", "words", "languages", "social", "platforms", "seasonal", "compliance", "recognition", "contacts", "ads", "seo", "assets", "competitors"];
 function kbSections(c) {
   const byId = new Map(SECTIONS.map((s) => [s.id, s]));
   return READ_ORDER.map((id) => byId.get(id)).filter((s) => s && s.id !== "internal" && (canEdit() || s.id !== "competitors")).map((s) => {
@@ -487,25 +480,22 @@ function kbSections(c) {
     return { ...s, fields, filled: fields.length > 0 };
   });
 }
+function jumpKb(id) { document.getElementById("kb-" + id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
 function kbArticle(c) {
-  const byId = new Map(kbSections(c).map((s) => [s.id, s]));
-  const chapters = CHAPTERS.map(([title, ids]) => {
-    const filled = ids.map((id) => byId.get(id)).filter((s) => s && s.filled);
-    const empty = ids.map((id) => byId.get(id)).filter((s) => s && !s.filled);
-    return { title, filled, empty };
-  }).filter((ch) => ch.filled.length);
-  if (!chapters.length) return `<p class="not-added">The brand guide appears here once the first facts are saved.</p>`;
-  const body = chapters.map((ch) => `<section class="kb-chapter"><h2>${esc(ch.title)}</h2><div class="knowledge-grid">${ch.filled.map((s) => `<div class="knowledge-block" id="kb-${s.id}"><div class="section-title"><h3>${esc(s.name)}</h3>${canEdit() ? `<button aria-label="Edit ${s.name}" class="text-button" data-a="${reg(() => editClient(c, s.id))}">Edit</button>` : ""}</div>${s.fields.map((f) => `<div class="knowledge-field"><span>${esc(f.label)}${c.internalFields.includes(f.key) ? ic("lock", { size: 11 }) : ""}</span><p>${esc(c.fields[f.key])}</p></div>`).join("")}</div>`).join("")}</div></section>`).join("");
-  const missing = chapters.flatMap((ch) => ch.empty);
-  const gap = missing.length ? `<div class="kb-gap"><h3>Still to add</h3><div>${missing.map((s) => canEdit() ? `<button type="button" data-a="${reg(() => editClient(c, s.id))}">${esc(s.name)}</button>` : `<span>${esc(s.name)}</span>`).join("")}</div></div>` : "";
-  return `${body}${gap}`;
+  const all = kbSections(c);
+  const filled = all.filter((s) => s.filled);
+  const empty = all.filter((s) => !s.filled);
+  if (!filled.length) return `<p class="not-added">This article appears once the first facts are saved.</p>`;
+  const outline = filled.map((s) => `<button type="button" data-a="${reg(() => jumpKb(s.id))}">${esc(s.name)}</button>`).join("");
+  const page = filled.map((s) => `<section id="kb-${s.id}"><header><h2>${esc(s.name)}</h2>${canEdit() ? `<button class="text-button" data-a="${reg(() => editClient(c, s.id))}">Edit</button>` : ""}</header>${s.fields.map((f) => `<h3>${esc(f.label)}${c.internalFields.includes(f.key) ? ic("lock", { size: 11 }) : ""}</h3><p>${esc(c.fields[f.key])}</p>`).join("")}</section>`).join("");
+  const gap = empty.length ? `<div class="kb-gap"><h3>Not written yet</h3><div>${empty.map((s) => canEdit() ? `<button type="button" data-a="${reg(() => editClient(c, s.id))}">${esc(s.name)}</button>` : `<span>${esc(s.name)}</span>`).join("")}</div></div>` : "";
+  return `<div class="kb-doc"><nav class="kb-outline" aria-label="On this page">${outline}</nav><article class="kb-page">${page}${gap}</article></div>`;
 }
 function chatOverview(c) {
-  const byId = new Map(kbSections(c).map((s) => [s.id, s]));
-  const chapters = CHAPTERS.filter(([, ids]) => ids.some((id) => byId.get(id)?.filled)).map(([title]) => title);
+  const filled = kbSections(c).filter((s) => s.filled);
   const about = briefBit(c.fields.about || c.fields.tagline, 220);
-  if (!about && !chapters.length) return `<p class="not-added">The brand guide appears here once the first facts are saved.</p>`;
-  return `<div class="kb-chat-sum">${about ? `<p>${esc(about)}</p>` : ""}<p>${chapters.map((title) => esc(title)).join(" · ")}</p></div>`;
+  if (!about && !filled.length) return `<p class="not-added">This article appears once the first facts are saved.</p>`;
+  return `<div class="kb-chat-sum">${about ? `<p>${esc(about)}</p>` : ""}<p>${filled.slice(0, 8).map((s) => esc(s.name)).join(" · ")}</p></div>`;
 }
 function viewClient(c) {
   const ws = st.ws; if (det.forId !== c.id) { det.forId = c.id; det.tab = "overview"; }

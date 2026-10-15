@@ -198,9 +198,18 @@ body{background:var(--background)}
 .delete-list+.form-field{display:grid;gap:6px;margin-bottom:14px}
 .delete-list+.form-field label{font-size:14px}
 
-/* agency brand guide: chapters, then the cards inside each chapter */
-.kb-chapter{margin:0 0 28px}
-.kb-chapter>h2{margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8b95a8}
+/* knowledge base article: outline on the left, the writing down the page */
+.kb-doc{display:grid;grid-template-columns:180px minmax(0,1fr);gap:28px;align-items:start}
+.kb-outline{position:sticky;top:12px;display:flex;flex-direction:column;max-height:calc(100vh - 24px);overflow:auto}
+.kb-outline button{display:block;width:100%;padding:6px 0 6px 10px;border:0;border-left:2px solid #e6eaf1;background:none;text-align:left;font:inherit;font-size:13px;color:#3c475c;cursor:pointer}
+.kb-outline button:hover{border-left-color:#3b5bdb;color:#3b5bdb}
+.kb-page{max-width:740px}
+.kb-page section{scroll-margin-top:76px;padding-top:8px}
+.kb-page header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:22px;border-bottom:1px solid var(--border)}
+.kb-page h2{margin:0 0 8px;font-size:20px;font-weight:680;letter-spacing:-.01em}
+.kb-page h3{display:flex;align-items:center;gap:6px;margin:16px 0 4px;font-size:12px;font-weight:650;color:#667085}
+.kb-page p{margin:0;font-size:15px;line-height:1.6;white-space:pre-wrap}
+@media (max-width:800px){.kb-doc{grid-template-columns:1fr}.kb-outline{position:static;flex-direction:row;flex-wrap:wrap;gap:8px;max-height:none}.kb-outline button{width:auto;border-left:0;padding:4px 8px}}
 /* knowledge base overview: a summary, then the sections with their facts */
 .kb-summary{margin:0 0 14px;padding:22px 24px;border:1px solid var(--border);border-radius:12px;background:#fff}
 .kb-summary .eyebrow{margin-bottom:8px}

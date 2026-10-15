@@ -472,7 +472,14 @@ function briefBit(v, n = 160) {
   if (s.length <= n) return s;
   return s.slice(0, n).replace(/\s+\S*$/, "") + "…";
 }
-const READ_ORDER = ["messages", "basics", "audience", "products", "voice", "words", "languages", "social", "platforms", "offers", "seasonal", "compliance", "recognition", "contacts", "ads", "seo", "assets", "competitors"];
+const CHAPTERS = [
+  ["The business", ["basics", "messages", "audience", "products", "offers"]],
+  ["How the brand sounds", ["voice", "words", "languages"]],
+  ["Caption rules", ["social", "platforms", "seasonal", "compliance"]],
+  ["Look and logo", ["recognition"]],
+  ["How the account runs", ["contacts", "ads", "seo", "assets", "competitors"]],
+];
+const READ_ORDER = CHAPTERS.flatMap(([, ids]) => ids);
 function kbSections(c) {
   const byId = new Map(SECTIONS.map((s) => [s.id, s]));
   return READ_ORDER.map((id) => byId.get(id)).filter((s) => s && s.id !== "internal" && (canEdit() || s.id !== "competitors")).map((s) => {
@@ -480,41 +487,25 @@ function kbSections(c) {
     return { ...s, fields, filled: fields.length > 0 };
   });
 }
-function jumpKb(id) { document.getElementById("kb-" + id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
-function factLines(v, n) {
-  return String(v || "").split(/\n/).map((s) => s.replace(/\s+/g, " ").trim()).filter(Boolean).slice(0, n);
-}
-function kbBusiness(c) {
-  const f = c.fields || {};
-  const about = String(f.about || f.tagline || "").replace(/\s+/g, " ").trim();
-  const contact = [f.phones, f.website].map((v) => String(v || "").replace(/\s+/g, " ").trim()).filter(Boolean).join(" · ");
-  const rows = [
-    ["Services", factLines(f.products, 8).join(" · ")],
-    ["Locations", String(f.address || c.location || "").replace(/\s+/g, " ").trim()],
-    ["Audience", briefBit(f.audience, 220)],
-    ["Credentials", factLines(f.usps, 6).join(" · ")],
-    ["Contact", contact],
-  ].filter(([, value]) => value);
-  return { about, rows };
-}
 function kbArticle(c) {
-  const all = kbSections(c);
-  const filled = all.filter((s) => s.filled);
-  const empty = all.filter((s) => !s.filled);
-  const biz = kbBusiness(c);
-  const lead = biz.about || biz.rows.length
-    ? `<div class="kb-summary"><div class="eyebrow">OVERVIEW</div>${biz.about ? `<p>${esc(biz.about)}</p>` : ""}${biz.rows.length ? `<dl class="kb-facts">${biz.rows.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>` : ""}</div>`
-    : `<p class="not-added">The overview appears here once the business facts are saved.</p>`;
-  if (!filled.length) return lead;
-  const jump = `<div class="kb-jump">${filled.map((s) => `<button type="button" data-a="${reg(() => jumpKb(s.id))}">${esc(s.name)}</button>`).join("")}</div>`;
-  const grid = `<div class="knowledge-grid">${filled.map((s) => `<div class="knowledge-block" id="kb-${s.id}"><div class="section-title"><h3>${esc(s.name)}</h3>${canEdit() ? `<button aria-label="Edit ${s.name}" class="text-button" data-a="${reg(() => editClient(c, s.id))}">Edit</button>` : ""}</div>${s.fields.map((f) => `<div class="knowledge-field"><span>${esc(f.label)}${c.internalFields.includes(f.key) ? ic("lock", { size: 11 }) : ""}</span><p>${esc(c.fields[f.key])}</p></div>`).join("")}</div>`).join("")}</div>`;
-  const gap = empty.length ? `<div class="kb-gap"><h3>Still to add</h3><div>${empty.map((s) => canEdit() ? `<button type="button" data-a="${reg(() => editClient(c, s.id))}">${esc(s.name)}</button>` : `<span>${esc(s.name)}</span>`).join("")}</div></div>` : "";
-  return `${lead}${jump}${grid}${gap}`;
+  const byId = new Map(kbSections(c).map((s) => [s.id, s]));
+  const chapters = CHAPTERS.map(([title, ids]) => {
+    const filled = ids.map((id) => byId.get(id)).filter((s) => s && s.filled);
+    const empty = ids.map((id) => byId.get(id)).filter((s) => s && !s.filled);
+    return { title, filled, empty };
+  }).filter((ch) => ch.filled.length);
+  if (!chapters.length) return `<p class="not-added">The brand guide appears here once the first facts are saved.</p>`;
+  const body = chapters.map((ch) => `<section class="kb-chapter"><h2>${esc(ch.title)}</h2><div class="knowledge-grid">${ch.filled.map((s) => `<div class="knowledge-block" id="kb-${s.id}"><div class="section-title"><h3>${esc(s.name)}</h3>${canEdit() ? `<button aria-label="Edit ${s.name}" class="text-button" data-a="${reg(() => editClient(c, s.id))}">Edit</button>` : ""}</div>${s.fields.map((f) => `<div class="knowledge-field"><span>${esc(f.label)}${c.internalFields.includes(f.key) ? ic("lock", { size: 11 }) : ""}</span><p>${esc(c.fields[f.key])}</p></div>`).join("")}</div>`).join("")}</div></section>`).join("");
+  const missing = chapters.flatMap((ch) => ch.empty);
+  const gap = missing.length ? `<div class="kb-gap"><h3>Still to add</h3><div>${missing.map((s) => canEdit() ? `<button type="button" data-a="${reg(() => editClient(c, s.id))}">${esc(s.name)}</button>` : `<span>${esc(s.name)}</span>`).join("")}</div></div>` : "";
+  return `${body}${gap}`;
 }
 function chatOverview(c) {
-  const biz = kbBusiness(c);
-  if (!biz.about && !biz.rows.length) return `<p class="not-added">The overview appears here once the business facts are saved.</p>`;
-  return `<div class="kb-chat-sum">${biz.about ? `<p>${esc(briefBit(biz.about, 220))}</p>` : ""}${biz.rows.map(([label, value]) => `<p><b>${esc(label)}.</b> ${esc(briefBit(value, 140))}</p>`).join("")}</div>`;
+  const byId = new Map(kbSections(c).map((s) => [s.id, s]));
+  const chapters = CHAPTERS.filter(([, ids]) => ids.some((id) => byId.get(id)?.filled)).map(([title]) => title);
+  const about = briefBit(c.fields.about || c.fields.tagline, 220);
+  if (!about && !chapters.length) return `<p class="not-added">The brand guide appears here once the first facts are saved.</p>`;
+  return `<div class="kb-chat-sum">${about ? `<p>${esc(about)}</p>` : ""}<p>${chapters.map((title) => esc(title)).join(" · ")}</p></div>`;
 }
 function viewClient(c) {
   const ws = st.ws; if (det.forId !== c.id) { det.forId = c.id; det.tab = "overview"; }

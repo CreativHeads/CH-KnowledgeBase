@@ -468,40 +468,52 @@ function openAddClient() {
 
 /* ================= Client detail ================= */
 function briefBit(v, n = 160) {
-  const lines = String(v || "").split(/\n/).map((s) => s.replace(/\s+/g, " ").trim()).filter(Boolean).slice(0, 3);
-  const s = lines.join(" · ");
+  const s = String(v || "").replace(/\s+/g, " ").trim();
   if (s.length <= n) return s;
   return s.slice(0, n).replace(/\s+\S*$/, "") + "…";
 }
-function briefOverview(c) {
-  const f = c.fields || {};
-  const rows = [
-    ["What they do", f.about, 220],
-    ["Where", f.address || c.location, 120],
-    ["What they offer", f.products, 180],
-    ["Remember", f.usps, 160],
-    ["Customer", f.audience, 160],
-    ["Voice", f.tone, 160],
-    ["Language", [f.primaryLanguage, f.languageNotes].filter(Boolean).join(". "), 140],
-    ["Ask them to", f.cta, 120],
-    ["Caption", f.format || f.maxLength, 180],
-    ["Hashtags", f.hashtags, 160],
-  ].map(([label, value, n]) => [label, briefBit(value, n)]).filter(([, value]) => value);
-  const line = briefBit(f.tagline || f.soundsLike, 120);
-  return { line, rows };
+const READ_ORDER = ["messages", "basics", "audience", "products", "voice", "words", "languages", "social", "platforms", "offers", "seasonal", "compliance", "recognition", "contacts", "ads", "seo", "assets", "competitors"];
+function kbSections(c) {
+  const byId = new Map(SECTIONS.map((s) => [s.id, s]));
+  return READ_ORDER.map((id) => byId.get(id)).filter((s) => s && s.id !== "internal" && (canEdit() || s.id !== "competitors")).map((s) => {
+    const fields = s.fields.filter((f) => String(c.fields[f.key] || "").trim() && !(s.id === "basics" && f.key === "about") && !(s.id === "messages" && f.key === "tagline"));
+    return { ...s, fields, filled: fields.length > 0 };
+  });
 }
-function overviewCard(c) {
-  const b = briefOverview(c);
-  if (!b.line && !b.rows.length) return `<p class="not-added">Answer a few questions and a short overview will collect here.</p>`;
-  return `<div class="brief-overview">${b.line ? `<h2>“${esc(b.line)}”</h2>` : ""}${b.rows.map(([label, value]) => `<div class="brief-row"><span>${esc(label)}</span><p>${esc(value)}</p></div>`).join("")}</div>`;
+function jumpKb(id) { document.getElementById("kb-" + id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
+function brandLead(c) {
+  const line = String(c.fields.tagline || c.fields.soundsLike || "").trim();
+  const about = String(c.fields.about || "").trim();
+  if (!line && !about) return `<p class="not-added">The first answers become the opening of this knowledge base.</p>`;
+  return `${line ? `<h2>“${esc(line)}”</h2>` : ""}<p class="kb-about">${esc(about || "The sections below are what the team and the bots can use.")}</p>`;
+}
+function kbArticle(c) {
+  const all = kbSections(c);
+  const filled = all.filter((s) => s.filled);
+  const empty = all.filter((s) => !s.filled);
+  if (!filled.length) return `<p class="not-added">Nothing is filed yet. Each answer in the chat becomes the next section.</p>`;
+  const toc = filled.map((s, i) => `<button type="button" data-a="${reg(() => jumpKb(s.id))}"><b>${i + 1}</b>${esc(s.name)}</button>`).join("");
+  const body = filled.map((s, i) => {
+    const next = filled[i + 1];
+    return `<article class="kb-section" id="kb-${s.id}"><header><h3><b>${i + 1}</b>${esc(s.name)}</h3>${canEdit() ? `<button class="text-button" data-a="${reg(() => editClient(c, s.id))}">Edit</button>` : ""}</header><p class="kb-why">${esc(s.description)}</p>${s.fields.map((f) => `<div class="kb-field"><h4>${esc(f.label)}${c.internalFields.includes(f.key) ? ic("lock", { size: 11 }) : ""}</h4><p>${esc(c.fields[f.key])}</p></div>`).join("")}${next ? `<button type="button" class="kb-next" data-a="${reg(() => jumpKb(next.id))}">Next<span>${esc(next.name)}</span></button>` : ""}</article>`;
+  }).join("");
+  const gap = empty.length ? `<div class="kb-gap"><h3>Still to add</h3><div>${empty.map((s) => canEdit() ? `<button type="button" data-a="${reg(() => editClient(c, s.id))}">${esc(s.name)}</button>` : `<span>${esc(s.name)}</span>`).join("")}</div></div>` : "";
+  return `<nav class="kb-toc" aria-label="On this page">${toc}</nav><div class="kb-article">${body}</div>${gap}`;
+}
+function chatOverview(c) {
+  const filled = kbSections(c).filter((s) => s.filled);
+  const line = briefBit(c.fields.tagline || c.name, 90);
+  const about = briefBit(c.fields.about, 180);
+  if (!filled.length && !about) return `<p class="not-added">Each answer is filed into the next section of the knowledge base.</p>`;
+  return `<div class="kb-chat">${line ? `<h2>${esc(line)}</h2>` : ""}${about ? `<p>${esc(about)}</p>` : ""}<ol>${filled.map((s) => `<li>${esc(s.name)}</li>`).join("")}</ol></div>`;
 }
 function viewClient(c) {
   const ws = st.ws; if (det.forId !== c.id) { det.forId = c.id; det.tab = "overview"; }
   const n = score(c); const refs = ws.refs.filter((r) => r.clientId === c.id);
   const approved = ws.examples.filter((e) => e.clientId === c.id && e.verdict === "approved");
   let content = "";
-  if (det.tab === "overview") content = `<div class="brand-overview"><section><div class="brand-voice-card" style="--brand: ${esc(c.colour)};"><div class="eyebrow">THE BRAND IN A FEW WORDS</div>${overviewCard(c)}<div class="tone-tags">${String(c.fields.adjectives || "").split(",").map((t) => t.trim()).filter((t) => t && t.length < 28).slice(0, 6).map((t) => `<span>${esc(t)}</span>`).join("")}</div></div>
-    <div class="section-title knowledge-title"><h2>Brand knowledge</h2><span>${LIBRARIES.length} libraries</span></div><div class="knowledge-grid">${SECTIONS.filter((s) => s.id !== "basics" && s.id !== "internal" && (canEdit() || s.id !== "competitors")).map((s) => { const fs = s.fields.filter((f) => c.fields[f.key]); return `<div class="knowledge-block"><div class="section-title"><h3>${s.name}</h3>${canEdit() ? `<button aria-label="Edit ${s.name}" class="text-button" data-a="${reg(() => editClient(c, s.id))}">Edit</button>` : ""}</div>${fs.length ? fs.map((f) => `<div class="knowledge-field"><span>${f.label}${c.internalFields.includes(f.key) ? ic("lock", { size: 11 }) : ""}</span><p>${esc(c.fields[f.key])}</p></div>`).join("") : `<p class="not-added">A little more context needed. Add this section.</p>`}</div>`; }).join("")}</div></section>
+  if (det.tab === "overview") content = `<div class="brand-overview"><section><div class="brand-voice-card" style="--brand: ${esc(c.colour)};"><div class="eyebrow">THE BRAND IN A FEW WORDS</div>${brandLead(c)}</div>
+    <div class="section-title knowledge-title"><h2>Brand knowledge</h2><span>Read it in order</span></div>${kbArticle(c)}</section>
     <aside><div class="panel brand-sidecard"><h3>Brand palette</h3><div class="colour-swatches">${(c.fields.colours || c.colour).split(",").map((x) => x.trim()).filter((x) => /^#[a-f\d]{6}$/i.test(x)).map((x) => `<button data-a="${reg(() => copyText(x))}"><span style="background: ${x};"></span><small>${x}</small></button>`).join("")}</div><p>Click a colour to copy its hex code.</p></div>
     <div class="panel brand-sidecard"><h3>${ic("book-open", { size: 17 })}Caption examples</h3><b class="side-number">${approved.length}</b><p>approved examples for this brand</p>${approved.slice(0, 1).map((e) => `<blockquote>${esc(e.text)}</blockquote>`).join("")}</div>
     ${st.me?.canEdit ? `<div class="panel brand-sidecard internal-card"><h3>${ic("lock", { size: 16 })}Internal notes</h3><p>${esc(c.fields.internalNotes || "No internal notes yet.")}</p><small>Excluded from all writing context</small><button class="text-button" data-a="${reg(() => editClient(c, "internal"))}">Edit notes</button></div>` : ""}
@@ -942,7 +954,7 @@ function viewEditor(c) {
   return `<button class="back-button" data-a="${reg(() => (ed.dirty ? confirmLeave(() => { ed.dirty = false; ed.draft = null; ed.messages = null; go("client", c.id); }) : go("client", c.id)))}">${ic("chevron-left", { size: 15 })}Back to ${esc(c.name)}</button>
   ${pageHead("BRAND INTERVIEW", `Get to know ${esc(c.name)}.`, "A chat. Each answer leads to the next relevant question, until the brand knowledge is covered.", editorBadge())}
   <div class="editor-layout"><nav class="section-stepper" id="ed-stepper">${stepper(a, ed.pending?.key, askTopic)}</nav>
-  <section class="editor-main panel chat-panel"><div class="chat-overview"><div class="eyebrow">OVERVIEW</div><p class="hint">Collected from the answers. It updates each time you send one.</p>${overviewCard(a)}</div><div id="chat-log" class="chat-log">${log}</div>
+  <section class="editor-main panel chat-panel"><div class="chat-overview"><div class="eyebrow">KNOWLEDGE BASE</div><p class="hint">Each answer is filed into the next section. This list grows as you answer.</p>${chatOverview(a)}</div><div id="chat-log" class="chat-log">${log}</div>
   ${ed.error ? `<p class="error-text" role="alert">${esc(ed.error)}</p>` : ""}
   ${ed.intake ? `<p class="hint">Fill in the details above, or skip and answer the questions.</p>` : ""}
   ${!ed.intake && canEdit() ? `<div class="chat-tools"><button type="button" class="text-button" data-a="${reg(() => openIntake(c))}">${ic("globe", { size: 14 })}${String(a.fields.website || "").trim() ? "Read the website again" : "Read a website"}</button><label class="text-button">${ic("upload", { size: 14 })}Add logo or file<input id="chat-file" type="file" accept="image/jpeg,image/png,image/webp,.pdf,.txt,.md,.csv,application/pdf,text/plain" ${ed.uploading ? "disabled" : ""}></label></div>` : ""}

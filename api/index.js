@@ -9,6 +9,7 @@ const kbapi = require("../lib/kbapi");
 const users = require("../lib/users");
 const libs = require("../lib/libraries");
 const onboard = require("../lib/onboard");
+const intake = require("../lib/intake");
 const { ensure } = require("../lib/ensure");
 const { all, one, query } = require("../lib/db");
 
@@ -160,26 +161,63 @@ route("DELETE", "/api/br/users/:id", async ({ user, p }) => {
 });
 
 /* ---------- documents: read on upload, then used as brand knowledge ---------- */
-route("POST", "/api/br/documents", async ({ req, user }) => {
-  auth.needEditor(user);
-  const b = await readBody(req, 5e6);
-  const c = await ws.clientOr404(b.clientId);
-  const mime = String(b.mime || "").split(";")[0];
-  if (!docs.TYPES[mime]) throw new HttpError(400, "Use a PDF, or a plain text, Markdown or CSV file.");
-  const buf = Buffer.from(String(b.data || ""), "base64");
+// Files over the host's 4.5 MB request limit arrive in pieces, are held in storage, and are joined on "finish".
+const CHUNK_MAX = 25;
+const uploadKey = (user, id) => {
+  if (!/^[0-9a-f-]{36}$/.test(String(id || ""))) throw new HttpError(400, "Bad upload.");
+  return `tmp/${user.id}/${id}`;
+};
+async function saveDocument(c, name, mime, buf, user) {
   if (!buf.length) throw new HttpError(400, "That file came through empty.");
-  if (!docs.sniff(mime, buf)) throw new HttpError(400, "That file is not really a " + docs.TYPES[mime] + " file.");
   if (buf.length > docs.MAX_BYTES) throw new HttpError(413, `Files need to be under ${Math.floor(docs.MAX_BYTES / 1024 / 1024)} MB.`);
-
-  const name = String(b.name || "Document").slice(0, 160) || "Document";
-  const ext = (name.match(/\.[a-z0-9]{1,5}$/i) || [""])[0] || "";
+  if (!docs.sniff(mime, buf)) throw new HttpError(400, "That file is not really a " + docs.TYPES[mime] + " file.");
+  name = String(name || "Document").slice(0, 160) || "Document";
+  const ext = (name.match(/.[a-z0-9]{1,5}$/i) || [""])[0] || "";
   const path = `${c.slug}/docs/${crypto.randomUUID()}${ext}`;
   await storage.upload(path, buf, mime);
-
   const row = await docs.add({ client: c, name, mime, buffer: buf, path, actor: user });
   await query("UPDATE clients SET updated_at = now() WHERE id = $1", [c.id]);
   await ws.logActivity(user, c.id, `Added the document “${name}” to ${c.name}.`);
   return { document: docs.out(row, c.slug) };
+}
+const docMime = (b) => {
+  const mime = String(b.mime || "").split(";")[0];
+  if (!docs.TYPES[mime]) throw new HttpError(400, "Use a PDF, Word, PowerPoint, text, Markdown or CSV file.");
+  return mime;
+};
+route("POST", "/api/br/documents", async ({ req, user }) => {
+  auth.needEditor(user);
+  const b = await readBody(req, 5e6);
+  const c = await ws.clientOr404(b.clientId);
+  return saveDocument(c, b.name, docMime(b), Buffer.from(String(b.data || ""), "base64"), user);
+});
+route("POST", "/api/br/documents/chunk", async ({ req, user }) => {
+  auth.needEditor(user);
+  const b = await readBody(req, 4e6);
+  const i = Number(b.index);
+  if (!Number.isInteger(i) || i < 0 || i >= CHUNK_MAX) throw new HttpError(400, "That file is too large.");
+  const buf = Buffer.from(String(b.data || ""), "base64");
+  if (!buf.length || buf.length > 3 * 1024 * 1024) throw new HttpError(400, "Bad piece.");
+  await storage.upload(`${uploadKey(user, b.uploadId)}/${i}`, buf, "application/octet-stream");
+  return { ok: true };
+});
+route("POST", "/api/br/documents/finish", async ({ req, user }) => {
+  auth.needEditor(user);
+  const b = await readBody(req);
+  const c = await ws.clientOr404(b.clientId);
+  const mime = docMime(b);
+  const key = uploadKey(user, b.uploadId);
+  const count = Number(b.count);
+  if (!Number.isInteger(count) || count < 1 || count > CHUNK_MAX) throw new HttpError(400, "That file is too large.");
+  const parts = [];
+  try {
+    const got = await Promise.all(Array.from({ length: count }, (_, i) => storage.download(`${key}/${i}`)));
+    if (got.reduce((n, p) => n + p.length, 0) > docs.MAX_BYTES) throw new HttpError(413, `Files need to be under ${Math.floor(docs.MAX_BYTES / 1024 / 1024)} MB.`);
+    parts.push(...got);
+    return await saveDocument(c, b.name, mime, Buffer.concat(parts), user);
+  } finally {
+    for (let i = 0; i < count; i++) await storage.remove(`${key}/${i}`);
+  }
 });
 
 route("GET", "/api/br/documents/:id/text", async ({ user, p }) => {
@@ -261,6 +299,12 @@ route("POST", "/api/br/onboarding", async ({ req, user }) => {
   if (b.action === "ask") return onboard.askNext(b);
   if (b.action === "learn") return onboard.learnAnswer(b);
   return { session: await onboard.start(b, user) };
+});
+
+/* The brand assistant: reads sources, files facts, asks what is missing. */
+route("POST", "/api/br/intake", async ({ req, user }) => {
+  auth.needEditor(user);
+  return intake.handle(await readBody(req, 4e6), user);
 });
 
 /* What the bot actually reads, documents included. Shown in the Writing context tab. */

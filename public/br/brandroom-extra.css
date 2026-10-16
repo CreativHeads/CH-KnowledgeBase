@@ -248,3 +248,33 @@ body{background:var(--background)}
 .review-item.off textarea{opacity:.55}
 .chat-log:has(.review-card){max-height:none}
 @media (max-width:767px){.review-card{width:100%;max-width:100%}}
+
+/* Brand assistant */
+.ia-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,1fr);gap:18px;align-items:start}
+.ia-chat{height:calc(100vh - 260px);min-height:480px}
+.ia-chat .chat-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ia-chat .chat-compose{flex-wrap:wrap}
+.ia-chat input[type=file]{display:none}
+.ia-panel{padding:16px 18px;max-height:calc(100vh - 260px);min-height:480px;overflow:auto}
+.ia-score{margin:8px 0 14px}
+.ia-category{border-top:1px solid #eef0f5}
+.ia-summary{all:unset;box-sizing:border-box;width:100%;display:flex;justify-content:space-between;align-items:center;padding:11px 0;cursor:pointer;font-weight:600}
+.ia-summary small{color:#7c8baa}
+.ia-summary:focus-visible{outline:2px solid #526bc4;outline-offset:2px}
+.ia-row{padding:8px 0 12px;border-top:1px dashed #eef0f5}
+.ia-rowhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ia-row p{margin:4px 0;font-size:14px;white-space:normal;word-break:break-word}
+.ia-none{color:#9aa5bd}
+.ia-tag{font-size:11px;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#3d52a0}
+.ia-tag.review{background:#fff4e0;color:#8a5a00}
+.ia-actions{display:flex;gap:6px;flex-wrap:wrap}
+.ia-alt{background:#f6f8fd;border-radius:8px;padding:8px;font-size:13px;margin:6px 0}
+.ia-changes{margin-top:10px;display:grid;gap:10px}
+.ia-cat>b{display:block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#7c8baa;margin-bottom:4px}
+.ia-fact{display:grid;gap:1px;padding:6px 8px;border-left:3px solid #526bc4;background:#f6f8fd;border-radius:6px;margin-bottom:4px}
+.ia-fact.kept{border-color:#c9a227;background:#fffaf0}
+.ia-fact .ia-label{font-weight:600;font-size:13px}
+.ia-fact .ia-value{font-size:13px;white-space:pre-line}
+.ia-fact small{color:#7c8baa}
+.ia-question{border:1px solid #526bc4}
+@media (max-width:900px){.ia-layout{grid-template-columns:1fr}.ia-chat,.ia-panel{height:auto;max-height:none;min-height:0}.ia-chat .chat-log{max-height:60vh}}

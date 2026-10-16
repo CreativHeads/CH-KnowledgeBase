@@ -260,7 +260,7 @@ async function loadContext(c) {
 /* Documents: the file is kept, and the words inside it become brand knowledge the bot reads. */
 const docState = { file: null, busy: false, error: "", busyId: null, openId: null, text: "" };
 const fileSize = (n) => (n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB");
-const DOC_TYPES = "application/pdf,text/plain,text/markdown,text/csv,.pdf,.txt,.md,.csv";
+const DOC_TYPES = "application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain,text/markdown,text/csv,.pdf,.docx,.pptx,.txt,.md,.csv";
 
 function viewDocuments(c) {
   const D = docState;
@@ -277,7 +277,7 @@ function viewDocuments(c) {
   return `<div class="bundle-head"><div><h2>What this brand has written down.</h2><p>Brand guides, price lists, FAQs. The words inside become part of the brand knowledge.</p></div>${pill(`${list.length} document${list.length === 1 ? "" : "s"}`)}</div>
   <div class="doc-layout">
     ${canEdit() ? `<form class="doc-upload panel" data-sub="${reg(() => uploadDoc(c))}">
-      <label class="dropzone">${ic("upload", { size: 26 })}<b>${esc(D.file ? D.file.name : "Choose a document")}</b><span>PDF, text, Markdown or CSV · up to 3 MB</span>
+      <label class="dropzone">${ic("upload", { size: 26 })}<b>${esc(D.file ? D.file.name : "Choose a document")}</b><span>PDF, Word, PowerPoint, text or CSV · up to 50 MB · bigger files: use the Brand assistant</span>
       <input type="file" id="doc-file" accept="${DOC_TYPES}" aria-label="Document"></label>
       ${D.error ? `<p class="error-text">${esc(D.error)}</p>` : ""}
       ${btn((D.busy ? spin() : ic("upload")) + (D.busy ? "Reading the file…" : "Add document"), { type: "submit", disabled: !D.file || D.busy })}
@@ -324,7 +324,7 @@ function viewAllDocuments() {
     ${canEdit() ? `<form class="doc-upload panel" data-sub="${reg(() => uploadDoc(target, true))}">
       <h3 class="doc-upload-title">Add a document</h3>
       <div class="form-field"><label>Client</label>${select(A.target, active.map((c) => ({ value: c.id, label: c.name })), (v) => { A.target = v; renderShell(); }, { label: "Client for this document" })}</div>
-      <label class="dropzone">${ic("upload", { size: 26 })}<b>${esc(D.file ? D.file.name : "Choose a document")}</b><span>PDF, text, Markdown or CSV · up to 3 MB</span>
+      <label class="dropzone">${ic("upload", { size: 26 })}<b>${esc(D.file ? D.file.name : "Choose a document")}</b><span>PDF, Word, PowerPoint, text or CSV · up to 50 MB</span>
       <input type="file" id="alldoc-file" accept="${DOC_TYPES}" aria-label="Document"></label>
       ${D.error ? `<p class="error-text">${esc(D.error)}</p>` : ""}
       ${btn((D.busy ? spin() : ic("upload")) + (D.busy ? "Reading the file…" : "Add document"), { type: "submit", disabled: !D.file || D.busy || !target })}
@@ -360,12 +360,11 @@ async function uploadDoc(c) {
   if (!c) return;
   const D = docState;
   if (!D.file || D.busy) return;
-  if (D.file.size > 3 * 1024 * 1024) { D.error = "That file is over 3 MB. Please use a smaller one."; return renderShell(); }
+  if (D.file.size > 50 * 1024 * 1024) { D.error = "That file is over 50 MB. Please use a smaller one."; return renderShell(); }
   D.busy = true; D.error = ""; renderShell();
   try {
-    const data = await blobB64(D.file);
-    const mime = D.file.type || (/\.md$/i.test(D.file.name) ? "text/markdown" : /\.csv$/i.test(D.file.name) ? "text/csv" : /\.txt$/i.test(D.file.name) ? "text/plain" : "application/pdf");
-    const r = await api("/br/documents", { clientId: c.id, name: D.file.name, mime, data });
+    const mime = MIME_OF[(D.file.name.split(".").pop() || "").toLowerCase()] || D.file.type || "application/pdf";
+    const r = await sendDoc(c.id, D.file, mime);
     await load();
     D.file = null;
     const d = r.document;
@@ -813,142 +812,120 @@ function editorQuestions() {
     ...q, section: SECTIONS.find((s) => s.id === q.section) || SECTIONS[0], top: false, short: !!q.short, label: q.topic,
   }));
 }
-function viewEditor(c) {
-  if (ed.forId !== c.id || !ed.draft) { ed.forId = c.id; ed.draft = JSON.parse(JSON.stringify(c)); ed.dirty = false; ed.error = ""; ed.qi = null; ed.messages = null; ed.pending = null; ed.reply = ""; ed.intake = null; ed.queue = []; ed.review = null; ed.thinking = false; ed.aiOpened = false; ed.uploading = false; }
-  const a = ed.draft;
-  if (!ed.messages) {
-    if (!String(a.fields.website || "").trim() && canEdit()) {
-      ed.messages = [{ role: "bot", text: `I'll learn ${a.name} in this chat. Answer in your own words. The next question follows what you just said, until the brand knowledge is covered.` }];
-      ed.qi = 0; openIntake(a, false);
-    } else {
-      const built = buildChat(a); ed.messages = built.messages; ed.pending = built.pending; ed.qi = built.index;
-      if (st.cfg?.ai && ed.pending && !ed.aiOpened) {
-        ed.aiOpened = true;
-        const askedNow = new Set(ed.messages.filter((m) => m.role === "user" && m.key).map((m) => m.key));
-        const last = [...ed.messages].reverse().find((m) => m.role === "user" && m.key);
-        aiAsk(a, ed.pending, last?.text || "", askedNow, last?.key || "").then((q) => {
-          if (!q?.ask || !ed.pending || (q.key === ed.pending.key && q.ask === ed.pending.ask)) return;
-          if (ed.messages.at(-1)?.role === "bot") {
-            ed.messages[ed.messages.length - 1] = { role: "bot", text: q.ask, key: q.key };
-            ed.pending = q; ed.qi = Math.max(0, editorQuestions().findIndex((x) => x.key === q.key)); renderShell();
-          }
-        });
-      }
-    }
-  }
-  const asked = () => new Set(ed.messages.filter((m) => m.role === "user" && m.key).map((m) => m.key));
-  const askTopic = (i) => {
-    const q = editorQuestions()[i]; if (!q) return;
-    if (ed.pending?.key === q.key && ed.messages.at(-1)?.role === "bot" && ed.messages.at(-1)?.key === q.key) return;
-    const has = String(a.fields[q.key] || "").trim();
-    const ask = has ? `Want to change this? ${q.ask}` : q.ask;
-    ed.pending = { ...q, ask }; ed.qi = i; ed.messages.push({ role: "bot", text: ask, key: q.key }); ed.focusQ = true; renderShell();
-  };
-  const send = async (forced) => {
-    const text = (typeof forced === "string" ? forced : ed.reply).trim();
-    if (!text || !ed.pending || ed.saving || ed.thinking) return;
-    const key = ed.pending.key;
-    const suggest = ed.pending.suggest;
-    const rejected = suggest && NO.test(text);
-    const value = suggest && YES.test(text) ? suggest : text;
-    ed.messages.push({ role: "user", text, key: rejected ? undefined : key });
-    ed.reply = "";
-    if (rejected) {
-      const next = handover(ed.pending, nextConfirm(a) || pickNext(a, asked(), "", true));
-      ed.pending = next;
-      ed.qi = next ? Math.max(0, editorQuestions().findIndex((q) => q.key === next.key)) : ed.qi;
-      ed.messages.push({ role: "bot", text: next ? `Left out. ${next.ask}` : "That covers the brand knowledge.", key: next?.key });
-      ed.focusQ = true; renderShell(); return;
-    }
-    let saved = value;
-    if (st.cfg?.ai && !suggest) {
-      ed.thinking = "check"; renderShell();
-      try {
-        const known = {};
-        for (const [k, v] of Object.entries(a.fields || {})) if (String(v || "").trim() && !/internal|competitor|locked/i.test(k)) known[k] = String(v).slice(0, 400);
-        const learned = await api("/br/onboarding", { action: "learn", field: key, question: ed.pending.ask || "", answer: value, name: a.name, known });
-        for (const u of learned.updates || []) if (u.field && u.value) a.fields[u.field] = u.value;
-        saved = a.fields[key] || value;
-        if (learned.note) ed.messages.push({ role: "bot", text: learned.note });
-      } catch { a.fields[key] = value; }
-      ed.thinking = false;
-    } else a.fields[key] = value;
-    let picked = nextConfirm(a) || (suggest ? pickNext(a, asked(), "", true) : pickNext(a, asked(), saved));
-    if (picked && !picked.suggest && st.cfg?.ai) {
-      ed.thinking = "next"; renderShell();
-      picked = await aiAsk(a, picked, suggest ? "" : saved, asked(), suggest ? "" : key);
-      ed.thinking = false;
-    }
-    const next = handover(ed.pending, picked);
-    ed.pending = next;
-    ed.qi = next ? Math.max(0, editorQuestions().findIndex((q) => q.key === next.key)) : ed.qi;
-    ed.messages.push({ role: "bot", text: next ? next.ask : "That covers the brand knowledge. Your answers are saved.", key: next?.key });
-    ed.saving = true; ed.focusQ = true; ed.error = ""; renderShell();
-    try { const r = await act({ action: "client.save", client: a }); await load(); ed.draft = JSON.parse(JSON.stringify(r.client)); ed.dirty = false; }
-    catch (e) { ed.error = e.message; ed.dirty = true; }
-    finally { ed.saving = false; renderShell(); }
-  };
-  const skip = async () => {
-    if (!ed.pending || ed.saving || ed.thinking) return;
-    const key = ed.pending.key;
-    ed.messages.push({ role: "user", text: "Skip this one.", key: ed.pending.suggest ? undefined : key });
-    let picked = nextConfirm(a) || pickNext(a, asked(), "", true);
-    if (picked && !picked.suggest && st.cfg?.ai) {
-      ed.thinking = true; renderShell();
-      const last = [...ed.messages].reverse().find((m) => m.role === "user" && m.key && !/^skip this one\.?$/i.test(m.text));
-      picked = await aiAsk(a, picked, last?.text || "", asked(), last?.key || "");
-      ed.thinking = false;
-    }
-    const next = handover(ed.pending, picked);
-    ed.pending = next;
-    ed.qi = next ? editorQuestions().findIndex((q) => q.key === next.key) : ed.qi;
-    ed.messages.push({ role: "bot", text: next ? next.ask : "That covers the brand knowledge.", key: next?.key });
-    ed.focusQ = true; renderShell();
-  };
-  const saveChatFile = async (file) => {
-    if (!file || ed.uploading) return;
-    ed.uploading = true; ed.error = ""; renderShell();
+/* ================= Brand assistant (replaces the interview) ================= */
+const ia = { forId: null, data: null, busy: "", text: "", error: "", editing: null, editText: "", loading: false, open: {} };
+const URLISH = /^(https?:\/\/\S+|(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}(?:\/\S*)?)$/i;
+const MIME_OF = { pdf: "application/pdf", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation", csv: "text/csv", md: "text/markdown", txt: "text/plain" };
+async function sendDoc(clientId, file, mime) {
+  if (file.size <= 2.5e6) return api("/br/documents", { clientId, name: file.name, mime, data: await blobB64(file) });
+  const piece = 2.4e6, count = Math.ceil(file.size / piece), uploadId = crypto.randomUUID();
+  for (let i = 0; i < count; i++) await api("/br/documents/chunk", { uploadId, index: i, data: await blobB64(file.slice(i * piece, (i + 1) * piece)) });
+  return api("/br/documents/finish", { clientId, uploadId, count, name: file.name, mime });
+}
+async function iaCall(body, busy) {
+  if (ia.busy) return;
+  ia.busy = busy || "Working…"; ia.error = ""; renderShell();
+  try { ia.data = await api("/br/intake", { clientId: ia.forId, ...body }); }
+  catch (e) { ia.error = e.message; }
+  finally { ia.busy = ""; ia.scroll = true; renderShell(); }
+}
+async function iaFiles(files) {
+  if (ia.busy) return;
+  for (const file of files) {
+    ia.busy = `Reading ${file.name}…`; ia.error = ""; renderShell();
     try {
       const image = /^image\/(jpeg|png|webp)$/.test(file.type) || /\.(jpe?g|png|webp)$/i.test(file.name);
       if (image) {
         if (file.size > 2e7) throw new Error("Please choose an image under 20 MB.");
         const im = await shrink(file);
         const kind = /logo/i.test(file.name) ? "Logo" : /pack/i.test(file.name) ? "Packaging" : /product/i.test(file.name) ? "Product" : "Reference";
-        await api("/br/media", { clientId: c.id, kind, name: file.name, description: `${kind} added from the brand chat.`, ...im });
-        ed.messages.push({ role: "user", text: `Saved ${kind.toLowerCase()}: ${file.name}` });
-      } else if (/\.(pdf|txt|md|csv)$/i.test(file.name)) {
-        if (file.size > 3e6) throw new Error("Each document needs to be under 3 MB.");
-        const mime = /\.pdf$/i.test(file.name) ? "application/pdf" : /\.csv$/i.test(file.name) ? "text/csv" : /\.md$/i.test(file.name) ? "text/markdown" : "text/plain";
-        await api("/br/documents", { clientId: c.id, name: file.name, mime, data: await blobB64(file) });
-        ed.messages.push({ role: "user", text: `Saved document: ${file.name}` });
-      } else throw new Error("Use a JPG, PNG or WebP image, or a PDF, text or CSV file.");
-      await load();
-      toast.success(`${file.name} saved`);
-    } catch (e) { ed.error = e.message; }
-    finally { ed.uploading = false; renderShell(); }
-  };
+        await api("/br/media", { clientId: ia.forId, kind, name: file.name, description: `${kind} added from the brand assistant.`, ...im });
+        toast.success(`${file.name} saved as a ${kind.toLowerCase()}`);
+      } else {
+        const mime = MIME_OF[(file.name.split(".").pop() || "").toLowerCase()];
+        if (!mime) throw new Error("Use a PDF, Word, PowerPoint, text or CSV file, or a JPG, PNG or WebP image.");
+        if (file.size > 50e6) {
+          // Too big to keep: read the words here, send only those. The file itself is not stored.
+          const { extractLocal } = await import("/br/extract.js");
+          const got = await extractLocal(file, { onProgress: (m) => { ia.busy = m; renderShell(); } });
+          ia.busy = `Filing ${file.name}…`; renderShell();
+          ia.data = await api("/br/intake", { clientId: ia.forId, action: "add_extract", title: file.name, text: got.text });
+        } else {
+          const r = await sendDoc(ia.forId, file, mime);
+          ia.busy = `Filing ${file.name}…`; renderShell();
+          ia.data = await api("/br/intake", { clientId: ia.forId, action: "add_document", documentId: r.document.id });
+        }
+      }
+    } catch (e) { ia.error = e.message; break; }
+  }
+  ia.busy = ""; ia.scroll = true; await load(); renderShell();
+}
+function iaSend() {
+  const t = ia.text.trim(); if (!t || ia.busy) return;
+  ia.text = "";
+  if (URLISH.test(t)) return iaCall({ action: "add_url", url: t }, "Reading the website…");
+  return iaCall({ action: "add_text", text: t }, "Sorting what you said…");
+}
+function iaMessage(m) {
+  const mine = m.role === "user";
+  let body = esc(m.text);
+  if (m.kind === "facts" && m.payload?.changes?.length) {
+    const by = {};
+    for (const c of m.payload.changes) (by[c.category || "Other"] ||= []).push(c);
+    body += `<div class="ia-changes">${Object.entries(by).map(([cat, list]) => `<div class="ia-cat"><b>${esc(cat)}</b>${list.map((c) => `<div class="ia-fact ${c.action}"><span class="ia-label">${esc(c.label)}</span><span class="ia-value">${esc(String(c.value).slice(0, 220))}</span><small>${c.action === "kept" ? "not used: you already have a value" : c.action === "updated" ? "updated" : "added"}${c.confidence && c.confidence !== "high" && c.action !== "kept" ? " · " + esc(c.confidence) + " confidence" : ""}</small></div>`).join("")}</div>`).join("")}</div>`;
+  }
+  if (m.kind === "sources") body = `${ic(m.payload?.items?.[0]?.type === "website" ? "globe" : "file-text", { size: 14 })} ${esc(m.text)}`;
+  return `<div class="chat-msg ${mine ? "user" : "bot"} ${m.kind === "question" ? "ia-question" : ""}"><span class="chat-who">${mine ? "You" : "Brandroom"}</span>${body}</div>`;
+}
+function iaRow(f) {
+  if (ia.editing === f.key) return `<div class="ia-row editing"><b>${esc(f.label)}</b>${textarea({ id: "ia-edit", value: ia.editText, rows: 4, inp: reg((v) => { ia.editText = v; }) })}<div class="ia-actions">${btn("Save", { size: "sm", a: reg(() => { const v = ia.editText; ia.editing = null; iaCall({ action: "set_field", field: f.key, value: v }, "Saving…"); }) })}${btn("Cancel", { size: "sm", variant: "ghost", a: reg(() => { ia.editing = null; renderShell(); }) })}</div></div>`;
+  const tag = !f.filled ? "" : f.by === "ai" ? `<span class="ia-tag ${f.reviewed ? "ok" : "review"}">${f.reviewed ? "AI · checked" : "AI · please check"}${f.source ? " · " + esc(f.source) : ""}</span>` : `<span class="ia-tag ok">Added by a person</span>`;
+  return `<div class="ia-row ${f.filled ? "" : "empty"}"><div class="ia-rowhead"><b>${esc(f.label)}</b>${tag}</div>
+    ${f.filled ? `<p>${esc(f.value).replace(/\n/g, "<br>")}</p>` : `<p class="ia-none">Not known yet</p>`}
+    ${f.alt ? `<div class="ia-alt">Another version from ${esc(f.alt.source)}: “${esc(f.alt.value.slice(0, 160))}” ${btn("Use this", { size: "sm", variant: "outline", a: reg(() => iaCall({ action: "use_alt", field: f.key }, "Saving…")) })}</div>` : ""}
+    <div class="ia-actions">
+      ${f.filled && f.by === "ai" && !f.reviewed ? btn("Looks right", { size: "sm", variant: "outline", a: reg(() => iaCall({ action: "confirm", field: f.key }, "Saving…")) }) : ""}
+      ${f.canUndo ? btn("Undo", { size: "sm", variant: "ghost", a: reg(() => iaCall({ action: "undo", field: f.key }, "Undoing…")) }) : ""}
+      ${btn(f.filled ? "Edit" : "Add", { size: "sm", variant: "ghost", a: reg(() => { ia.editing = f.key; ia.editText = f.value; ia.focusEdit = true; renderShell(); }) })}
+      ${!f.filled ? btn("Ask me", { size: "sm", variant: "ghost", a: reg(() => iaCall({ action: "ask_about", field: f.key }, "…")) }) : ""}
+    </div></div>`;
+}
+function iaPanel() {
+  const d = ia.data;
+  return `<div class="ia-score"><b>${d.percent}% known</b>${progress(d.percent, { label: "Brand knowledge coverage" })}
+    ${d.unreviewed ? `<p class="hint">${d.unreviewed} AI-filled ${d.unreviewed === 1 ? "detail needs" : "details need"} a quick check. ${btn("Confirm all", { size: "sm", variant: "outline", a: reg(() => iaCall({ action: "confirm_all" }, "Saving…")) })}</p>` : ""}</div>
+    ${d.categories.map((c) => { const open = ia.open[c.id] ?? c.filled > 0; return `<section class="ia-category ${open ? "open" : ""}"><button type="button" class="ia-summary" aria-expanded="${open}" data-a="${reg(() => { ia.open[c.id] = !open; renderShell(); })}"><span>${esc(c.name)}</span><small>${c.filled}/${c.total}</small></button>${open ? c.fields.map(iaRow).join("") : ""}</section>`; }).join("")}`;
+}
+function viewEditor(c) {
+  if (ia.forId !== c.id) { ia.forId = c.id; ia.data = null; ia.error = ""; ia.text = ""; ia.editing = null; ia.open = {}; ia.loading = false; }
+  if (!ia.data && !ia.loading) {
+    ia.loading = true;
+    api("/br/intake", { clientId: c.id, action: "start" })
+      .then((d) => { ia.data = d; ia.scroll = true; })
+      .catch((e) => { ia.error = e.message; })
+      .finally(() => { ia.loading = false; renderShell(); });
+  }
   afterHooks.push(() => {
-    const log = document.getElementById("chat-log"); if (log) log.scrollTop = log.scrollHeight;
-    const file = document.getElementById("chat-file");
-    if (file) file.onchange = () => { const chosen = file.files?.[0]; file.value = ""; if (chosen) saveChatFile(chosen); };
-    const box = document.getElementById("chat-reply");
-    if (box) box.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); box.form?.requestSubmit(); } });
-    if (ed.focusQ && box) { ed.focusQ = false; box.focus(); }
+    const log = document.getElementById("chat-log"); if (log && ia.scroll) { log.scrollTop = log.scrollHeight; ia.scroll = false; }
+    const file = document.getElementById("ia-file");
+    if (file) file.onchange = () => { const list = [...file.files]; file.value = ""; if (list.length) iaFiles(list); };
+    const box = document.getElementById("ia-text");
+    if (box) box.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); iaSend(); } });
+    if (ia.focusEdit) { ia.focusEdit = false; document.getElementById("ia-edit")?.focus(); }
   });
-  const log = ed.messages.map((m) => m.role === "intake" ? intakeBubble() : m.role === "review" ? reviewBubble() : `<div class="chat-msg ${m.role}"><span class="chat-who">${m.role === "bot" ? "Brandroom" : "You"}</span>${esc(m.text)}</div>`).join("")
-    + (ed.intake?.busy ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} Reading the website. This takes a few seconds…</div>` : "")
-    + (ed.thinking ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} ${ed.thinking === "check" ? "Checking the answer…" : "Thinking of the next question…"}</div>` : "")
-    + (ed.uploading ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} Saving the file…</div>` : "");
-  const quick = ed.pending?.suggest ? `<div class="chat-quick">${btn(ic("check", { size: 14 }) + "Yes, that's right", { size: "sm", variant: "outline", disabled: ed.saving, a: reg(() => send("yes")) })}${btn("No, leave it out", { size: "sm", variant: "ghost", disabled: ed.saving, a: reg(() => send("no")) })}</div>` : "";
-  return `<button class="back-button" data-a="${reg(() => (ed.dirty ? confirmLeave(() => { ed.dirty = false; ed.draft = null; ed.messages = null; go("client", c.id); }) : go("client", c.id)))}">${ic("chevron-left", { size: 15 })}Back to ${esc(c.name)}</button>
-  ${pageHead("BRAND INTERVIEW", `Get to know ${esc(c.name)}.`, "A chat. Each answer leads to the next relevant question, until the brand knowledge is covered.", editorBadge())}
-  <div class="editor-layout"><nav class="section-stepper" id="ed-stepper">${stepper(a, ed.pending?.key, askTopic)}</nav>
-  <section class="editor-main panel chat-panel"><div class="chat-overview"><div class="eyebrow">KNOWLEDGE BASE</div>${chatOverview(a)}</div><div id="chat-log" class="chat-log">${log}</div>
-  ${ed.error ? `<p class="error-text" role="alert">${esc(ed.error)}</p>` : ""}
-  ${ed.intake ? `<p class="hint">Fill in the details above, or skip and answer the questions.</p>` : ""}
-  ${!ed.intake && canEdit() ? `<div class="chat-tools"><button type="button" class="text-button" data-a="${reg(() => openIntake(c))}">${ic("globe", { size: 14 })}${String(a.fields.website || "").trim() ? "Read the website again" : "Read a website"}</button><label class="text-button">${ic("upload", { size: 14 })}Add logo or file<input id="chat-file" type="file" accept="image/jpeg,image/png,image/webp,.pdf,.txt,.md,.csv,application/pdf,text/plain" ${ed.uploading ? "disabled" : ""}></label></div>` : ""}
-  ${ed.intake ? "" : quick}
-  ${ed.intake ? "" : ed.pending ? `<form class="chat-compose" data-sub="${reg(send)}">${textarea({ id: "chat-reply", value: ed.reply, rows: 2, placeholder: ed.pending.suggest ? "Type “yes”, or the correct version…" : "Type your answer…", inp: reg((v) => { ed.reply = v; const b = document.getElementById("chat-send"); if (b) b.disabled = ed.saving || !v.trim(); }) })}<div class="chat-actions">${btn("Skip", { variant: "ghost", a: reg(skip), disabled: ed.saving })}${btn(ed.saving ? "Saving…" : "Send", { type: "submit", disabled: ed.saving || !ed.reply.trim(), attrs: 'id="chat-send"' })}</div></form>` : `<p class="hint">The brand knowledge is covered. Choose a topic on the left to change an answer.</p>`}</section></div>`;
+  const d = ia.data;
+  const back = `<button class="back-button" data-a="${reg(() => go("client", c.id))}">${ic("chevron-left", { size: 15 })}Back to ${esc(c.name)}</button>`;
+  const head = pageHead("BRAND ASSISTANT", `Teach Brandroom about ${esc(c.name)}.`, "Give it a website, files or notes. It reads them, files what an agency needs, and asks only about what's missing.");
+  if (!d) return `${back}${head}<div class="panel" style="padding:24px">${ia.error ? `<p class="error-text" role="alert">${esc(ia.error)}</p>` : `${spin(16)} Loading…`}</div>`;
+  const log = d.messages.map(iaMessage).join("") + (ia.busy ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} ${esc(ia.busy)}</div>` : "");
+  const notice = d.ai.ready ? "" : `<p class="hint">AI isn't connected, so websites are read for basics only (phone, social links, address) and files can't be sorted. Set OPENAI_API_KEY and OPENAI_MODEL on the server.</p>`;
+  const skipBtn = d.pending ? btn("Skip question", { variant: "ghost", disabled: !!ia.busy, a: reg(() => iaCall({ action: "skip" }, "…")) }) : "";
+  return `${back}${head}
+  <div class="ia-layout"><section class="panel chat-panel ia-chat"><div id="chat-log" class="chat-log">${log}</div>
+    ${ia.error ? `<p class="error-text" role="alert">${esc(ia.error)}</p>` : ""}${notice}
+    <form class="chat-compose" data-sub="${reg(iaSend)}">${textarea({ id: "ia-text", value: ia.text, rows: 2, placeholder: d.pending ? "Answer, paste a website, or add a file…" : "Paste a website, add a file, or tell me about them…", inp: reg((v) => { ia.text = v; }) })}
+      <div class="chat-actions"><label class="text-button">${ic("upload", { size: 14 })}Add files<input id="ia-file" type="file" multiple accept="image/jpeg,image/png,image/webp,.pdf,.docx,.pptx,.txt,.md,.csv,application/pdf" ${ia.busy ? "disabled" : ""}></label>${skipBtn}${btn(ia.busy ? "Working…" : "Send", { type: "submit", disabled: !!ia.busy })}</div></form></section>
+    <aside class="panel ia-panel"><div class="eyebrow">WHAT I KNOW</div>${iaPanel()}</aside></div>`;
 }
 const editorBadge = () => `<span id="ed-state" class="pill ${ed.dirty ? "draft" : "ready"}">${ed.dirty ? "Unsaved changes" : ic("check", { size: 13 }) + "All changes saved"}</span>`;
 function stepper(a, key, pick) {

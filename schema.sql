@@ -261,3 +261,47 @@ create table if not exists onboarding_sessions (
   updated_at     timestamptz not null default now()
 );
 alter table onboarding_sessions enable row level security;
+
+
+-- v2.2: AI intake. What was read, what was learned from it, and the conversation, so the assistant remembers.
+-- Which person or AI set each field, where it came from, and what it replaced (for "undo").
+alter table clients add column if not exists field_meta jsonb not null default '{}'::jsonb;
+
+create table if not exists intake_sources (
+  id          bigserial primary key,
+  client_id   bigint not null references clients(id) on delete cascade,
+  kind        text not null check (kind in ('website','document','note')),
+  title       text not null,
+  url         text,
+  document_id bigint references documents(id) on delete set null,
+  status      text not null default 'done' check (status in ('done','empty','failed')),
+  summary     text not null default '',
+  facts_count integer not null default 0,
+  note        text not null default '',
+  created_by  bigint references users(id) on delete set null,
+  created_at  timestamptz not null default now()
+);
+create index if not exists intake_sources_client_idx on intake_sources(client_id, created_at desc);
+
+create table if not exists intake_messages (
+  id         bigserial primary key,
+  client_id  bigint not null references clients(id) on delete cascade,
+  role       text not null check (role in ('user','assistant')),
+  kind       text not null default 'text',
+  body       text not null default '',
+  payload    jsonb not null default '{}'::jsonb,
+  created_by bigint references users(id) on delete set null,
+  created_at timestamptz not null default now()
+);
+create index if not exists intake_messages_client_idx on intake_messages(client_id, id);
+
+create table if not exists intake_state (
+  client_id  bigint primary key references clients(id) on delete cascade,
+  pending    jsonb,                                  -- the question waiting for an answer
+  skipped    jsonb not null default '[]'::jsonb,     -- fields the person chose not to answer
+  updated_at timestamptz not null default now()
+);
+
+alter table intake_sources  enable row level security;
+alter table intake_messages enable row level security;
+alter table intake_state    enable row level security;

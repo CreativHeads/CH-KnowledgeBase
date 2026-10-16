@@ -187,7 +187,7 @@ async function load() {
 // differ between the local app and the hosted one. The server tells us in workspace.config.
 const refUrl = (id) => (st.cfg.refBase || "/api/ck/refs/") + id + "/file";
 async function refresh() { await load(); renderShell(); }
-const VIEWS = ["clients", "client", "editor", "documents", "examples", "activity", "agency", "skills", "onboarding", "keys", "settings"];
+const VIEWS = ["clients", "client", "editor", "documents", "examples", "activity", "agency", "skills", "keys", "settings"];
 function go(view, id) {
   if (st.view === "editor" && ed.dirty && view !== "editor") { confirmLeave(() => { ed.dirty = false; go(view, id); }); return; }
   if (st.view === "editor" && view !== "editor") ed.draft = null;
@@ -212,7 +212,7 @@ function sidebarInner() {
   const group = (label, items) => `<div data-slot="sidebar-group" data-sidebar="group" class="relative flex w-full min-w-0 flex-col p-2"><div data-slot="sidebar-group-label" data-sidebar="group-label" class="${GROUP_LABEL}">${label}</div><ul data-slot="sidebar-menu" data-sidebar="menu" class="flex w-full min-w-0 flex-col gap-1">${items.map(item).join("")}</ul></div>`;
   const me = st.me || {};
   return `<div data-slot="sidebar-header" data-sidebar="header" class="flex flex-col gap-2 p-2"><button class="wordmark" data-a="${reg(() => go("clients"))}"><span class="app-mark">${ic("book-open", { size: 22 })}</span><span>brandroom<span class="wordmark-sub">BY CREATIVHEADS®</span></span></button><div class="workspace-name"><span class="workspace-logo">CH</span><span>CreativHeads Agency<small>Team workspace</small></span>${ic("chevrons-up-down", { size: 15 })}</div></div>
-  <div data-slot="sidebar-content" data-sidebar="content" class="flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden">${group("WORKSPACE", [["clients", "Clients", "layers"], ["documents", "Documents", "file-text"], ["agency", "Agency libraries", "shield-check"], ["skills", "Skills", "list"], ["onboarding", "Onboarding", "sparkles"]])}${group("MANAGE", [["activity", "Activity", "clock-3"]].concat(me.isAdmin ? [["keys", "Bot keys", "shield-check"]] : []).concat([["settings", "Settings", "settings-2"]]))}</div>
+  <div data-slot="sidebar-content" data-sidebar="content" class="flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden">${group("WORKSPACE", [["clients", "Clients", "layers"], ["documents", "Documents", "file-text"], ["agency", "Agency libraries", "shield-check"], ["skills", "Skills", "list"], ])}${group("MANAGE", [["activity", "Activity", "clock-3"]].concat(me.isAdmin ? [["keys", "Bot keys", "shield-check"]] : []).concat([["settings", "Settings", "settings-2"]]))}</div>
   <div data-slot="sidebar-footer" data-sidebar="footer" class="flex flex-col gap-2 p-2">
   <div class="account"><span class="avatar admin">${esc((me.name || "?")[0].toUpperCase())}</span><span><b>${esc(me.name || "")}</b><small>${esc(ROLE[me.role] || "Team")} · CreativHeads</small></span>${pill(esc((ROLE[me.role] || "TEAM").toUpperCase()))}</div></div>`;
 }

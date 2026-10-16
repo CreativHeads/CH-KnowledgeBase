@@ -459,8 +459,8 @@ function openAddClient() {
   async function submit() {
     if (!f.name.trim()) return; f.busy = true; f.error = ""; st.dialog.locked = true; renderDialog();
     try { const r = await act({ action: "client.save", client: { id: uuid(), name: f.name.trim(), industry: f.industry.trim(), location: "", lead: f.lead, colour: "#526bc4", status: "active", fields: {}, internalFields: ["internalNotes"] } });
-      await load(); st.dialog.locked = false; closeDialog(); toast.success("Client added"); editClient(r.client, "basics"); }
-    catch (e) { f.error = e.message; f.busy = false; if (st.dialog) { st.dialog.locked = false; renderDialog(); } }
+      st.dialog.locked = false; closeDialog(); toast.success("Client added"); await load(); editClient(r.client, "basics"); }
+    catch (e) { f.error = e.message; f.busy = false; if (st.dialog) { st.dialog.locked = false; renderDialog(); } else toast.error(e.message); }
   }
   openDialog(render);
 }
@@ -522,8 +522,8 @@ function viewClient(c) {
 function confirmArchive(c) {
   let busy = false;
   openDialog(() => `${alertHeader(`${c.status === "archived" ? "Restore" : "Archive"} ${esc(c.name)}?`, c.status === "archived" ? "The brand will be available in the active client library again." : "Brand details and examples are kept. The client will be excluded from caption detection.")}${alertFooter(btn("Cancel", { variant: "outline", a: reg(closeDialog), disabled: busy }) + btn(busy ? "Saving…" : c.status === "archived" ? "Restore client" : "Archive client", { disabled: busy, a: reg(async () => { busy = true; st.dialog.locked = true; renderDialog();
-    try { await act({ action: "client.save", client: { ...c, status: c.status === "archived" ? "active" : "archived" } }); await load(); st.dialog.locked = false; closeDialog(); toast.success("Client status updated"); renderShell(); }
-    catch (e) { toast.error(e.message); busy = false; if (st.dialog) { st.dialog.locked = false; renderDialog(); } } }) }))}`, { alert: true });
+    try { await act({ action: "client.save", client: { ...c, status: c.status === "archived" ? "active" : "archived" } }); st.dialog.locked = false; closeDialog(); toast.success("Client status updated"); await load(); renderShell(); }
+    catch (e) { toast.error(e.message); busy = false; if (st.dialog) { st.dialog.locked = false; renderDialog(); } else toast.error(e.message); } }) }))}`, { alert: true });
 }
 function confirmDelete(c) {
   const f = { typed: "", busy: false, error: "" };
@@ -540,8 +540,8 @@ function confirmDelete(c) {
     f.busy = true; f.error = ""; st.dialog.locked = true; renderDialog();
     try {
       await api(`/br/clients/${encodeURIComponent(c.id)}/delete`, { confirm: f.typed.trim() });
-      await load(); st.dialog.locked = false; closeDialog(); toast.success(`${c.name} was deleted`); go("clients");
-    } catch (e) { f.error = e.message; f.busy = false; if (st.dialog) { st.dialog.locked = false; renderDialog(); } }
+      st.dialog.locked = false; closeDialog(); toast.success(`${c.name} was deleted`); await load(); go("clients");
+    } catch (e) { f.error = e.message; f.busy = false; if (st.dialog) { st.dialog.locked = false; renderDialog(); } else toast.error(e.message); }
   }) }))}`, { alert: true });
 }
 function viewRefs(c, refs) {
@@ -958,7 +958,7 @@ function openAddExample() {
   <div class="form-field"><label for="ex-reason">${f.verdict === "rejected" ? "Why was this rejected? (required)" : "Why does this work?"}</label>${textarea({ id: "ex-reason", value: f.reason, rows: 2, inp: reg((v) => { f.reason = v; upd(); }), attrs: `maxlength="2000"${f.verdict === "rejected" ? " required" : ""}` })}</div>
   ${f.error ? `<p class="error-text">${esc(f.error)}</p>` : ""}${dlgFooter(btn("Cancel", { variant: "outline", a: reg(closeDialog) }) + btn((f.busy ? spin() : ic("check")) + "Save example", { type: "submit", disabled: !okNow(), attrs: 'id="ex-save"' }))}</form>`;
   async function submit() { if (!okNow()) return; f.busy = true; f.error = ""; renderDialog();
-    try { await act({ action: "example.save", example: { id: uuid(), clientId: f.client, platform: f.platform, language: f.language, verdict: f.verdict, text: f.text, reason: f.reason, featured: false } }); await load(); closeDialog(); toast.success("Caption example saved"); renderShell(); }
+    try { await act({ action: "example.save", example: { id: uuid(), clientId: f.client, platform: f.platform, language: f.language, verdict: f.verdict, text: f.text, reason: f.reason, featured: false } }); closeDialog(); toast.success("Caption example saved"); await load(); renderShell(); }
     catch (e) { f.error = e.message; f.busy = false; renderDialog(); } }
   openDialog(render, { cls: "example-dialog" });
 }
@@ -1023,8 +1023,8 @@ function openPersonDialog(u = null) {
     try {
       if (u) await api(`/br/users/${u.id}`, { name: f.name, role: f.role, active: f.active, ...(f.password ? { password: f.password } : {}) });
       else await api("/br/users", { name: f.name, email: f.email, role: f.role, ...(f.password ? { password: f.password } : {}) });
-      await loadPeople(true); await load(); st.dialog.locked = false; closeDialog(); toast.success(u ? "Changes saved" : "Person added"); renderShell();
-    } catch (e) { f.error = e.message; f.busy = false; if (st.dialog) { st.dialog.locked = false; renderDialog(); } }
+      st.dialog.locked = false; closeDialog(); toast.success(u ? "Changes saved" : "Person added"); await loadPeople(true); await load(); renderShell();
+    } catch (e) { f.error = e.message; f.busy = false; if (st.dialog) { st.dialog.locked = false; renderDialog(); } else toast.error(e.message); }
   }
   openDialog(render);
 }
@@ -1033,8 +1033,8 @@ function confirmDeletePerson(u) {
   let busy = false;
   openDialog(() => `${alertHeader(`Delete ${esc(u.name || u.email)}?`, "They’ll be signed out and can’t sign in again. What they added stays in the workspace. To keep their account but stop access, switch it off instead.")}${alertFooter(btn("Cancel", { variant: "outline", a: reg(closeDialog), disabled: busy }) + btn(busy ? "Deleting…" : "Delete person", { disabled: busy, a: reg(async () => {
     busy = true; st.dialog.locked = true; renderDialog();
-    try { await apiDelete(`/br/users/${u.id}`); await loadPeople(true); await load(); st.dialog.locked = false; closeDialog(); toast.success("Person deleted"); renderShell(); }
-    catch (e) { toast.error(e.message); busy = false; if (st.dialog) { st.dialog.locked = false; renderDialog(); } } }) }))}`, { alert: true });
+    try { await apiDelete(`/br/users/${u.id}`); st.dialog.locked = false; closeDialog(); toast.success("Person deleted"); await loadPeople(true); await load(); renderShell(); }
+    catch (e) { toast.error(e.message); busy = false; if (st.dialog) { st.dialog.locked = false; renderDialog(); } else toast.error(e.message); } }) }))}`, { alert: true });
 }
 
 /* ================= Settings ================= */

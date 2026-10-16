@@ -302,6 +302,9 @@ create table if not exists intake_state (
   updated_at timestamptz not null default now()
 );
 
+alter table intake_sources add column if not exists body text not null default '';          -- the text that was read, kept as the assistant's memory
+alter table intake_state   add column if not exists searched jsonb not null default '{}'::jsonb; -- which gaps were already looked up in memory
+
 alter table intake_sources  enable row level security;
 alter table intake_messages enable row level security;
 alter table intake_state    enable row level security;

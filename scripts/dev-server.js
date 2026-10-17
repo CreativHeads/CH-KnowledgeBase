@@ -18,7 +18,7 @@ const addSecurityHeaders = (res, pathname) => {
   for (const r of RULES) if (r.re.test(pathname)) for (const h of r.headers) res.setHeader(h.key, h.value);
 };
 const PORT = Number(process.env.PORT) || 3100;
-const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp", ".ico": "image/x-icon", ".json": "application/json" };
+const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp", ".ico": "image/x-icon", ".json": "application/json", ".wasm": "application/wasm", ".pfb": "application/octet-stream", ".ttf": "font/ttf" };
 
 http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");

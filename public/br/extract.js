@@ -63,7 +63,7 @@ async function pdfText(file, { pdfUrl = "/br/vendor/pdf.min.mjs", workerUrl = "/
   const head = await bytes(file, 0, Math.min(file.size, 131072));
   const transport = new pdfjs.PDFDataRangeTransport(file.size, head);
   transport.requestDataRange = (begin, end) => { file.slice(begin, end).arrayBuffer().then((b) => transport.onDataRange(begin, new Uint8Array(b))); };
-  const doc = await pdfjs.getDocument({ range: transport, disableStream: true, disableAutoFetch: true, isEvalSupported: false }).promise;
+  const doc = await pdfjs.getDocument({ range: transport, disableStream: true, disableAutoFetch: true, isEvalSupported: false, disableFontFace: true, standardFontDataUrl: "/br/vendor/standard_fonts/", wasmUrl: "/br/vendor/wasm/" }).promise;
   let text = "";
   try {
     for (let i = 1; i <= doc.numPages && text.length < MAX_CHARS; i++) {
@@ -75,6 +75,33 @@ async function pdfText(file, { pdfUrl = "/br/vendor/pdf.min.mjs", workerUrl = "/
     }
   } finally { try { await doc.destroy(); } catch {} }
   return { text, pages: doc.numPages };
+}
+
+// Scanned PDFs hold pictures, not text. Draws the first pages as images so the AI can read them.
+export async function renderPages(file, { max = 12, width = 1400, pdfUrl = "/br/vendor/pdf.min.mjs", workerUrl = "/br/vendor/pdf.worker.min.mjs", onProgress } = {}) {
+  const pdfjs = await import(pdfUrl);
+  if (workerUrl) pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+  const head = await bytes(file, 0, Math.min(file.size, 131072));
+  const transport = new pdfjs.PDFDataRangeTransport(file.size, head);
+  transport.requestDataRange = (begin, end) => { file.slice(begin, end).arrayBuffer().then((b) => transport.onDataRange(begin, new Uint8Array(b))); };
+  const doc = await pdfjs.getDocument({ range: transport, disableStream: true, disableAutoFetch: true, isEvalSupported: false, disableFontFace: true, standardFontDataUrl: "/br/vendor/standard_fonts/", wasmUrl: "/br/vendor/wasm/" }).promise;
+  const out = [];
+  try {
+    const n = Math.min(doc.numPages, max);
+    for (let i = 1; i <= n; i++) {
+      onProgress?.(`Preparing page ${i} of ${n}…`);
+      const page = await doc.getPage(i);
+      const base = page.getViewport({ scale: 1 });
+      const viewport = page.getViewport({ scale: Math.min(3, width / base.width) });
+      const cv = document.createElement("canvas"); cv.width = Math.round(viewport.width); cv.height = Math.round(viewport.height);
+      await page.render({ canvasContext: cv.getContext("2d"), viewport }).promise;
+      const blob = await new Promise((r) => cv.toBlob(r, "image/jpeg", 0.72));
+      const data = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1]); fr.onerror = rej; fr.readAsDataURL(blob); });
+      out.push({ mime: "image/jpeg", data, page: i });
+      page.cleanup();
+    }
+    return { pages: out, total: doc.numPages };
+  } finally { try { await doc.destroy(); } catch {} }
 }
 
 // Returns { text, truncated }. Throws a plain-English error when the file can't be read.

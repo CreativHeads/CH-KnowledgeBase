@@ -836,6 +836,17 @@ async function iaCall(body, busy) {
   catch (e) { ia.error = e.message; }
   finally { ia.busy = ""; ia.scroll = true; renderShell(); }
 }
+// A scanned PDF: draw the first pages and let the AI read them, a few at a time.
+async function iaScan(file) {
+  const { renderPages } = await import("/br/extract.js");
+  const { pages, total } = await renderPages(file, { max: 12, onProgress: (m) => { ia.busy = m; renderShell(); } });
+  for (let i = 0; i < pages.length; i += 3) {
+    const batch = pages.slice(i, i + 3);
+    ia.busy = `Reading pages ${batch[0].page}–${batch.at(-1).page} of ${total}…`; renderShell();
+    ia.data = await api("/br/intake", { clientId: ia.forId, action: "add_images", title: `${file.name} (pages ${batch[0].page}–${batch.at(-1).page})`, images: batch.map((p) => ({ mime: p.mime, data: p.data })) });
+  }
+  if (total > pages.length) toast.success(`Read the first ${pages.length} of ${total} pages.`);
+}
 async function iaFiles(files) {
   if (ia.busy) return;
   for (const file of files) {
@@ -847,20 +858,27 @@ async function iaFiles(files) {
         const im = await shrink(file);
         const kind = /logo/i.test(file.name) ? "Logo" : /pack/i.test(file.name) ? "Packaging" : /product/i.test(file.name) ? "Product" : "Reference";
         await api("/br/media", { clientId: ia.forId, kind, name: file.name, description: `${kind} added from the brand assistant.`, ...im });
-        toast.success(`${file.name} saved as a ${kind.toLowerCase()}`);
+        // Also have the AI read it: text in it, colours, logo style.
+        ia.busy = `Reading ${file.name}…`; renderShell();
+        try {
+          const big = await shrink(file, 1600, 2.4e6);
+          ia.data = await api("/br/intake", { clientId: ia.forId, action: "add_images", title: file.name, images: [big] });
+        } catch (e) { toast.error(`${file.name} was saved, but I could not read it: ${e.message}`); }
       } else {
         const mime = MIME_OF[(file.name.split(".").pop() || "").toLowerCase()];
         if (!mime) throw new Error("Use a PDF, Word, PowerPoint, text or CSV file, or a JPG, PNG or WebP image.");
         if (file.size > 50e6) {
           // Too big to keep: read the words here, send only those. The file itself is not stored.
           const { extractLocal } = await import("/br/extract.js");
-          const got = await extractLocal(file, { onProgress: (m) => { ia.busy = m; renderShell(); } });
-          ia.busy = `Filing ${file.name}…`; renderShell();
-          ia.data = await api("/br/intake", { clientId: ia.forId, action: "add_extract", title: file.name, text: got.text });
+          try {
+            const got = await extractLocal(file, { onProgress: (m) => { ia.busy = m; renderShell(); } });
+            ia.busy = `Filing ${file.name}…`; renderShell();
+            ia.data = await api("/br/intake", { clientId: ia.forId, action: "add_extract", title: file.name, text: got.text });
+          } catch (e) { if (!e.noText) throw e; await iaScan(file); }
         } else {
           const r = await sendDoc(ia.forId, file, mime);
-          ia.busy = `Filing ${file.name}…`; renderShell();
-          ia.data = await api("/br/intake", { clientId: ia.forId, action: "add_document", documentId: r.document.id });
+          if (["no_text", "failed"].includes(r.document.status) && mime === "application/pdf") await iaScan(file); // a scan: the AI looks at the pages
+          else { ia.busy = `Filing ${file.name}…`; renderShell(); ia.data = await api("/br/intake", { clientId: ia.forId, action: "add_document", documentId: r.document.id }); }
         }
       }
     } catch (e) { ia.error = e.message; break; }
@@ -886,13 +904,12 @@ function iaMessage(m) {
 }
 function iaRow(f) {
   if (ia.editing === f.key) return `<div class="ia-row editing"><b>${esc(f.label)}</b>${textarea({ id: "ia-edit", value: ia.editText, rows: 4, inp: reg((v) => { ia.editText = v; }) })}<div class="ia-actions">${btn("Save", { size: "sm", a: reg(() => { const v = ia.editText; ia.editing = null; iaCall({ action: "set_field", field: f.key, value: v }, "Saving…"); }) })}${btn("Cancel", { size: "sm", variant: "ghost", a: reg(() => { ia.editing = null; renderShell(); }) })}</div></div>`;
-  const tag = !f.filled ? "" : f.by === "ai" ? `<span class="ia-tag ${f.reviewed ? "ok" : "review"}">${f.reviewed ? "AI · checked" : "AI · please check"}${f.source ? " · " + esc(f.source) : ""}</span>` : `<span class="ia-tag ok">Added by a person</span>`;
+  const tag = !f.filled ? "" : f.by === "ai" ? `<span class="ia-tag ok">${f.source ? "From " + esc(f.source) : "Filled by AI"}</span>` : `<span class="ia-tag ok">Added by a person</span>`;
   return `<div class="ia-row ${f.filled ? "" : "empty"}"><div class="ia-rowhead"><b>${esc(f.label)}</b>${tag}</div>
     ${f.filled ? `<p>${esc(f.value).replace(/\n/g, "<br>")}</p>` : `<p class="ia-none">Not known yet</p>`}
     ${f.alt ? `<div class="ia-alt">Another version from ${esc(f.alt.source)}: “${esc(f.alt.value.slice(0, 160))}” ${btn("Use this", { size: "sm", variant: "outline", a: reg(() => iaCall({ action: "use_alt", field: f.key }, "Saving…")) })}</div>` : ""}
     <div class="ia-actions">
-      ${f.filled && f.by === "ai" && !f.reviewed ? btn("Looks right", { size: "sm", variant: "outline", a: reg(() => iaCall({ action: "confirm", field: f.key }, "Saving…")) }) : ""}
-      ${f.canUndo ? btn("Undo", { size: "sm", variant: "ghost", a: reg(() => iaCall({ action: "undo", field: f.key }, "Undoing…")) }) : ""}
+            ${f.canUndo ? btn("Undo", { size: "sm", variant: "ghost", a: reg(() => iaCall({ action: "undo", field: f.key }, "Undoing…")) }) : ""}
       ${btn(f.filled ? "Edit" : "Add", { size: "sm", variant: "ghost", a: reg(() => { ia.editing = f.key; ia.editText = f.value; ia.focusEdit = true; renderShell(); }) })}
       ${!f.filled ? btn("Ask me", { size: "sm", variant: "ghost", a: reg(() => iaCall({ action: "ask_about", field: f.key }, "…")) }) : ""}
     </div></div>`;
@@ -900,7 +917,7 @@ function iaRow(f) {
 function iaPanel() {
   const d = ia.data;
   return `<div class="ia-score"><b>${d.percent}% known</b>${progress(d.percent, { label: "Brand knowledge coverage" })}
-    ${d.unreviewed ? `<p class="hint">${d.unreviewed} AI-filled ${d.unreviewed === 1 ? "detail needs" : "details need"} a quick check. ${btn("Confirm all", { size: "sm", variant: "outline", a: reg(() => iaCall({ action: "confirm_all" }, "Saving…")) })}</p>` : ""}</div>
+    </div>
     ${d.categories.map((c) => { const open = ia.open[c.id] ?? c.filled > 0; return `<section class="ia-category ${open ? "open" : ""}"><button type="button" class="ia-summary" aria-expanded="${open}" data-a="${reg(() => { ia.open[c.id] = !open; renderShell(); })}"><span>${esc(c.name)}</span><small>${c.filled}/${c.total}</small></button>${open ? c.fields.map(iaRow).join("") : ""}</section>`; }).join("")}`;
 }
 function viewEditor(c) {
@@ -930,7 +947,7 @@ function viewEditor(c) {
   return `${back}${head}
   <div class="ia-layout"><section class="panel chat-panel ia-chat"><div id="chat-log" class="chat-log">${log}</div>
     ${ia.error ? `<p class="error-text" role="alert">${esc(ia.error)}</p>` : ""}${notice}
-    <form class="chat-compose" data-sub="${reg(iaSend)}">${textarea({ id: "ia-text", value: ia.text, rows: 2, placeholder: d.pending ? "Answer, paste a website, or add a file…" : "Paste a website, add a file, or tell me about them…", inp: reg((v) => { ia.text = v; }) })}
+    <form class="chat-compose" data-sub="${reg(iaSend)}">${textarea({ id: "ia-text", value: ia.text, rows: 2, placeholder: d.pending ? "Answer, paste a website, or add a file…" : "Paste a website, add files or screenshots, or tell me about them…", inp: reg((v) => { ia.text = v; }) })}
       <div class="chat-actions"><label class="text-button">${ic("upload", { size: 14 })}Add files<input id="ia-file" type="file" multiple accept="image/jpeg,image/png,image/webp,.pdf,.docx,.pptx,.txt,.md,.csv,application/pdf" ${ia.busy ? "disabled" : ""}></label>${skipBtn}${btn(ia.busy ? "Working…" : "Send", { type: "submit", disabled: !!ia.busy })}</div></form></section>
     <aside class="panel ia-panel"><div class="eyebrow">WHAT I KNOW</div>${iaPanel()}</aside></div>`;
 }

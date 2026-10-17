@@ -1,6 +1,6 @@
 // The whole Brandroom API, as one Vercel function. Static files are served from /public.
 const crypto = require("crypto");
-const { HttpError, json, readBody } = require("../lib/http");
+const { HttpError, json, readBody, num } = require("../lib/http");
 const auth = require("../lib/auth");
 const ws = require("../lib/workspace");
 const storage = require("../lib/storage");
@@ -126,7 +126,7 @@ route("POST", "/api/br/media", async ({ req, user }) => {
 
 route("GET", "/api/br/refs/:id/file", async ({ res, user, p }) => {
   auth.need(user);
-  const r = await one("SELECT * FROM refs WHERE id = $1", [Number(p.id)]);
+  const r = await one("SELECT * FROM refs WHERE id = $1", [num(p.id)]);
   if (!r) throw new HttpError(404, "Image not found.");
   const buf = await storage.download(r.path);
   res.writeHead(200, { "content-type": r.mime, "cache-control": "private, max-age=600", "x-content-type-options": "nosniff" });
@@ -135,7 +135,7 @@ route("GET", "/api/br/refs/:id/file", async ({ res, user, p }) => {
 
 route("DELETE", "/api/br/refs/:id", async ({ user, p }) => {
   auth.needEditor(user);
-  const r = await one("SELECT * FROM refs WHERE id = $1", [Number(p.id)]);
+  const r = await one("SELECT * FROM refs WHERE id = $1", [num(p.id)]);
   if (!r) return { ok: true };
   await query("DELETE FROM refs WHERE id = $1", [r.id]);
   await storage.remove(r.path);
@@ -167,19 +167,24 @@ const uploadKey = (user, id) => {
   if (!/^[0-9a-f-]{36}$/.test(String(id || ""))) throw new HttpError(400, "Bad upload.");
   return `tmp/${user.id}/${id}`;
 };
-async function saveDocument(c, name, mime, buf, user) {
+async function saveDocument(c, name, mime, buf, user, read = null) {
   if (!buf.length) throw new HttpError(400, "That file came through empty.");
+  const recent = (await one("SELECT COUNT(*)::int AS n FROM documents WHERE added_by = $1 AND created_at > now() - interval '1 hour'", [user.id])).n;
+  if (recent >= 60) throw new HttpError(429, "That is a lot of uploads in an hour. Wait a little, then carry on.");
   if (buf.length > docs.MAX_BYTES) throw new HttpError(413, `Files need to be under ${Math.floor(docs.MAX_BYTES / 1024 / 1024)} MB.`);
   if (!docs.sniff(mime, buf)) throw new HttpError(400, "That file is not really a " + docs.TYPES[mime] + " file.");
   name = String(name || "Document").slice(0, 160) || "Document";
   const ext = (name.match(/.[a-z0-9]{1,5}$/i) || [""])[0] || "";
   const path = `${c.slug}/docs/${crypto.randomUUID()}${ext}`;
   await storage.upload(path, buf, mime);
-  const row = await docs.add({ client: c, name, mime, buffer: buf, path, actor: user });
+  const row = await docs.add({ client: c, name, mime, buffer: buf, path, actor: user, read });
   await query("UPDATE clients SET updated_at = now() WHERE id = $1", [c.id]);
   await ws.logActivity(user, c.id, `Added the document “${name}” to ${c.name}.`);
   return { document: docs.out(row, c.slug) };
 }
+// A PDF's text as read in the person's browser. Only an editor can send it, and it is capped like any extracted text.
+const browserRead = (b) => (typeof b.text === "string" && String(b.mime || "").split(";")[0] === "application/pdf"
+  ? { text: b.text.slice(0, docs.MAX_TEXT), pages: Number.isInteger(b.pages) && b.pages > 0 ? b.pages : null } : null);
 const docMime = (b) => {
   const mime = String(b.mime || "").split(";")[0];
   if (!docs.TYPES[mime]) throw new HttpError(400, "Use a PDF, Word, PowerPoint, text, Markdown or CSV file.");
@@ -189,7 +194,7 @@ route("POST", "/api/br/documents", async ({ req, user }) => {
   auth.needEditor(user);
   const b = await readBody(req, 5e6);
   const c = await ws.clientOr404(b.clientId);
-  return saveDocument(c, b.name, docMime(b), Buffer.from(String(b.data || ""), "base64"), user);
+  return saveDocument(c, b.name, docMime(b), Buffer.from(String(b.data || ""), "base64"), user, browserRead(b));
 });
 route("POST", "/api/br/documents/chunk", async ({ req, user }) => {
   auth.needEditor(user);
@@ -214,7 +219,7 @@ route("POST", "/api/br/documents/finish", async ({ req, user }) => {
     const got = await Promise.all(Array.from({ length: count }, (_, i) => storage.download(`${key}/${i}`)));
     if (got.reduce((n, p) => n + p.length, 0) > docs.MAX_BYTES) throw new HttpError(413, `Files need to be under ${Math.floor(docs.MAX_BYTES / 1024 / 1024)} MB.`);
     parts.push(...got);
-    return await saveDocument(c, b.name, mime, Buffer.concat(parts), user);
+    return await saveDocument(c, b.name, mime, Buffer.concat(parts), user, browserRead(b));
   } finally {
     for (let i = 0; i < count; i++) await storage.remove(`${key}/${i}`);
   }
@@ -222,13 +227,13 @@ route("POST", "/api/br/documents/finish", async ({ req, user }) => {
 
 route("GET", "/api/br/documents/:id/text", async ({ user, p }) => {
   auth.need(user);
-  const d = await one("SELECT body, internal, status FROM documents WHERE id = $1", [Number(p.id)]);
+  const d = await one("SELECT body, internal, status FROM documents WHERE id = $1", [num(p.id)]);
   if (!d || (d.internal && !auth.canEdit(user))) throw new HttpError(404, "Document not found.");
   return { text: d.status === "ready" ? d.body : "" };
 });
 route("GET", "/api/br/documents/:id/file", async ({ res, user, p }) => {
   auth.need(user);
-  const d = await one("SELECT * FROM documents WHERE id = $1", [Number(p.id)]);
+  const d = await one("SELECT * FROM documents WHERE id = $1", [num(p.id)]);
   if (!d || (d.internal && !auth.canEdit(user))) throw new HttpError(404, "Document not found."); // same answer as "no such file", so its existence is not revealed
   const buf = await storage.download(d.path);
   res.writeHead(200, {
@@ -336,6 +341,12 @@ module.exports = async (req, res) => {
     // Cookies are SameSite=Lax, and the app adds this header, so a form posted from another site cannot act for you.
     if (!["GET", "HEAD"].includes(req.method) && req.headers["x-requested-with"] !== "app")
       throw new HttpError(403, "Blocked request.");
+    // A browser says which site sent a write. If it is not this site, refuse it.
+    if (!["GET", "HEAD"].includes(req.method) && req.headers.origin) {
+      let from = "";
+      try { from = new URL(req.headers.origin).host; } catch {}
+      if (from !== req.headers.host) throw new HttpError(403, "Blocked request.");
+    }
 
     for (const r of routes) {
       if (r.method !== req.method) continue;

@@ -816,11 +816,18 @@ function editorQuestions() {
 const ia = { forId: null, data: null, busy: "", text: "", error: "", editing: null, editText: "", loading: false, open: {} };
 const URLISH = /^(https?:\/\/\S+|(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}(?:\/\S*)?)$/i;
 const MIME_OF = { pdf: "application/pdf", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation", csv: "text/csv", md: "text/markdown", txt: "text/plain" };
+// A PDF is read here in the browser, so the server never has to open it. If that fails the server still tries.
+async function readPdfHere(file, mime) {
+  if (mime !== "application/pdf") return {};
+  try { const { extractLocal } = await import("/br/extract.js"); const r = await extractLocal(file); return { text: r.text, pages: r.pages }; }
+  catch (e) { return e.noText ? { text: "", pages: e.pages } : {}; }
+}
 async function sendDoc(clientId, file, mime) {
-  if (file.size <= 2.5e6) return api("/br/documents", { clientId, name: file.name, mime, data: await blobB64(file) });
+  const read = await readPdfHere(file, mime);
+  if (file.size <= 2.5e6) return api("/br/documents", { clientId, name: file.name, mime, data: await blobB64(file), ...read });
   const piece = 2.4e6, count = Math.ceil(file.size / piece), uploadId = crypto.randomUUID();
   for (let i = 0; i < count; i++) await api("/br/documents/chunk", { uploadId, index: i, data: await blobB64(file.slice(i * piece, (i + 1) * piece)) });
-  return api("/br/documents/finish", { clientId, uploadId, count, name: file.name, mime });
+  return api("/br/documents/finish", { clientId, uploadId, count, name: file.name, mime, ...read });
 }
 async function iaCall(body, busy) {
   if (ia.busy) return;

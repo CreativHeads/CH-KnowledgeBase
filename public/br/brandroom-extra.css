@@ -278,3 +278,6 @@ body{background:var(--background)}
 .ia-fact small{color:#7c8baa}
 .ia-question{border:1px solid #526bc4}
 @media (max-width:900px){.ia-layout{grid-template-columns:1fr}.ia-chat,.ia-panel{height:auto;max-height:none;min-height:0}.ia-chat .chat-log{max-height:60vh}}
+
+/* A long unbroken name or word must wrap instead of stretching the page. */
+h1,h2,h3,.back-button,.chat-msg,.table-brand,.ia-row p,.ia-value,.example-text{overflow-wrap:anywhere;min-width:0}

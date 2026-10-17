@@ -74,19 +74,19 @@ async function pdfText(file, { pdfUrl = "/br/vendor/pdf.min.mjs", workerUrl = "/
       onProgress?.(`Reading page ${i} of ${doc.numPages}…`);
     }
   } finally { try { await doc.destroy(); } catch {} }
-  return text;
+  return { text, pages: doc.numPages };
 }
 
 // Returns { text, truncated }. Throws a plain-English error when the file can't be read.
 export async function extractLocal(file, opts = {}) {
   const name = file.name.toLowerCase();
-  let text;
-  if (name.endsWith(".pdf")) text = await pdfText(file, opts);
+  let text, pages = null;
+  if (name.endsWith(".pdf")) ({ text, pages } = await pdfText(file, opts));
   else if (name.endsWith(".docx")) text = await officeText(file, "docx");
   else if (name.endsWith(".pptx")) text = await officeText(file, "pptx");
   else if (/\.(txt|md|csv)$/.test(name)) text = await file.slice(0, 8e6).text();
   else throw new Error("Large files can be PDF, Word, PowerPoint, text or CSV.");
   text = tidy(text);
-  if (!text) throw new Error("No text could be read from this file. If it is a scan, it holds only pictures of text.");
-  return { text: text.slice(0, MAX_CHARS), truncated: text.length > MAX_CHARS };
+  if (!text) throw Object.assign(new Error("No text could be read from this file. If it is a scan, it holds only pictures of text."), { noText: true, pages });
+  return { text: text.slice(0, MAX_CHARS), truncated: text.length > MAX_CHARS, pages };
 }

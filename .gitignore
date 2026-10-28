@@ -52,3 +52,5 @@ desktop.ini
 
 # ── Tool settings that belong to one person ──────────────────────────────────
 .claude/
+
+.vercel

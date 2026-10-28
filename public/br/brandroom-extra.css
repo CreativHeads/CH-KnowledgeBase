@@ -288,16 +288,6 @@ h1,h2,h3,.back-button,.chat-msg,.table-brand,.ia-row p,.ia-value,.example-text{o
 .br-login-mark{background:none!important;cursor:default!important;margin-bottom:6px!important;padding:0!important}
 .brandroom-brand-logo{height:32px;width:auto;max-width:190px;object-fit:contain;display:block}
 .brandroom-login-logo{height:42px;width:auto;max-width:250px;object-fit:contain;display:block}
-.dark-mode-logo{display:none!important}
-:root.dark .light-mode-logo,.dark .light-mode-logo{display:none!important}
-:root.dark .dark-mode-logo,.dark .dark-mode-logo{display:block!important}
-@media (prefers-color-scheme:dark){
-  :root:not(.light) .light-mode-logo{display:none!important}
-  :root:not(.light) .dark-mode-logo{display:block!important}
-}
-.brandroom-icon-collapsed{display:none!important}
-[data-collapsible="icon"] .brandroom-brand-logo{display:none!important}
-[data-collapsible="icon"] .brandroom-icon-collapsed{display:block!important;width:32px;height:26px;object-fit:contain}
 .app-mark{background:transparent!important;box-shadow:none!important;padding:0!important;width:auto!important;height:auto!important;display:inline-flex!important;align-items:center;justify-content:center}
 .app-mark img,.app-mark svg{width:36px;height:30px;object-fit:contain;display:block}
 .large-app-mark{background:transparent!important;box-shadow:none!important;width:auto!important;height:auto!important;display:inline-flex!important;align-items:center;justify-content:center;margin-bottom:12px}

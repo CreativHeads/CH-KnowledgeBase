@@ -281,3 +281,24 @@ body{background:var(--background)}
 
 /* A long unbroken name or word must wrap instead of stretching the page. */
 h1,h2,h3,.back-button,.chat-msg,.table-brand,.ia-row p,.ia-value,.example-text{overflow-wrap:anywhere;min-width:0}
+
+/* BrandRoom Custom Logo & Icons */
+.wordmark{border:0;background:none;cursor:pointer;padding:4px 6px;border-radius:8px;transition:opacity .15s ease,background-color .15s ease;text-decoration:none;display:inline-flex;align-items:center}
+.wordmark:hover{background-color:var(--accent)}
+.br-login-mark{background:none!important;cursor:default!important;margin-bottom:6px!important;padding:0!important}
+.brandroom-brand-logo{height:32px;width:auto;max-width:190px;object-fit:contain;display:block}
+.brandroom-login-logo{height:42px;width:auto;max-width:250px;object-fit:contain;display:block}
+.dark-mode-logo{display:none!important}
+:root.dark .light-mode-logo,.dark .light-mode-logo{display:none!important}
+:root.dark .dark-mode-logo,.dark .dark-mode-logo{display:block!important}
+@media (prefers-color-scheme:dark){
+  :root:not(.light) .light-mode-logo{display:none!important}
+  :root:not(.light) .dark-mode-logo{display:block!important}
+}
+.brandroom-icon-collapsed{display:none!important}
+[data-collapsible="icon"] .brandroom-brand-logo{display:none!important}
+[data-collapsible="icon"] .brandroom-icon-collapsed{display:block!important;width:32px;height:26px;object-fit:contain}
+.app-mark{background:transparent!important;box-shadow:none!important;padding:0!important;width:auto!important;height:auto!important;display:inline-flex!important;align-items:center;justify-content:center}
+.app-mark img,.app-mark svg{width:36px;height:30px;object-fit:contain;display:block}
+.large-app-mark{background:transparent!important;box-shadow:none!important;width:auto!important;height:auto!important;display:inline-flex!important;align-items:center;justify-content:center;margin-bottom:12px}
+.large-app-mark img,.large-app-mark svg{width:56px;height:46px;object-fit:contain;display:block}

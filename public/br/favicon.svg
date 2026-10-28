@@ -1,1 +1,46 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#3456ee"/><path d="M8 8h8a5 5 0 0 1 4 8 5 5 0 0 1-4 8H8V8zm5 4v4h3a2 2 0 0 0 0-4h-3zm0 8h3a2 2 0 0 0 0-4h-3v4z" fill="white"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 298 243" width="298" height="243">
+  <defs>
+    <!-- Main vibrant blue to soft lavender gradient -->
+    <linearGradient id="brandroomGrad" x1="12%" y1="95%" x2="88%" y2="8%">
+      <stop offset="0%" stop-color="#0e6efd"/>
+      <stop offset="30%" stop-color="#389eff"/>
+      <stop offset="60%" stop-color="#80b8ff"/>
+      <stop offset="85%" stop-color="#c5d1fb"/>
+      <stop offset="100%" stop-color="#edd0bb"/>
+    </linearGradient>
+    
+    <!-- Warm peach/amber glow on top right -->
+    <radialGradient id="brandroomPeach" cx="88%" cy="10%" r="60%">
+      <stop offset="0%" stop-color="#fed6b8" stop-opacity="1"/>
+      <stop offset="40%" stop-color="#f7cbab" stop-opacity="0.75"/>
+      <stop offset="70%" stop-color="#e8c6be" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#80b8ff" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Clip path matching badge contour -->
+    <clipPath id="badgeClip">
+      <path d="M 121 2 L 260 2 A 36 36 0 0 1 296 38 L 296 205 A 36 36 0 0 1 260 241 L 121 241 A 120 120 0 0 1 1 121 A 120 120 0 0 1 121 2 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- Badge Background -->
+  <g clip-path="url(#badgeClip)">
+    <rect width="298" height="243" fill="url(#brandroomGrad)"/>
+    <rect width="298" height="243" fill="url(#brandroomPeach)"/>
+  </g>
+
+  <!-- Layer 1 (Top Pill) -->
+  <path d="M 116 63 L 206 63 C 218 63 227 72 227 82 C 227 92 218 100 206 100 L 116 100 C 104 100 95 92 95 82 C 95 72 104 63 116 63 Z" fill="#ffffff"/>
+
+  <!-- Layer 2 (Middle Shelf / Open Book) -->
+  <path d="M 95 105 L 98 105 C 101 107 104 107 107 109 L 110 110 L 214 110 C 218 108 222 108 225 111 C 226.5 113 227 116 227 122 C 227 131 220 139 208 139 L 114 139 C 102 139 95 131 95 122 Z" fill="#ffffff"/>
+
+  <!-- Layer 3 (Bottom Shelf / Open Book) -->
+  <path d="M 95 142 L 97 144 C 101 146 105 147 109 149 L 215 149 C 219 147 222 147 225 150 C 226.5 152 227 155 227 161 C 227 170 220 178 208 178 L 114 178 C 102 178 95 170 95 161 Z" fill="#ffffff"/>
+
+  <!-- Registered Trademark ® -->
+  <g fill="none" stroke="#ffffff" stroke-width="1.8" opacity="0.9">
+    <circle cx="262.5" cy="25.5" r="9"/>
+    <text x="262.5" y="29.2" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" font-weight="600" fill="#ffffff" stroke="none" text-anchor="middle">R</text>
+  </g>
+</svg>

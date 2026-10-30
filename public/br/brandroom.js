@@ -977,6 +977,8 @@ function viewEditor(c) {
     if (box) box.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); iaSend(); } });
     if (box && ia.focusBox) { ia.focusBox = false; box.focus(); box.setSelectionRange(box.value.length, box.value.length); }
     if (ia.focusDoc) { ia.focusDoc = false; document.getElementById("kb-edit")?.focus(); }
+    const fit = () => { const p = document.querySelector(".ax-page"); if (!p) return; if (window.innerWidth <= 1020) { p.style.height = ""; return; } p.style.height = Math.max(420, window.innerHeight - p.getBoundingClientRect().top - 48) + "px"; };
+    fit(); window.onresize = fit;
     const zone = document.querySelector(".ax-chat");
     if (zone) {
       const over = (e) => { if ([...(e.dataTransfer?.types || [])].includes("Files")) { e.preventDefault(); zone.classList.add("drag"); } };
@@ -986,17 +988,16 @@ function viewEditor(c) {
     }
   });
   const d = ia.data;
-  const back = `<button class="back-button" data-a="${reg(() => go("client", c.id))}">${ic("chevron-left", { size: 15 })}Back to ${esc(c.name)}</button>`;
-  const hero = `<header class="ax-hero"><span class="ax-badge">${ic("sparkles", { size: 14 })}AI Brand Assistant</span><h1>Teach Brandroom about <span>${esc(c.name)}</span></h1><p>Give it a website, files or notes. It reads everything and writes one complete knowledge base, then keeps it up to date as you add more.</p></header>`;
-  if (!d) return `<div class="ax-page">${back}${hero}<div class="ax-card" style="padding:24px">${ia.error ? `<p class="error-text" role="alert">${esc(ia.error)}</p>` : `${spin(16)} Loading…`}</div></div>`;
+  const backBtn = `<button type="button" class="ax-back" aria-label="Back to ${esc(c.name)}" title="Back to ${esc(c.name)}" data-a="${reg(() => go("client", c.id))}">${ic("chevron-left", { size: 18 })}</button>`;
+  if (!d) return `<div class="ax-page"><div class="ax-card" style="padding:24px">${ia.error ? `<p class="error-text" role="alert">${esc(ia.error)}</p>` : `${spin(16)} Loading…`}</div></div>`;
   const typing = ia.busy ? `<div class="ax-row"><span class="ax-avatar sm">${ic("sparkles", { size: 14 })}</span><div class="ax-bubble typing"><i></i><i></i><i></i><span>${esc(ia.busy)}</span></div></div>` : "";
   const log = d.messages.map(iaMessage).join("") + typing;
   const notice = d.ai.ready ? "" : `<p class="ax-hint warn">AI isn't connected, so websites are read for basics only and files can't be sorted. Set OPENAI_API_KEY and OPENAI_MODEL on the server.</p>`;
   const chips = `<div class="ax-suggest">${axBtn("globe", "Add a website", () => { ia.text = ia.text || "https://"; ia.focusBox = true; renderShell(); }, { text: true, disabled: !!ia.busy })}<label class="ax-btn text">${ic("paperclip", { size: 15 })}<span>Upload files</span><input id="ia-file" type="file" multiple accept="image/jpeg,image/png,image/webp,.pdf,.docx,.pptx,.txt,.md,.csv,application/pdf" ${ia.busy ? "disabled" : ""}></label>${d.pending ? axBtn("x", "Skip question", () => iaCall({ action: "skip" }, "…"), { text: true, disabled: !!ia.busy }) : ""}</div>`;
-  return `<div class="ax-page">${back}${hero}
+  return `<div class="ax-page">
   <div class="ax-grid">
     <section class="ax-card ax-chat" aria-label="Chat"><div class="ax-drop"><span>${ic("upload", { size: 22 })}</span><b>Drop files to add them</b><small>PDF, Word, PowerPoint, text, images</small></div>
-      <div class="ax-chat-head"><span class="ax-avatar">${ic("sparkles", { size: 18 })}</span><div><b>Brandroom AI</b><small><i class="ax-dot ${ia.busy ? "busy" : ""}"></i>${ia.busy ? esc(ia.busy) : "Ready"}</small></div></div>
+      <div class="ax-chat-head">${backBtn}<span class="ax-avatar">${ic("sparkles", { size: 18 })}</span><div><b>Brandroom AI</b><small><i class="ax-dot ${ia.busy ? "busy" : ""}"></i>${ia.busy ? esc(ia.busy) : "Ready"}</small></div></div>
       <div id="chat-log" class="ax-log">${log}</div>
       ${ia.error ? `<p class="error-text" role="alert">${esc(ia.error)}</p>` : ""}${notice}
       ${chips}

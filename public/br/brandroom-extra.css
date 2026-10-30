@@ -403,3 +403,15 @@ h1,h2,h3,.back-button,.chat-msg,.table-brand,.ia-row p,.ia-value,.example-text{o
 #kb-edit{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.55;border-radius:14px}
 @media (max-width:1020px){.ax-grid{grid-template-columns:1fr}.ax-chat{height:auto;min-height:0;max-height:78vh}.ax-doc{min-height:0}}
 @media (prefers-reduced-motion:reduce){.ax-dot.busy,.ax-bubble.typing i,.ax-skeleton i{animation:none}.ax-log{scroll-behavior:auto}}
+
+/* fit the window: only the chat and the document scroll */
+html:has(.ax-page),body:has(.ax-page){overflow:hidden}
+body:has(.ax-page) footer{display:none}
+.ax-page{display:flex;flex-direction:column;max-width:1440px;margin:0 auto;height:calc(100dvh - 90px)}
+.ax-grid{flex:1;min-height:0;align-items:stretch}
+.ax-chat{height:auto;min-height:0}
+.ax-doc{height:100%;min-height:0;overflow:hidden}
+.ax-doc-body{flex:1;min-height:0;overflow:auto}
+.ax-back{display:grid;place-items:center;width:34px;height:34px;margin-left:-6px;border:0;border-radius:10px;background:transparent;color:#5d6882;cursor:pointer;flex:none}
+.ax-back:hover{background:#eef1ff;color:#2d46c9}
+@media (max-width:1020px){html:has(.ax-page),body:has(.ax-page){overflow:auto}body:has(.ax-page) footer{display:block}.ax-page{height:auto}.ax-chat{height:72vh;max-height:none}.ax-doc{height:auto;min-height:420px}}

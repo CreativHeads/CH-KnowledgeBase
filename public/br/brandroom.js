@@ -474,7 +474,7 @@ function kbLoad(c) {
   const e = kbDocs[c.id];
   if (e) return e;
   const entry = kbDocs[c.id] = { loading: true, text: "", error: "" };
-  api("/br/kb?client=" + encodeURIComponent(c.id)).then((d) => { entry.text = d.text || ""; entry.at = d.at; }).catch((err) => { entry.error = err.message; })
+  api("/br/kb?client=" + encodeURIComponent(c.id)).then((d) => { entry.text = d.text || ""; entry.at = d.at; entry.fromFields = !!d.fromFields; }).catch((err) => { entry.error = err.message; })
     .finally(() => { entry.loading = false; if (st.view === "client" && det.forId === c.id) renderShell(); });
   return entry;
 }
@@ -485,7 +485,8 @@ function kbArticle(c) {
   if (!e.text.trim()) return `<div class="kb-doc"><article class="kb-page"><div class="ax-empty"><span class="ax-orb">${ic("sparkles", { size: 26 })}</span><h3>The knowledge base hasn't been written yet</h3><p>${canEdit() ? "Upload your client's knowledge base, a website, files or notes in the Brand assistant, and it writes the full knowledge base here." : "A head or admin writes it with the Brand assistant."}</p>${canEdit() ? btn(ic("sparkles") + "Open the Brand assistant", { a: reg(() => go("editor", c.id)) }) : ""}</div></article></div>`;
   const heads = [...e.text.matchAll(/^##\s+(.+?)\s*$/gm)].map((m) => m[1]);
   const outline = heads.map((h, i) => `<button type="button" data-a="${reg(() => document.getElementById("kbs-" + i)?.scrollIntoView({ behavior: "smooth", block: "start" }))}">${esc(h)}</button>`).join("");
-  const bar = canEdit() ? `<div class="kbp-bar">${e.at ? `<small>Updated ${esc(dm(e.at))}</small>` : ""}${btn(ic("sparkles", { size: 15 }) + "Update with the assistant", { variant: "outline", size: "sm", a: reg(() => go("editor", c.id)) })}</div>` : "";
+  const bar = e.fromFields ? `<div class="kbp-bar"><small>Shown from the saved brand details.${canEdit() ? " Write the full knowledge base with the assistant." : ""}</small>${canEdit() ? btn(ic("sparkles", { size: 15 }) + "Write the full knowledge base", { size: "sm", a: reg(() => go("editor", c.id)) }) : ""}</div>`
+    : canEdit() ? `<div class="kbp-bar">${e.at ? `<small>Updated ${esc(dm(e.at))}</small>` : ""}${btn(ic("sparkles", { size: 15 }) + "Update with the assistant", { variant: "outline", size: "sm", a: reg(() => go("editor", c.id)) })}</div>` : "";
   return `<div class="kb-doc"><nav class="kb-outline" aria-label="On this page">${outline}</nav><article class="kb-page">${bar}<div class="iakb-doc">${kbHtml(e.text, true)}</div></article></div>`;
 }
 function viewClient(c) {

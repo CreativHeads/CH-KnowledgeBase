@@ -415,3 +415,8 @@ body:has(.ax-page) footer{display:none}
 .ax-back{display:grid;place-items:center;width:34px;height:34px;margin-left:-6px;border:0;border-radius:10px;background:transparent;color:#5d6882;cursor:pointer;flex:none}
 .ax-back:hover{background:#eef1ff;color:#2d46c9}
 @media (max-width:1020px){html:has(.ax-page),body:has(.ax-page){overflow:auto}body:has(.ax-page) footer{display:block}.ax-page{height:auto}.ax-chat{height:72vh;max-height:none}.ax-doc{height:auto;min-height:420px}}
+
+/* client page: the written knowledge base */
+.kbp-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 12px}
+.kbp-bar small{color:#7c88a6}
+.kb-page .iakb-doc{max-width:none}

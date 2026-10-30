@@ -152,9 +152,6 @@ function libraryPct(c, id) {
   if (!fields.length) return 0;
   return Math.round(100 * fields.filter((f) => filled(c, f.key)).length / fields.length);
 }
-function libraryBars(c) {
-  return `<div class="lib-bars">${LIBRARIES.map(([id, name]) => { const n = libraryPct(c, id); return `<div class="lib-bar"><small><span>${esc(name)}</span><b>${n}%</b></small>${progress(n, { label: name })}</div>`; }).join("")}</div>`;
-}
 function suggestionBox(c) {
   const rows = (st.ws?.suggestions || []).filter((s) => s.clientId === c.id);
   if (!rows.length || !canEdit()) return "";
@@ -471,30 +468,25 @@ function briefBit(v, n = 160) {
   if (s.length <= n) return s;
   return s.slice(0, n).replace(/\s+\S*$/, "") + "…";
 }
-const READ_ORDER = ["basics", "audience", "products", "messages", "offers", "voice", "words", "languages", "social", "platforms", "seasonal", "compliance", "recognition", "contacts", "ads", "seo", "assets", "competitors"];
-function kbSections(c) {
-  const byId = new Map(SECTIONS.map((s) => [s.id, s]));
-  return READ_ORDER.map((id) => byId.get(id)).filter((s) => s && s.id !== "internal" && (canEdit() || s.id !== "competitors")).map((s) => {
-    const fields = s.fields.filter((f) => String(c.fields[f.key] || "").trim());
-    return { ...s, fields, filled: fields.length > 0 };
-  });
+// The written knowledge base for the client page. It is fetched when the page opens and again after the assistant changes it.
+const kbDocs = {};
+function kbLoad(c) {
+  const e = kbDocs[c.id];
+  if (e) return e;
+  const entry = kbDocs[c.id] = { loading: true, text: "", error: "" };
+  api("/br/kb?client=" + encodeURIComponent(c.id)).then((d) => { entry.text = d.text || ""; entry.at = d.at; }).catch((err) => { entry.error = err.message; })
+    .finally(() => { entry.loading = false; if (st.view === "client" && det.forId === c.id) renderShell(); });
+  return entry;
 }
-function jumpKb(id) { document.getElementById("kb-" + id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
 function kbArticle(c) {
-  const all = kbSections(c);
-  const filled = all.filter((s) => s.filled);
-  const empty = all.filter((s) => !s.filled);
-  if (!filled.length) return `<p class="not-added">This article appears once the first facts are saved.</p>`;
-  const outline = filled.map((s) => `<button type="button" data-a="${reg(() => jumpKb(s.id))}">${esc(s.name)}</button>`).join("");
-  const page = filled.map((s) => `<section id="kb-${s.id}"><header><h2>${esc(s.name)}</h2>${canEdit() ? `<button class="text-button" data-a="${reg(() => editClient(c, s.id))}">Edit</button>` : ""}</header>${s.fields.map((f) => `<h3>${esc(f.label)}${c.internalFields.includes(f.key) ? ic("lock", { size: 11 }) : ""}</h3><p>${esc(c.fields[f.key])}</p>`).join("")}</section>`).join("");
-  const gap = empty.length ? `<div class="kb-gap"><h3>Not written yet</h3><div>${empty.map((s) => canEdit() ? `<button type="button" data-a="${reg(() => editClient(c, s.id))}">${esc(s.name)}</button>` : `<span>${esc(s.name)}</span>`).join("")}</div></div>` : "";
-  return `<div class="kb-doc"><nav class="kb-outline" aria-label="On this page">${outline}</nav><article class="kb-page">${page}${gap}</article></div>`;
-}
-function chatOverview(c) {
-  const filled = kbSections(c).filter((s) => s.filled);
-  const about = briefBit(c.fields.about || c.fields.tagline, 220);
-  if (!about && !filled.length) return `<p class="not-added">This article appears once the first facts are saved.</p>`;
-  return `<div class="kb-chat-sum">${about ? `<p>${esc(about)}</p>` : ""}<p>${filled.slice(0, 8).map((s) => esc(s.name)).join(" · ")}</p></div>`;
+  const e = kbLoad(c);
+  if (e.loading) return `<div class="kb-doc"><article class="kb-page"><div class="ax-skeleton"><i style="width:40%"></i><i></i><i style="width:90%"></i><i style="width:70%"></i></div></article></div>`;
+  if (e.error) return `<p class="not-added">${esc(e.error)}</p>`;
+  if (!e.text.trim()) return `<div class="kb-doc"><article class="kb-page"><div class="ax-empty"><span class="ax-orb">${ic("sparkles", { size: 26 })}</span><h3>The knowledge base hasn't been written yet</h3><p>${canEdit() ? "Upload your client's knowledge base, a website, files or notes in the Brand assistant, and it writes the full knowledge base here." : "A head or admin writes it with the Brand assistant."}</p>${canEdit() ? btn(ic("sparkles") + "Open the Brand assistant", { a: reg(() => go("editor", c.id)) }) : ""}</div></article></div>`;
+  const heads = [...e.text.matchAll(/^##\s+(.+?)\s*$/gm)].map((m) => m[1]);
+  const outline = heads.map((h, i) => `<button type="button" data-a="${reg(() => document.getElementById("kbs-" + i)?.scrollIntoView({ behavior: "smooth", block: "start" }))}">${esc(h)}</button>`).join("");
+  const bar = canEdit() ? `<div class="kbp-bar">${e.at ? `<small>Updated ${esc(dm(e.at))}</small>` : ""}${btn(ic("sparkles", { size: 15 }) + "Update with the assistant", { variant: "outline", size: "sm", a: reg(() => go("editor", c.id)) })}</div>` : "";
+  return `<div class="kb-doc"><nav class="kb-outline" aria-label="On this page">${outline}</nav><article class="kb-page">${bar}<div class="iakb-doc">${kbHtml(e.text, true)}</div></article></div>`;
 }
 function viewClient(c) {
   const ws = st.ws; if (det.forId !== c.id) { det.forId = c.id; det.tab = "overview"; }
@@ -515,7 +507,7 @@ function viewClient(c) {
     content = `<div class="bundle-head"><div><h2>What the bot can see</h2><p>Internal notes, locked fields and team-only documents are left out. This is exactly the context used for captions.</p></div><div class="inline-options">${select(det.platform, PLATFORMS, (v) => { det.platform = v; det.ctx = null; renderShell(); }, { label: "Context platform" })}${select(det.language, LANGUAGES, (v) => { det.language = v; det.ctx = null; renderShell(); }, { label: "Context language" })}${btn(ic("copy") + "Copy JSON", { variant: "outline", disabled: !json, a: reg(() => copyText(json)) })}</div></div><pre class="bundle-json">${json === null ? "Loading the writing context…" : esc(json)}</pre>`; }
   return `<button class="back-button" data-a="${reg(() => go("clients"))}">${ic("chevron-left", { size: 15 })}Client library</button>
   <div class="client-detail-head">${mark(c, "large")}<div><div class="detail-name"><h1>${esc(c.name)}</h1>${pill(c.status === "archived" ? "Archived" : n >= 80 ? "Complete" : "In progress", n >= 80 ? "ready" : "draft")}</div><p>${esc(c.industry)} <span>·</span> ${esc(c.location || "Location not added")}</p></div><div class="head-actions">${canEdit() ? btn(ic("file-text") + "Edit brand", { variant: "outline", a: reg(() => editClient(c)) }) : ""}${btn(ic("braces") + "Preview bot bundle", { a: reg(() => { det.tab = "bundle"; renderShell(); }) })}</div></div>
-  <div class="client-meta"><span><span class="avatar tiny">${esc((c.lead || "?")[0])}</span>${esc(c.lead || "Unassigned")} · Account lead</span><span>${ic("clock-3", { size: 14 })}Updated ${dm(c.updatedAt)}</span><span class="detail-progress">Brand knowledge ${progress(n)}<b>${n}%</b></span></div>${libraryBars(c)}
+  <div class="client-meta"><span><span class="avatar tiny">${esc((c.lead || "?")[0])}</span>${esc(c.lead || "Unassigned")} · Account lead</span><span>${ic("clock-3", { size: 14 })}Updated ${dm(c.updatedAt)}</span></div>
   ${suggestionBox(c)}
   ${tabs(det.tab, [["overview", "Brand overview"], ["references", `Reference images <span class="tab-count">${refs.length}</span>`], ["documents", "Documents"], ["notes", "Team Notes"], ["assets", "Brand Assets"], ["bundle", `Writing context ${ic("braces", { size: 15 })}`]], (v) => { det.tab = v; renderShell(); }, { cls: "detail-tabs", content })}`;
 }
@@ -834,7 +826,7 @@ async function iaCall(body, busy) {
   ia.busy = busy || "Working…"; ia.error = ""; renderShell();
   try { ia.data = await api("/br/intake", { clientId: ia.forId, ...body }); }
   catch (e) { ia.error = e.message; }
-  finally { ia.busy = ""; ia.scroll = true; renderShell(); }
+  finally { ia.busy = ""; ia.scroll = true; delete kbDocs[ia.forId]; renderShell(); }
 }
 // A scanned PDF: draw the first pages and let the AI read them, a few at a time.
 async function iaScan(file) {
@@ -916,7 +908,8 @@ function iaMessage(m) {
   return `<div class="ax-row"><span class="ax-avatar sm">${ic("sparkles", { size: 14 })}</span><div class="ax-bubble ${m.kind === "question" ? "q" : ""}">${m.kind === "question" ? `<small class="ax-qlabel">Question</small>` : ""}${body}</div></div>`;
 }
 // The knowledge base is shown as one document. Text is escaped first, then only bold and list markers are turned into tags.
-function kbHtml(md) {
+function kbHtml(md, ids = false) {
+  let n = 0;
   const inline = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
   let html = "", list = false;
   for (const raw of String(md || "").split("\n")) {
@@ -925,7 +918,7 @@ function kbHtml(md) {
     if (li) { if (!list) { html += "<ul>"; list = true; } html += `<li>${inline(li[1])}</li>`; continue; }
     if (list) { html += "</ul>"; list = false; }
     if (!l.trim()) continue;
-    if (l.startsWith("## ")) html += `<h3 class="iakb-h">${inline(l.slice(3))}</h3>`;
+    if (l.startsWith("## ")) html += `<h3 class="iakb-h"${ids ? ` id="kbs-${n++}"` : ""}>${inline(l.slice(3))}</h3>`;
     else if (l.startsWith("# ")) html += `<h2 class="iakb-title">${inline(l.slice(2))}</h2>`;
     else if (l.startsWith("> ")) html += `<p class="iakb-note">${inline(l.slice(2))}</p>`;
     else html += `<p>${inline(l)}</p>`;

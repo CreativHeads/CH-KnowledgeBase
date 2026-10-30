@@ -306,6 +306,12 @@ route("POST", "/api/br/onboarding", async ({ req, user }) => {
   return { session: await onboard.start(b, user) };
 });
 
+/* The client's written knowledge base. Readable by everyone who can sign in. */
+route("GET", "/api/br/kb", async ({ user, q }) => {
+  auth.need(user);
+  return intake.readKb(await ws.clientOr404(q.client));
+});
+
 /* The brand assistant: reads sources, files facts, asks what is missing. */
 route("POST", "/api/br/intake", async ({ req, user }) => {
   auth.needEditor(user);

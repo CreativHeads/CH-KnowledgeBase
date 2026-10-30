@@ -813,7 +813,7 @@ function editorQuestions() {
   }));
 }
 /* ================= Brand assistant (replaces the interview) ================= */
-const ia = { forId: null, data: null, busy: "", text: "", error: "", editing: null, editText: "", loading: false, open: {} };
+const ia = { forId: null, data: null, busy: "", text: "", error: "", editing: null, editText: "", loading: false, open: {}, editingDoc: false, docText: "" };
 const URLISH = /^(https?:\/\/\S+|(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}(?:\/\S*)?)$/i;
 const MIME_OF = { pdf: "application/pdf", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation", csv: "text/csv", md: "text/markdown", txt: "text/plain" };
 // A PDF is read here in the browser, so the server never has to open it. If that fails the server still tries.
@@ -884,44 +884,84 @@ async function iaFiles(files) {
     } catch (e) { ia.error = e.message; break; }
   }
   ia.busy = ""; ia.scroll = true; await load(); renderShell();
+  if (ia.data?.ai.ready && !ia.error) await iaCompose();
 }
 function iaSend() {
   const t = ia.text.trim(); if (!t || ia.busy) return;
   ia.text = "";
-  if (URLISH.test(t)) return iaCall({ action: "add_url", url: t }, "Reading the website…");
-  return iaCall({ action: "add_text", text: t }, "Sorting what you said…");
+  if (URLISH.test(t)) return iaCall({ action: "add_url", url: t }, "Reading the website…").then(() => (ia.data?.ai.ready && !ia.error ? iaCompose() : null));
+  return iaCall({ action: "add_text", text: t }, "Sorting what you said…").then(() => (t.length >= 150 && ia.data?.ai.ready && !ia.error ? iaCompose() : null));
 }
+Object.assign(ICONS, {
+  "globe": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"/><path d=\"M2 12h20\"/>",
+  "send": "<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\"/><path d=\"m21.854 2.147-10.94 10.939\"/>",
+  "paperclip": "<path d=\"m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551\"/>",
+  "download": "<path d=\"M12 15V3\"/><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><path d=\"m7 10 5 5 5-5\"/>",
+  "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/>",
+  "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/>",
+});
 function iaMessage(m) {
   const mine = m.role === "user";
   let body = esc(m.text);
   if (m.kind === "facts" && m.payload?.changes?.length) {
     const by = {};
     for (const c of m.payload.changes) (by[c.category || "Other"] ||= []).push(c);
-    body += `<div class="ia-changes">${Object.entries(by).map(([cat, list]) => `<div class="ia-cat"><b>${esc(cat)}</b>${list.map((c) => `<div class="ia-fact ${c.action}"><span class="ia-label">${esc(c.label)}</span><span class="ia-value">${esc(String(c.value).slice(0, 220))}</span><small>${c.action === "kept" ? "not used: you already have a value" : c.action === "updated" ? "updated" : "added"}${c.confidence && c.confidence !== "high" && c.action !== "kept" ? " · " + esc(c.confidence) + " confidence" : ""}</small></div>`).join("")}</div>`).join("")}</div>`;
+    body += `<div class="ax-facts">${Object.entries(by).map(([cat, list]) => `<div class="ax-fact-group"><b>${esc(cat)}</b>${list.map((c) => `<div class="ax-fact ${c.action}"><span>${esc(c.label)}</span><em>${esc(String(c.value).slice(0, 200))}</em></div>`).join("")}</div>`).join("")}</div>`;
   }
-  if (m.kind === "sources") body = `${ic(m.payload?.items?.[0]?.type === "website" ? "globe" : "file-text", { size: 14 })} ${esc(m.text)}`;
-  return `<div class="chat-msg ${mine ? "user" : "bot"} ${m.kind === "question" ? "ia-question" : ""}"><span class="chat-who">${mine ? "You" : "Brandroom"}</span>${body}</div>`;
+  if (m.kind === "sources") {
+    const web = m.payload?.items?.[0]?.type === "website";
+    return `<div class="ax-row mine"><div class="ax-chip-msg">${ic(web ? "globe" : "file-text", { size: 15 })}<span>${esc(m.text)}</span></div></div>`;
+  }
+  if (mine) return `<div class="ax-row mine"><div class="ax-bubble mine">${body}</div></div>`;
+  return `<div class="ax-row"><span class="ax-avatar sm">${ic("sparkles", { size: 14 })}</span><div class="ax-bubble ${m.kind === "question" ? "q" : ""}">${m.kind === "question" ? `<small class="ax-qlabel">Question</small>` : ""}${body}</div></div>`;
 }
-function iaRow(f) {
-  if (ia.editing === f.key) return `<div class="ia-row editing"><b>${esc(f.label)}</b>${textarea({ id: "ia-edit", value: ia.editText, rows: 4, inp: reg((v) => { ia.editText = v; }) })}<div class="ia-actions">${btn("Save", { size: "sm", a: reg(() => { const v = ia.editText; ia.editing = null; iaCall({ action: "set_field", field: f.key, value: v }, "Saving…"); }) })}${btn("Cancel", { size: "sm", variant: "ghost", a: reg(() => { ia.editing = null; renderShell(); }) })}</div></div>`;
-  const tag = !f.filled ? "" : f.by === "ai" ? `<span class="ia-tag ok">${f.source ? "From " + esc(f.source) : "Filled by AI"}</span>` : `<span class="ia-tag ok">Added by a person</span>`;
-  return `<div class="ia-row ${f.filled ? "" : "empty"}"><div class="ia-rowhead"><b>${esc(f.label)}</b>${tag}</div>
-    ${f.filled ? `<p>${esc(f.value).replace(/\n/g, "<br>")}</p>` : `<p class="ia-none">Not known yet</p>`}
-    ${f.alt ? `<div class="ia-alt">Another version from ${esc(f.alt.source)}: “${esc(f.alt.value.slice(0, 160))}” ${btn("Use this", { size: "sm", variant: "outline", a: reg(() => iaCall({ action: "use_alt", field: f.key }, "Saving…")) })}</div>` : ""}
-    <div class="ia-actions">
-            ${f.canUndo ? btn("Undo", { size: "sm", variant: "ghost", a: reg(() => iaCall({ action: "undo", field: f.key }, "Undoing…")) }) : ""}
-      ${btn(f.filled ? "Edit" : "Add", { size: "sm", variant: "ghost", a: reg(() => { ia.editing = f.key; ia.editText = f.value; ia.focusEdit = true; renderShell(); }) })}
-      ${!f.filled ? btn("Ask me", { size: "sm", variant: "ghost", a: reg(() => iaCall({ action: "ask_about", field: f.key }, "…")) }) : ""}
-    </div></div>`;
+// The knowledge base is shown as one document. Text is escaped first, then only bold and list markers are turned into tags.
+function kbHtml(md) {
+  const inline = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  let html = "", list = false;
+  for (const raw of String(md || "").split("\n")) {
+    const l = raw.trimEnd();
+    const li = /^\s*[-*]\s+(.*)$/.exec(l);
+    if (li) { if (!list) { html += "<ul>"; list = true; } html += `<li>${inline(li[1])}</li>`; continue; }
+    if (list) { html += "</ul>"; list = false; }
+    if (!l.trim()) continue;
+    if (l.startsWith("## ")) html += `<h3 class="iakb-h">${inline(l.slice(3))}</h3>`;
+    else if (l.startsWith("# ")) html += `<h2 class="iakb-title">${inline(l.slice(2))}</h2>`;
+    else if (l.startsWith("> ")) html += `<p class="iakb-note">${inline(l.slice(2))}</p>`;
+    else html += `<p>${inline(l)}</p>`;
+  }
+  return html + (list ? "</ul>" : "");
 }
-function iaPanel() {
-  const d = ia.data;
-  return `<div class="ia-score"><b>${d.percent}% known</b>${progress(d.percent, { label: "Brand knowledge coverage" })}
-    </div>
-    ${d.categories.map((c) => { const open = ia.open[c.id] ?? c.filled > 0; return `<section class="ia-category ${open ? "open" : ""}"><button type="button" class="ia-summary" aria-expanded="${open}" data-a="${reg(() => { ia.open[c.id] = !open; renderShell(); })}"><span>${esc(c.name)}</span><small>${c.filled}/${c.total}</small></button>${open ? c.fields.map(iaRow).join("") : ""}</section>`; }).join("")}`;
+async function iaCompose() { return iaCall({ action: "compose" }, "Writing the knowledge base…"); }
+function iaDownload(c) {
+  const blob = new Blob([ia.data.kb.text], { type: "text/markdown" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${c.name} knowledge base.md`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+const axBtn = (icon, label, fn, { primary = false, text = false, disabled = false } = {}) =>
+  `<button type="button" class="ax-btn ${primary ? "primary" : ""} ${text ? "text" : ""}" aria-label="${esc(label)}" title="${esc(label)}"${disabled ? " disabled" : ""} data-a="${reg(fn)}">${ic(icon, { size: 15 })}${text ? `<span>${esc(label)}</span>` : ""}</button>`;
+function iaSourcesRow(d) {
+  const seen = new Set(), items = [];
+  for (const s of d.sources || []) { if (seen.has(s.title)) continue; seen.add(s.title); items.push(s); }
+  if (!items.length) return "";
+  return `<div class="ax-sources"><small>Built from</small>${items.slice(0, 8).map((s) => `<span class="ax-src ${s.status === "failed" ? "bad" : ""}">${ic(s.kind === "website" ? "globe" : "file-text", { size: 12 })}${esc(s.title)}</span>`).join("")}</div>`;
+}
+function iaDoc(c) {
+  const d = ia.data, k = d.kb;
+  const writing = /knowledge base/i.test(ia.busy || "");
+  const when = k.at ? new Date(k.at).toLocaleDateString(undefined, { day: "numeric", month: "short" }) : "";
+  const status = k.text ? (k.stale ? `<span class="ax-pill warn">Update available</span>` : `<span class="ax-pill ok">${ic("check", { size: 12 })}Up to date${when ? " · " + esc(when) : ""}</span>`) : "";
+  const head = (tools) => `<div class="ax-doc-head"><div><span class="ax-eyebrow">Knowledge base</span><h2>${esc(c.name)}</h2>${status}</div><div class="ax-tools">${tools}</div></div>`;
+  if (ia.editingDoc) return `${head(axBtn("check", "Save", () => { const t = ia.docText; ia.editingDoc = false; iaCall({ action: "save_doc", text: t }, "Saving…"); }, { primary: true, text: true }) + axBtn("x", "Cancel", () => { ia.editingDoc = false; renderShell(); }, { text: true }))}<div class="ax-doc-body">${textarea({ id: "kb-edit", value: ia.docText, rows: 24, inp: reg((v) => { ia.docText = v; }) })}<p class="ax-hint">Use # for the title, ## for sections and - for lists. Your edits are kept when the assistant updates the document.</p></div>`;
+  const canBuild = d.ai.ready && k.canBuild;
+  const build = canBuild ? axBtn("refresh-cw", k.text ? "Update" : "Write knowledge base", iaCompose, { primary: k.stale || !k.text, text: true, disabled: !!ia.busy }) : "";
+  if (writing) return `${head("")}<div class="ax-doc-body"><div class="ax-skeleton"><i style="width:48%"></i><i></i><i style="width:92%"></i><i style="width:76%"></i><i style="width:38%;margin-top:22px"></i><i></i><i style="width:84%"></i><i style="width:64%"></i></div><p class="ax-hint">Writing the knowledge base from everything I've read…</p></div>`;
+  if (!k.text) return `${head(build)}<div class="ax-doc-body"><div class="ax-empty"><span class="ax-orb">${ic("sparkles", { size: 26 })}</span><h3>Your client's knowledge base appears here</h3><p>Add what you have. I read it all and write one complete, organised document for ${esc(c.name)}.</p><ol><li><b>Website</b> Paste the address</li><li><b>Files</b> PDF, Word, PowerPoint, text or images</li><li><b>Notes</b> Tell me anything else</li></ol></div></div>`;
+  const tools = build + axBtn("pencil", "Edit", () => { ia.editingDoc = true; ia.docText = k.text; ia.focusDoc = true; renderShell(); }) + axBtn("copy", "Copy", () => copyText(k.text)) + axBtn("download", "Download", () => iaDownload(c));
+  return `${head(tools)}${iaSourcesRow(d)}<div class="ax-doc-body">${k.stale && d.ai.ready ? `<p class="ax-stale">${ic("info", { size: 14 })}There is new information since this was written. Choose Update to add it.</p>` : ""}<article class="iakb-doc">${kbHtml(k.text)}</article></div>`;
 }
 function viewEditor(c) {
-  if (ia.forId !== c.id) { ia.forId = c.id; ia.data = null; ia.error = ""; ia.text = ""; ia.editing = null; ia.open = {}; ia.loading = false; }
+  if (ia.forId !== c.id) { ia.forId = c.id; ia.data = null; ia.error = ""; ia.text = ""; ia.editing = null; ia.open = {}; ia.loading = false; ia.editingDoc = false; }
   if (!ia.data && !ia.loading) {
     ia.loading = true;
     api("/br/intake", { clientId: c.id, action: "start" })
@@ -935,21 +975,35 @@ function viewEditor(c) {
     if (file) file.onchange = () => { const list = [...file.files]; file.value = ""; if (list.length) iaFiles(list); };
     const box = document.getElementById("ia-text");
     if (box) box.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); iaSend(); } });
-    if (ia.focusEdit) { ia.focusEdit = false; document.getElementById("ia-edit")?.focus(); }
+    if (box && ia.focusBox) { ia.focusBox = false; box.focus(); box.setSelectionRange(box.value.length, box.value.length); }
+    if (ia.focusDoc) { ia.focusDoc = false; document.getElementById("kb-edit")?.focus(); }
+    const zone = document.querySelector(".ax-chat");
+    if (zone) {
+      const over = (e) => { if ([...(e.dataTransfer?.types || [])].includes("Files")) { e.preventDefault(); zone.classList.add("drag"); } };
+      zone.ondragenter = over; zone.ondragover = over;
+      zone.ondragleave = (e) => { if (!zone.contains(e.relatedTarget)) zone.classList.remove("drag"); };
+      zone.ondrop = (e) => { e.preventDefault(); zone.classList.remove("drag"); const list = [...(e.dataTransfer?.files || [])]; if (list.length) iaFiles(list); };
+    }
   });
   const d = ia.data;
   const back = `<button class="back-button" data-a="${reg(() => go("client", c.id))}">${ic("chevron-left", { size: 15 })}Back to ${esc(c.name)}</button>`;
-  const head = pageHead("BRAND ASSISTANT", `Teach Brandroom about ${esc(c.name)}.`, "Give it a website, files or notes. It reads them, files what an agency needs, and asks only about what's missing.");
-  if (!d) return `${back}${head}<div class="panel" style="padding:24px">${ia.error ? `<p class="error-text" role="alert">${esc(ia.error)}</p>` : `${spin(16)} Loading…`}</div>`;
-  const log = d.messages.map(iaMessage).join("") + (ia.busy ? `<div class="chat-msg bot"><span class="chat-who">Brandroom</span>${spin(14)} ${esc(ia.busy)}</div>` : "");
-  const notice = d.ai.ready ? "" : `<p class="hint">AI isn't connected, so websites are read for basics only (phone, social links, address) and files can't be sorted. Set OPENAI_API_KEY and OPENAI_MODEL on the server.</p>`;
-  const skipBtn = d.pending ? btn("Skip question", { variant: "ghost", disabled: !!ia.busy, a: reg(() => iaCall({ action: "skip" }, "…")) }) : "";
-  return `${back}${head}
-  <div class="ia-layout"><section class="panel chat-panel ia-chat"><div id="chat-log" class="chat-log">${log}</div>
-    ${ia.error ? `<p class="error-text" role="alert">${esc(ia.error)}</p>` : ""}${notice}
-    <form class="chat-compose" data-sub="${reg(iaSend)}">${textarea({ id: "ia-text", value: ia.text, rows: 2, placeholder: d.pending ? "Answer, paste a website, or add a file…" : "Paste a website, add files or screenshots, or tell me about them…", inp: reg((v) => { ia.text = v; }) })}
-      <div class="chat-actions"><label class="text-button">${ic("upload", { size: 14 })}Add files<input id="ia-file" type="file" multiple accept="image/jpeg,image/png,image/webp,.pdf,.docx,.pptx,.txt,.md,.csv,application/pdf" ${ia.busy ? "disabled" : ""}></label>${skipBtn}${btn(ia.busy ? "Working…" : "Send", { type: "submit", disabled: !!ia.busy })}</div></form></section>
-    <aside class="panel ia-panel"><div class="eyebrow">WHAT I KNOW</div>${iaPanel()}</aside></div>`;
+  const hero = `<header class="ax-hero"><span class="ax-badge">${ic("sparkles", { size: 14 })}AI Brand Assistant</span><h1>Teach Brandroom about <span>${esc(c.name)}</span></h1><p>Give it a website, files or notes. It reads everything and writes one complete knowledge base, then keeps it up to date as you add more.</p></header>`;
+  if (!d) return `<div class="ax-page">${back}${hero}<div class="ax-card" style="padding:24px">${ia.error ? `<p class="error-text" role="alert">${esc(ia.error)}</p>` : `${spin(16)} Loading…`}</div></div>`;
+  const typing = ia.busy ? `<div class="ax-row"><span class="ax-avatar sm">${ic("sparkles", { size: 14 })}</span><div class="ax-bubble typing"><i></i><i></i><i></i><span>${esc(ia.busy)}</span></div></div>` : "";
+  const log = d.messages.map(iaMessage).join("") + typing;
+  const notice = d.ai.ready ? "" : `<p class="ax-hint warn">AI isn't connected, so websites are read for basics only and files can't be sorted. Set OPENAI_API_KEY and OPENAI_MODEL on the server.</p>`;
+  const chips = `<div class="ax-suggest">${axBtn("globe", "Add a website", () => { ia.text = ia.text || "https://"; ia.focusBox = true; renderShell(); }, { text: true, disabled: !!ia.busy })}<label class="ax-btn text">${ic("paperclip", { size: 15 })}<span>Upload files</span><input id="ia-file" type="file" multiple accept="image/jpeg,image/png,image/webp,.pdf,.docx,.pptx,.txt,.md,.csv,application/pdf" ${ia.busy ? "disabled" : ""}></label>${d.pending ? axBtn("x", "Skip question", () => iaCall({ action: "skip" }, "…"), { text: true, disabled: !!ia.busy }) : ""}</div>`;
+  return `<div class="ax-page">${back}${hero}
+  <div class="ax-grid">
+    <section class="ax-card ax-chat" aria-label="Chat"><div class="ax-drop"><span>${ic("upload", { size: 22 })}</span><b>Drop files to add them</b><small>PDF, Word, PowerPoint, text, images</small></div>
+      <div class="ax-chat-head"><span class="ax-avatar">${ic("sparkles", { size: 18 })}</span><div><b>Brandroom AI</b><small><i class="ax-dot ${ia.busy ? "busy" : ""}"></i>${ia.busy ? esc(ia.busy) : "Ready"}</small></div></div>
+      <div id="chat-log" class="ax-log">${log}</div>
+      ${ia.error ? `<p class="error-text" role="alert">${esc(ia.error)}</p>` : ""}${notice}
+      ${chips}
+      <form class="ax-compose" data-sub="${reg(iaSend)}">${textarea({ id: "ia-text", value: ia.text, rows: 1, placeholder: d.pending ? "Answer, paste a website, or drop a file…" : "Paste a website, drop files, or tell me about them…", inp: reg((v) => { ia.text = v; }) })}<button type="submit" class="ax-send" aria-label="Send"${ia.busy ? " disabled" : ""}>${ic("send", { size: 18 })}</button></form>
+    </section>
+    <aside class="ax-card ax-doc">${iaDoc(c)}</aside>
+  </div></div>`;
 }
 const editorBadge = () => `<span id="ed-state" class="pill ${ed.dirty ? "draft" : "ready"}">${ed.dirty ? "Unsaved changes" : ic("check", { size: 13 }) + "All changes saved"}</span>`;
 function stepper(a, key, pick) {

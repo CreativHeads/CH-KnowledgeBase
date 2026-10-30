@@ -266,6 +266,10 @@ alter table onboarding_sessions enable row level security;
 -- v2.2: AI intake. What was read, what was learned from it, and the conversation, so the assistant remembers.
 -- Which person or AI set each field, where it came from, and what it replaced (for "undo").
 alter table clients add column if not exists field_meta jsonb not null default '{}'::jsonb;
+-- The client's whole knowledge base, written as one document from everything the assistant has read.
+alter table clients add column if not exists kb_doc text not null default '';
+alter table clients add column if not exists kb_doc_at timestamptz;
+alter table clients add column if not exists kb_sources jsonb not null default '[]'::jsonb;  -- which sources the document already includes
 
 create table if not exists intake_sources (
   id          bigserial primary key,

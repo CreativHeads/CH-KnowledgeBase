@@ -306,6 +306,8 @@ create table if not exists intake_state (
   updated_at timestamptz not null default now()
 );
 
+alter table intake_state   add column if not exists queue jsonb not null default '[]'::jsonb;   -- follow-up questions waiting to be asked
+alter table intake_state   add column if not exists planned jsonb not null default '{}'::jsonb; -- when the questions were last worked out
 alter table intake_sources add column if not exists body text not null default '';          -- the text that was read, kept as the assistant's memory
 alter table intake_state   add column if not exists searched jsonb not null default '{}'::jsonb; -- which gaps were already looked up in memory
 

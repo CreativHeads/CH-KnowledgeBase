@@ -7,7 +7,7 @@ Runs on **Vercel** (the site) and **Supabase** (database and files).
 
 | Guide | What it covers |
 |---|---|
-| [DEPLOY.md](DEPLOY.md) | GitHub → Supabase → Vercel → `ch.creativheads.com`, step by step |
+| [DEPLOY.md](DEPLOY.md) | GitHub → Supabase → Vercel → `brandroom.creativheads.com`, step by step |
 | [SECURITY.md](SECURITY.md) | What protects the site, and what to do if a key leaks |
 
 ---
@@ -89,7 +89,7 @@ KB_API_KEYS=seo-agent:the-key-you-made
 **3. The tool calls it** with the key in a header:
 
 ```bash
-curl "https://ch.creativheads.com/api/kb/v1/clients?website=example.com" \
+curl "https://brandroom.creativheads.com/api/kb/v1/clients?website=example.com" \
   -H "Authorization: Bearer the-key-you-made"
 ```
 

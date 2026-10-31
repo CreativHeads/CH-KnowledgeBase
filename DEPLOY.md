@@ -1,4 +1,4 @@
-# Putting Brandroom online: GitHub → Supabase → Vercel → ch.creativheads.com
+# Putting Brandroom online: GitHub → Supabase → Vercel → brandroom.creativheads.com
 
 Follow the steps in order. Each one says how to tell it worked.
 Allow about 45 minutes the first time. Most of it is waiting on dashboards.
@@ -6,7 +6,7 @@ Allow about 45 minutes the first time. Most of it is waiting on dashboards.
 You will end up with:
 
 ```
-https://ch.creativheads.com   →   Vercel (the site)   →   Supabase (database + files)
+https://brandroom.creativheads.com   →   Vercel (the site)   →   Supabase (database + files)
 ```
 
 Keep two things open in a notepad as you go. You will be copying values between sites:
@@ -108,7 +108,7 @@ reference images. In Supabase, **Table Editor → clients** shows White Stone.
 | `SUPABASE_SERVICE_KEY` | your service_role key |
 | `SUPABASE_BUCKET` | `brand-refs` |
 | `APP_SECRET` | **required.** Long random text, at least 24 characters. The site refuses to run without it. Make one with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
-| `APP_URL` | `https://ch.creativheads.com` |
+| `APP_URL` | `https://brandroom.creativheads.com` |
 | `KB_API_KEYS` | the same line as in your `.env`, for example `seo-agent:the-key` |
 | `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET` | add after step 6 |
 | `MS_ALLOWED_DOMAIN` | `creativheads.com` |
@@ -124,18 +124,18 @@ cause is a typo in `DATABASE_URL`.
 
 ---
 
-## 4. Hostinger: make `ch.creativheads.com`
+## 4. Hostinger: make `brandroom.creativheads.com`
 
 A subdomain is just one extra DNS record. **Nothing about your main site or email changes.**
 
 ### 4a. Tell Vercel about the name first
 1. Vercel → your project → **Settings → Domains → Add**.
-2. Type `ch.creativheads.com` and click **Add**.
+2. Type `brandroom.creativheads.com` and click **Add**.
 3. Vercel shows a record to create. It will look like:
 
 | Type | Name | Value |
 |---|---|---|
-| CNAME | `ch` | a value Vercel shows, such as `cname.vercel-dns.com` |
+| CNAME | `brandroom` | a value Vercel shows, such as `cname.vercel-dns.com` |
 
 **Copy the value Vercel shows you.** Newer projects get a project-specific value, so do not type the
 one above from memory.
@@ -143,7 +143,7 @@ one above from memory.
 ### 4b. Create the record in Hostinger
 1. Log in to **hpanel.hostinger.com** → **Domains** → click **creativheads.com** → **DNS / Nameservers**
    → **DNS records**.
-2. **Check first:** look through the existing records for anything with the name `ch`
+2. **Check first:** look through the existing records for anything with the name `brandroom`
    (an `A`, `AAAA` or `CNAME`). **Delete it**, because a name cannot have a CNAME and another
    record at the same time.
 3. Add a record:
@@ -151,7 +151,7 @@ one above from memory.
 | Field | Value |
 |---|---|
 | Type | **CNAME** |
-| Name | `ch` (only `ch`, not `ch.creativheads.com`) |
+| Name | `brandroom` (only `brandroom`, not `brandroom.creativheads.com`) |
 | Points to / Target | the value Vercel showed you |
 | TTL | `300` (or leave the default) |
 
@@ -165,12 +165,12 @@ one above from memory.
 1. DNS usually takes 5–30 minutes, and rarely a few hours.
 2. Back in Vercel → **Settings → Domains**. It shows **Valid Configuration** when ready, then issues the
    HTTPS certificate by itself, which takes about a minute.
-3. Open **https://ch.creativheads.com**.
+3. Open **https://brandroom.creativheads.com**.
 
 **It worked when** the Brandroom sign-in loads there with a padlock.
 
-If Vercel keeps saying "Invalid Configuration" after an hour, check the record name is exactly `ch`
-and that no older `ch` record is still there.
+If Vercel keeps saying "Invalid Configuration" after an hour, check the record name is exactly `brandroom`
+and that no older `brandroom` record is still there.
 
 ---
 
@@ -178,7 +178,7 @@ and that no older `ch` record is still there.
 
 In SEO Studio → **Settings → Integrations → Knowledgebase**:
 
-- Change the URL to `https://ch.creativheads.com/api/kb/v1`
+- Change the URL to `https://brandroom.creativheads.com/api/kb/v1`
 - Keep the same key (it must match `KB_API_KEYS` in Vercel)
 - Click **Test connection**
 
@@ -193,7 +193,7 @@ Needs the real address from step 4, so it comes after.
 1. **portal.azure.com → Microsoft Entra ID → App registrations → New registration**
    - Name: `Brandroom`
    - Supported account types: **Accounts in this organizational directory only**
-   - Redirect URI → **Web** → `https://ch.creativheads.com/api/auth/microsoft/callback`
+   - Redirect URI → **Web** → `https://brandroom.creativheads.com/api/auth/microsoft/callback`
 2. On the overview page copy the **Application (client) ID** and **Directory (tenant) ID**.
 3. **Certificates & secrets → New client secret.** Copy the **Value** straight away. It is shown once.
 4. Add `MS_TENANT_ID`, `MS_CLIENT_ID` and `MS_CLIENT_SECRET` to Vercel → Settings → Environment
@@ -228,7 +228,7 @@ Vercel redeploys on its own within a minute. Database changes in `schema.sql` ne
 |---|---|---|
 | Sign-in page loads, then "Something went wrong" | Wrong `DATABASE_URL` | Check it is the **Transaction pooler** string with the password filled in |
 | Images do not show | Bucket name or service key | Bucket must be exactly `brand-refs`; check `SUPABASE_SERVICE_KEY` |
-| "Redirect URI does not match" on Microsoft sign-in | `APP_URL` or the Azure URI differs | Both must be `https://ch.creativheads.com` exactly, with no trailing slash |
-| Domain stuck on "Invalid Configuration" | Old `ch` record, or wrong value | Delete other `ch` records; paste the exact value Vercel shows |
+| "Redirect URI does not match" on Microsoft sign-in | `APP_URL` or the Azure URI differs | Both must be `https://brandroom.creativheads.com` exactly, with no trailing slash |
+| Domain stuck on "Invalid Configuration" | Old `brandroom` record, or wrong value | Delete other `brandroom` records; paste the exact value Vercel shows |
 | SEO Studio says it cannot connect | `KB_API_KEYS` missing in Vercel | Add it and redeploy |
 | Uploading a document fails | File over 3 MB | Vercel's upload limit. Use a smaller file |

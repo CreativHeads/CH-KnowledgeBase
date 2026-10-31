@@ -2,15 +2,31 @@
 
 This puts the same app that runs on Vercel onto your own VPS. The database and files stay in Supabase, so
 your data does not move and nothing is lost. Your other site on the VPS is not touched: this adds one more
-name, and Nginx sends each name to the right app.
+name, and Caddy sends each name to the right app.
 
 ```
-https://kb.creativheads.com  →  Nginx (on the VPS)  →  Brandroom (Node, 127.0.0.1:3100)  →  Supabase
+https://kb.creativheads.com  →  Caddy (on the VPS)  →  Brandroom (Node, 127.0.0.1:3100)  →  Supabase
 ```
 
 `brandroom.creativheads.com` can stay on Vercel at the same time. Both talk to the same database.
 
 Time needed: about 30 minutes. You only copy and paste.
+
+---
+
+## The fast way: one installer
+
+On the VPS terminal (step 0 below), run these two lines. The installer does steps 2 to 8 for you: it installs Node,
+gets the code, asks for your keys (typed hidden), starts the app, adds `kb.creativheads.com` to Caddy, and tells
+you the one DNS record to create. It is safe to run again, and it backs up your Caddyfile first and puts it back
+if the check fails.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/CreativHeads/CH-KnowledgeBase/main/deploy/vps/install.sh -o /tmp/brandroom-install.sh
+sudo bash /tmp/brandroom-install.sh
+```
+
+The rest of this page is the same thing done by hand, and the troubleshooting.
 
 ---
 
@@ -24,12 +40,18 @@ All commands below are run there. Lines starting with `#` are only comments.
 
 ```bash
 cat /etc/os-release | head -2           # should say Ubuntu or Debian
-sudo ss -ltnp | grep -E ':(80|443|3100)\b'
+sudo ss -ltnp | grep -E ':(80|443|3100)'
+systemctl is-active caddy nginx apache2 2>/dev/null
+docker ps --format '{{.Names}}  {{.Ports}}' 2>/dev/null | head
 ```
 
-- If port **80/443** show `nginx`, continue: this guide is written for Nginx.
-- If they show `apache2`, `httpd`, `litespeed` or `docker-proxy`, **stop and send me that line.** The steps
-  for the proxy part are different, and I do not want to break your existing site.
+From outside, your VPS (**187.126.125.145**, where pulse, cue and takeboard already point) answers on ports 80 and 443
+with **Caddy**. So this guide uses **Caddy** (steps 6 and 8). Caddy is simpler than Nginx: it gets the HTTPS
+certificate by itself. **Do not install Nginx or certbot** here, because they would fight Caddy for ports 80 and 443.
+
+- If the output of those commands shows Caddy running as a normal service (`caddy  active`): continue.
+- If Caddy runs **inside Docker** (`docker ps` lists a caddy, traefik or similar container): send me the output
+  of those commands. The proxy step is different and I do not want to break your other apps.
 - If port **3100** is already used by something, tell me, and we pick another port.
 
 ## 2. Install Node 22 and Git
@@ -49,7 +71,14 @@ sudo useradd --system --create-home --shell /usr/sbin/nologin brandroom
 sudo mkdir -p /var/www/brandroom && sudo chown brandroom:brandroom /var/www/brandroom
 ```
 
-The code comes from GitHub. If the repository is private, give the VPS **read-only** access with a deploy key:
+The code comes from GitHub (the repository is public, so no key is needed):
+
+```bash
+sudo -u brandroom git clone https://github.com/CreativHeads/CH-KnowledgeBase.git /var/www/brandroom
+cd /var/www/brandroom && sudo -u brandroom npm ci --omit=dev
+```
+
+If you ever make the repository private, give the VPS **read-only** access with a deploy key instead:
 
 ```bash
 sudo -u brandroom mkdir -p -m 700 /home/brandroom/.ssh
@@ -108,42 +137,64 @@ sleep 2 && curl -s http://127.0.0.1:3100/healthz        # prints: ok
 
 If it does not print `ok`: `sudo journalctl -u brandroom -n 50 --no-pager` shows why.
 
-## 6. Nginx: send `kb.creativheads.com` to the app
+## 6. Caddy: send `kb.creativheads.com` to the app
 
-```bash
-sudo cp /var/www/brandroom/deploy/vps/nginx-kb.conf /etc/nginx/conf.d/kb.creativheads.com.conf
-sudo nginx -t && sudo systemctl reload nginx
+Open Caddy's config file (usually `/etc/caddy/Caddyfile`) and **add this block at the end**. Leave everything
+that is already there as it is:
+
+```
+kb.creativheads.com {
+	encode gzip zstd
+	request_body {
+		max_size 8MB
+	}
+	reverse_proxy 127.0.0.1:3100 {
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Real-IP {remote_host}
+		transport http {
+			read_timeout 120s
+		}
+	}
+}
 ```
 
-`nginx -t` must say `syntax is ok` and `test is successful` before you reload. Your other site keeps working.
+The same text is in `deploy/vps/Caddyfile.snippet`. Then check and reload:
+
+```bash
+sudo nano /etc/caddy/Caddyfile
+sudo caddy validate --config /etc/caddy/Caddyfile      # must say: Valid configuration
+sudo systemctl reload caddy
+```
+
+Your other sites keep working. (If you use **Nginx** on some other server, `deploy/vps/nginx-kb.conf` is the
+equivalent, with `certbot` for HTTPS.)
 
 ## 7. DNS: point the name at the VPS
 
-1. hPanel → **VPS → Overview**: copy the VPS's **IPv4 address**.
-2. hPanel → **Domains → creativheads.com → DNS records**.
-3. If there is an old `kb` record (Vercel's `CNAME`), **delete it**: a name cannot have both a CNAME and an A record.
-4. Add:
+This is the step that makes `kb.creativheads.com` exist at all. Right now it has **no DNS record**, so browsers say
+"This site can't be reached".
+
+1. hPanel → **Domains → creativheads.com → DNS records**.
+2. If there is an old `kb` record, **delete it** (a name cannot have a CNAME and an A record together).
+3. Add:
 
 | Type | Name | Points to | TTL |
 |---|---|---|---|
-| **A** | `kb` | the VPS IPv4 address | 300 |
+| **A** | `kb` | **187.126.125.145** (this VPS; confirm it in hPanel → VPS → Overview) | 300 |
 
-5. Wait 5–30 minutes. Check from the VPS: `dig +short kb.creativheads.com` should print the VPS's address.
+4. Wait 5–30 minutes. Check: `dig +short kb.creativheads.com` (on the VPS) prints `187.126.125.145`.
 
-## 8. HTTPS certificate (free, renews by itself)
+## 8. HTTPS
 
-Only after the DNS check above shows the right address:
+With Caddy there is nothing to run. Once the DNS record above works, Caddy asks Let's Encrypt for the certificate
+on the first visit and renews it by itself. Watch it happen with:
 
 ```bash
-sudo apt-get install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d kb.creativheads.com --redirect -m YOUR-EMAIL --agree-tos --no-eff-email
+sudo journalctl -u caddy -n 30 --no-pager | grep -i -E "certificate|obtain|error"
 ```
 
-Put **your own email** in place of `YOUR-EMAIL` (Let's Encrypt uses it only for expiry warnings). Open
-**https://kb.creativheads.com**. The sign-in page should load with a padlock.
-
-Make sure the VPS firewall allows web traffic: in hPanel → VPS → **Firewall**, allow TCP **80** and **443**
-(and `sudo ufw status` should not be blocking them if `ufw` is on).
+Open **https://kb.creativheads.com**. The sign-in page should load with a padlock. Make sure ports **80** and **443**
+are open in hPanel → VPS → **Firewall**; Caddy needs port 80 once to prove the name is yours.
 
 ## 9. Updating later
 
@@ -177,4 +228,32 @@ You should see `HTTP/2 200` and the security headers `strict-transport-security`
 - **Keep the VPS itself safe:** use SSH keys instead of passwords, `sudo apt-get install -y unattended-upgrades`,
   and keep only ports 22, 80 and 443 open.
 - **If something breaks:** `sudo journalctl -u brandroom -n 100 --no-pager` (the app) and
-  `sudo tail -n 50 /var/log/nginx/error.log` (Nginx).
+  `sudo journalctl -u caddy -n 50 --no-pager` (Caddy).
+
+---
+
+## If you already installed Nginx or ran certbot
+
+Caddy owns ports 80 and 443, so Nginx cannot start next to it, and a failed Nginx can leave Caddy's ports in a
+confusing state. Undo it, then use steps 6–8 above:
+
+```bash
+sudo systemctl disable --now nginx 2>/dev/null
+sudo rm -f /etc/nginx/conf.d/kb.creativheads.com.conf
+sudo systemctl restart caddy
+sudo ss -ltnp | grep -E ':(80|443)\b'        # only caddy should be listed
+```
+
+## One command that shows me everything
+
+If something still does not work, run this and send me the whole output (it has no secrets):
+
+```bash
+echo "== app";  systemctl is-active brandroom; curl -s http://127.0.0.1:3100/healthz; echo
+echo "== ports"; sudo ss -ltnp | grep -E ':(80|443|3100)\b'
+echo "== web servers"; systemctl is-active caddy nginx apache2 2>/dev/null
+echo "== caddy block"; sudo grep -n -A12 "kb.creativheads.com" /etc/caddy/Caddyfile
+echo "== caddy log"; sudo journalctl -u caddy -n 20 --no-pager
+echo "== app log"; sudo journalctl -u brandroom -n 20 --no-pager
+echo "== dns"; dig +short kb.creativheads.com
+```

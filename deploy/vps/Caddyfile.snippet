@@ -1,0 +1,20 @@
+# Caddy: sends kb.creativheads.com to Brandroom on this same machine.
+# Caddy gets and renews the HTTPS certificate by itself, as soon as the DNS record for the name points here.
+# Add this block to your Caddyfile (usually /etc/caddy/Caddyfile), then:  sudo systemctl reload caddy
+kb.creativheads.com {
+	encode gzip zstd
+
+	# The biggest request the app sends is a ~3.3 MB piece of a large file.
+	request_body {
+		max_size 8MB
+	}
+
+	reverse_proxy 127.0.0.1:3100 {
+		# Overwritten with the real visitor address, never appended, so nobody can fake it.
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Real-IP {remote_host}
+		transport http {
+			read_timeout 120s
+		}
+	}
+}

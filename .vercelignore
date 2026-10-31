@@ -13,3 +13,5 @@ scripts/
 DEPLOY.md
 SECURITY.md
 README.md
+deploy/
+VPS.md

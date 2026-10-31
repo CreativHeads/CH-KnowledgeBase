@@ -1,0 +1,31 @@
+# systemd unit: keeps Brandroom running, starts it on boot and restarts it if it ever stops.
+# Install:  sudo cp deploy/vps/brandroom.service /etc/systemd/system/ && sudo systemctl daemon-reload
+[Unit]
+Description=Brandroom (CreativHeads knowledge base)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=brandroom
+Group=brandroom
+WorkingDirectory=/var/www/brandroom
+# Passwords and keys live here, outside the code folder. See VPS.md.
+EnvironmentFile=/etc/brandroom.env
+Environment=NODE_ENV=production
+Environment=TRUST_PROXY=1
+Environment=PORT=3100
+ExecStart=/usr/bin/node scripts/server.js
+Restart=always
+RestartSec=3
+# Locks the app down: it cannot gain extra rights, see other users' files or change the system.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

@@ -7,6 +7,7 @@ Runs on **Vercel** (the site) and **Supabase** (database and files).
 
 | Guide | What it covers |
 |---|---|
+| [VPS.md](VPS.md) | Run it on your own Hostinger VPS instead, with Nginx and systemd |
 | [DEPLOY.md](DEPLOY.md) | GitHub → Supabase → Vercel → `brandroom.creativheads.com`, step by step |
 | [SECURITY.md](SECURITY.md) | What protects the site, and what to do if a key leaks |
 
